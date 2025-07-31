@@ -3,6 +3,7 @@ import imageUrlBuilder from '@sanity/image-url'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 
+// Sanity client setup
 const client = createClient({
   projectId: '3jc8hsku',
   dataset: 'production',
@@ -10,11 +11,13 @@ const client = createClient({
   useCdn: false,
 })
 
+// Image builder
 const builder = imageUrlBuilder(client)
 function urlFor(source: any) {
   return builder.image(source)
 }
 
+// Fetch product by slug
 async function getProduct(slug: string) {
   const query = `*[_type == "product" && slug.current == $slug][0]{
     title,
@@ -25,7 +28,15 @@ async function getProduct(slug: string) {
   return await client.fetch(query, { slug }, { cache: 'no-store' })
 }
 
-export default async function Page({ params }: { params: { slug: string } }) {
+// Correct type for dynamic route
+type ProductPageProps = {
+  params: {
+    slug: string
+  }
+}
+
+// Page component
+export default async function Page({ params }: ProductPageProps) {
   const product = await getProduct(params.slug)
 
   if (!product) {
