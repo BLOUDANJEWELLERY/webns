@@ -25,7 +25,6 @@ async function getProduct(slug: string) {
   return await client.fetch(query, { slug }, { cache: 'no-store' })
 }
 
-// ✅ Clean and correct function signature
 export default async function Page({ params }: { params: { slug: string } }) {
   const product = await getProduct(params.slug)
 
