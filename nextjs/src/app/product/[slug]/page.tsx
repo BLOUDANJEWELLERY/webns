@@ -2,6 +2,7 @@ import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
+import type { PageProps } from 'next'
 
 const client = createClient({
   projectId: '3jc8hsku',
@@ -25,9 +26,7 @@ async function getProduct(slug: string) {
   return await client.fetch(query, { slug }, { cache: 'no-store' })
 }
 
-// ✅ Next.js 15 compatible syntax — params is a plain object
-import type { PageProps } from 'next'
-
+// ✅ Correct and Vercel-friendly type definition
 export default async function Page({ params }: PageProps<{ slug: string }>) {
   const product = await getProduct(params.slug)
 
