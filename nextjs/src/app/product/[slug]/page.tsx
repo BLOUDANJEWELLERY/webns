@@ -25,13 +25,8 @@ async function getProduct(slug: string) {
   return await client.fetch(query, { slug }, { cache: 'no-store' })
 }
 
-type Props = {
-  params: {
-    slug: string
-  }
-}
-
-export default async function ProductPage({ params }: Props) {
+// ✅ Next.js 15 compatible syntax — params is a plain object
+export default async function Page({ params }: { params: { slug: string } }) {
   const product = await getProduct(params.slug)
 
   if (!product) {
