@@ -16,7 +16,14 @@ function urlFor(source: any) {
 }
 
 async function getProducts() {
-  const query = `*[_type == "product"]{_id, title, price, description, "slug": slug.current, image}`
+  const query = `*[_type == "product"]{
+    _id,
+    title,
+    price,
+    description,
+    "slug": slug.current,
+    image
+  }`
   return await client.fetch(query, {}, { cache: 'no-store' })
 }
 
@@ -25,7 +32,9 @@ export default async function HomePage() {
 
   return (
     <main className="p-4 md:p-8 max-w-6xl mx-auto">
-      <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center">Our Clothing Collection</h1>
+      <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center">
+        Our Clothing Collection
+      </h1>
 
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {products.map((product: any) => (
