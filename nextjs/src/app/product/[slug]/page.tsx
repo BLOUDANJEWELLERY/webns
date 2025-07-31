@@ -1,7 +1,6 @@
-// app/page.tsx
-import Link from 'next/link'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
+import { notFound } from 'next/navigation'
 
 const client = createClient({
   projectId: '3jc8hsku',
@@ -15,34 +14,39 @@ function urlFor(source: any) {
   return builder.image(source)
 }
 
-async function getProducts() {
-  const query = `*[_type == "product"]{_id, title, price, description, "slug": slug.current, image}`
-  return await client.fetch(query, {}, { cache: 'no-store' })
+async function getProduct(slug: string) {
+  const query = `*[_type == "product" && slug.current == $slug][0]{
+    title,
+    price,
+    image,
+    description
+  }`
+  const product = await client.fetch(query, { slug }, { cache: 'no-store' })
+  return product
 }
 
-export default async function HomePage() {
-  const products = await getProducts()
+export default async function ProductPage({ params }: { params: { slug: string } }) {
+  const product = await getProduct(params.slug)
+
+  if (!product) {
+    notFound()
+  }
 
   return (
-    <main className="p-4 md:p-8 max-w-6xl mx-auto">
-      <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center">Our Clothing Collection</h1>
-      
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {products.map((product: any) => (
-          <Link key={product._id} href={`/product/${product.slug.current}`} className="block group border rounded-xl overflow-hidden shadow hover:shadow-lg transition duration-300">
-            {product.image && (
-              <img
-                src={urlFor(product.image).width(400).height(400).fit('crop').url()}
-                alt={product.title}
-                className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-            )}
-            <div className="p-4 text-center">
-              <h2 className="text-lg font-semibold">{product.title}</h2>
-              <p className="text-gray-700 font-medium mt-1">${product.price}</p>
-            </div>
-          </Link>
-        ))}
+    <main className="p-4 md:p-8 max-w-4xl mx-auto">
+      <div className="flex flex-col md:flex-row gap-8 items-center">
+        {product.image && (
+          <img
+            src={urlFor(product.image).width(600).height(600).fit('crop').url()}
+            alt={product.title}
+            className="w-full md:w-1/2 h-auto object-cover rounded-lg shadow"
+          />
+        )}
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold mb-4">{product.title}</h1>
+          <p className="text-xl text-gray-700 mb-4">${product.price}</p>
+          <p className="text-gray-600 leading-relaxed">{product.description}</p>
+        </div>
       </div>
     </main>
   )
