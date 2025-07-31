@@ -16,7 +16,6 @@ function urlFor(source: any) {
 }
 
 interface Product {
-  _id: string
   title: string
   price: number
   description: string
@@ -30,7 +29,7 @@ export const dynamic = 'force-dynamic'
 export default async function ProductPage({ params }: { params: { slug: string } }) {
   const query = `
     *[_type == "product" && slug.current == $slug][0]{
-      _id, title, price, description, image
+     title, price, description, image
     }
   `
   const product: Product = await client.fetch(query, { slug: params.slug })
