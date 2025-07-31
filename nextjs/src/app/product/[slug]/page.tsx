@@ -1,5 +1,4 @@
 // app/product/[slug]/page.tsx
-
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import { notFound } from 'next/navigation'
@@ -24,6 +23,10 @@ interface Product {
   image: any
 }
 
+// ✅ Tell Next.js this is a dynamic route
+export const dynamic = 'force-dynamic'
+
+// ✅ The page component
 export default async function ProductPage({ params }: { params: { slug: string } }) {
   const query = `
     *[_type == "product" && slug.current == $slug][0]{
