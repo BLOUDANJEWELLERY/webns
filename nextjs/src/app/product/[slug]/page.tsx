@@ -1,14 +1,8 @@
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import { notFound } from 'next/navigation'
-import { ImageResponse } from 'next/server'
 import Image from 'next/image'
 
-type Props = {
-  params: { slug: string }
-}
-
-// Sanity client
 const client = createClient({
   projectId: '3jc8hsku',
   dataset: 'production',
@@ -16,13 +10,11 @@ const client = createClient({
   useCdn: false,
 })
 
-// Image builder
 const builder = imageUrlBuilder(client)
 function urlFor(source: any) {
   return builder.image(source)
 }
 
-// Query
 async function getProduct(slug: string) {
   const query = `*[_type == "product" && slug.current == $slug][0]{
     title,
@@ -33,8 +25,12 @@ async function getProduct(slug: string) {
   return await client.fetch(query, { slug }, { cache: 'no-store' })
 }
 
-// ✅ Actual page
-export default async function Page({ params }: Props) {
+// ✅ This is the key — fully type-safe and Vercel-friendly
+export default async function Page({
+  params,
+}: {
+  params: { slug: string }
+}) {
   const product = await getProduct(params.slug)
 
   if (!product) {
