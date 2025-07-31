@@ -3,6 +3,7 @@ import imageUrlBuilder from '@sanity/image-url'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 
+// Setup Sanity client
 const client = createClient({
   projectId: '3jc8hsku',
   dataset: 'production',
@@ -10,11 +11,13 @@ const client = createClient({
   useCdn: false,
 })
 
+// Image URL builder
 const builder = imageUrlBuilder(client)
 function urlFor(source: any) {
   return builder.image(source)
 }
 
+// Fetch product data
 async function getProduct(slug: string) {
   const query = `*[_type == "product" && slug.current == $slug][0]{
     title,
@@ -25,7 +28,7 @@ async function getProduct(slug: string) {
   return await client.fetch(query, { slug }, { cache: 'no-store' })
 }
 
-// ✅ This is the key — fully type-safe and Vercel-friendly
+// ✅ FIXED: CORRECT inline typing for `params`
 export default async function Page({
   params,
 }: {
