@@ -26,7 +26,9 @@ async function getProduct(slug: string) {
 }
 
 // ✅ Next.js 15 compatible syntax — params is a plain object
-export default async function Page({ params }: { params: { slug: string } }) {
+import type { PageProps } from 'next'
+
+export default async function Page({ params }: PageProps<{ slug: string }>) {
   const product = await getProduct(params.slug)
 
   if (!product) {
