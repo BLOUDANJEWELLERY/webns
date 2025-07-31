@@ -1,63 +1,64 @@
-import { createClient } from ‘next-sanity’
-import imageUrlBuilder from ‘@sanity/image-url’
-import { notFound } from ‘next/navigation’
-import Image from ‘next/image’
+import { createClient } from 'next-sanity'
+import imageUrlBuilder from '@sanity/image-url'
+import { notFound } from 'next/navigation'
+import { ImageResponse } from 'next/server'
+import Image from 'next/image'
 
-// Sanity client setup
+type Props = {
+  params: { slug: string }
+}
+
+// Sanity client
 const client = createClient({
-projectId: ‘3jc8hsku’,
-dataset: ‘production’,
-apiVersion: ‘2023-07-30’,
-useCdn: false,
+  projectId: '3jc8hsku',
+  dataset: 'production',
+  apiVersion: '2023-07-30',
+  useCdn: false,
 })
 
 // Image builder
 const builder = imageUrlBuilder(client)
 function urlFor(source: any) {
-return builder.image(source)
+  return builder.image(source)
 }
 
-// Fetch product by slug
+// Query
 async function getProduct(slug: string) {
-const query = `*[_type == "product" && slug.current == $slug][0]{ title, price, image, description }`
-return await client.fetch(query, { slug }, { cache: ‘no-store’ })
+  const query = `*[_type == "product" && slug.current == $slug][0]{
+    title,
+    price,
+    image,
+    description
+  }`
+  return await client.fetch(query, { slug }, { cache: 'no-store' })
 }
 
-// Correct type for Next.js 15 dynamic route
-type ProductPageProps = {
-params: Promise<{
-slug: string
-}>
-}
+// ✅ Actual page
+export default async function Page({ params }: Props) {
+  const product = await getProduct(params.slug)
 
-// Page component
-export default async function Page({ params }: ProductPageProps) {
-// Await the params Promise
-const { slug } = await params
-const product = await getProduct(slug)
+  if (!product) {
+    notFound()
+  }
 
-if (!product) {
-notFound()
-}
-
-return (
-<main className="p-4 md:p-8 max-w-4xl mx-auto">
-<div className="flex flex-col md:flex-row gap-8 items-center">
-{product.image && (
-<Image
-src={urlFor(product.image).width(600).height(600).fit(‘crop’).url()}
-alt={product.title}
-width={600}
-height={600}
-className=“w-full md:w-1/2 h-auto object-cover rounded-lg shadow”
-/>
-)}
-<div className="flex-1">
-<h1 className="text-3xl font-bold mb-4">{product.title}</h1>
-<p className="text-xl text-gray-700 mb-4">${product.price}</p>
-<p className="text-gray-600 leading-relaxed">{product.description}</p>
-</div>
-</div>
-</main>
-)
+  return (
+    <main className="p-4 md:p-8 max-w-4xl mx-auto">
+      <div className="flex flex-col md:flex-row gap-8 items-center">
+        {product.image && (
+          <Image
+            src={urlFor(product.image).width(600).height(600).fit('crop').url()}
+            alt={product.title}
+            width={600}
+            height={600}
+            className="w-full md:w-1/2 h-auto object-cover rounded-lg shadow"
+          />
+        )}
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold mb-4">{product.title}</h1>
+          <p className="text-xl text-gray-700 mb-4">${product.price}</p>
+          <p className="text-gray-600 leading-relaxed">{product.description}</p>
+        </div>
+      </div>
+    </main>
+  )
 }
