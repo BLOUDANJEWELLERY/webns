@@ -1,7 +1,7 @@
-// app/page.tsx
 import Link from 'next/link'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
+import Image from 'next/image'
 
 const client = createClient({
   projectId: '3jc8hsku',
@@ -26,14 +26,20 @@ export default async function HomePage() {
   return (
     <main className="p-4 md:p-8 max-w-6xl mx-auto">
       <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center">Our Clothing Collection</h1>
-      
+
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {products.map((product: any) => (
-          <Link key={product._id} href={`/product/${product.slug}`} className="block group border rounded-xl overflow-hidden shadow hover:shadow-lg transition duration-300">
+          <Link
+            key={product._id}
+            href={`/product/${product.slug}`}
+            className="block group border rounded-xl overflow-hidden shadow hover:shadow-lg transition duration-300"
+          >
             {product.image && (
-              <img
+              <Image
                 src={urlFor(product.image).width(400).height(400).fit('crop').url()}
                 alt={product.title}
+                width={400}
+                height={400}
                 className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
               />
             )}
