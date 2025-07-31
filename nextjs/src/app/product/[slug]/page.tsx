@@ -1,6 +1,7 @@
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import { notFound } from 'next/navigation'
+import Image from 'next/image'
 
 const client = createClient({
   projectId: '3jc8hsku',
@@ -21,11 +22,16 @@ async function getProduct(slug: string) {
     image,
     description
   }`
-  const product = await client.fetch(query, { slug }, { cache: 'no-store' })
-  return product
+  return await client.fetch(query, { slug }, { cache: 'no-store' })
 }
 
-export default async function ProductPage({ params }: { params: { slug: string } }) {
+type Props = {
+  params: {
+    slug: string
+  }
+}
+
+export default async function ProductPage({ params }: Props) {
   const product = await getProduct(params.slug)
 
   if (!product) {
@@ -36,9 +42,11 @@ export default async function ProductPage({ params }: { params: { slug: string }
     <main className="p-4 md:p-8 max-w-4xl mx-auto">
       <div className="flex flex-col md:flex-row gap-8 items-center">
         {product.image && (
-          <img
+          <Image
             src={urlFor(product.image).width(600).height(600).fit('crop').url()}
             alt={product.title}
+            width={600}
+            height={600}
             className="w-full md:w-1/2 h-auto object-cover rounded-lg shadow"
           />
         )}
