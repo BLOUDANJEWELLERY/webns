@@ -2,7 +2,6 @@ import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
-import type { PageProps } from 'next'
 
 const client = createClient({
   projectId: '3jc8hsku',
@@ -26,8 +25,8 @@ async function getProduct(slug: string) {
   return await client.fetch(query, { slug }, { cache: 'no-store' })
 }
 
-// ✅ Correct and Vercel-friendly type definition
-export default async function Page({ params }: PageProps<{ slug: string }>) {
+// ✅ Clean and correct function signature
+export default async function Page({ params }: { params: { slug: string } }) {
   const product = await getProduct(params.slug)
 
   if (!product) {
