@@ -1,7 +1,7 @@
-// app/product/[slug]/page.tsx
+// app/page.tsx
+import Link from 'next/link'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
-import { notFound } from 'next/navigation'
 
 const client = createClient({
   projectId: '3jc8hsku',
@@ -15,39 +15,35 @@ function urlFor(source: any) {
   return builder.image(source)
 }
 
-interface Product {
-  title: string
-  price: number
-  description: string
-  image: any
+async function getProducts() {
+  const query = `*[_type == "product"]{_id, title, price, description, "slug": slug.current, image}`
+  return await client.fetch(query, {}, { cache: 'no-store' })
 }
 
-// Force this page to always be dynamic
-export const dynamic = 'force-dynamic'
-
-// Hardcoded slug: "necklace"
-export default async function ProductPage() {
-  const query = `
-    *[_type == "product" && slug.current == "necklace"][0]{
-      title, price, description, image
-    }
-  `
-  const product: Product = await client.fetch(query)
-
-  if (!product) return notFound()
+export default async function HomePage() {
+  const products = await getProducts()
 
   return (
-    <main className="max-w-2xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-4">{product.title}</h1>
-      {product.image && (
-        <img
-          src={urlFor(product.image).width(800).url()}
-          alt={product.title}
-          className="w-full rounded-lg shadow mb-6"
-        />
-      )}
-      <p className="text-xl text-gray-800 font-semibold mb-2">${product.price}</p>
-      <p className="text-gray-600 leading-relaxed">{product.description}</p>
+    <main className="p-4 md:p-8 max-w-6xl mx-auto">
+      <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center">Our Clothing Collection</h1>
+      
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {products.map((product: any) => (
+          <Link key={product._id} href={`/product/${product.slug.current}`} className="block group border rounded-xl overflow-hidden shadow hover:shadow-lg transition duration-300">
+            {product.image && (
+              <img
+                src={urlFor(product.image).width(400).height(400).fit('crop').url()}
+                alt={product.title}
+                className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            )}
+            <div className="p-4 text-center">
+              <h2 className="text-lg font-semibold">{product.title}</h2>
+              <p className="text-gray-700 font-medium mt-1">${product.price}</p>
+            </div>
+          </Link>
+        ))}
+      </div>
     </main>
   )
 }
