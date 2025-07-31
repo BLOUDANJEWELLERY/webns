@@ -3,7 +3,6 @@ import imageUrlBuilder from '@sanity/image-url'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 
-// Setup Sanity client
 const client = createClient({
   projectId: '3jc8hsku',
   dataset: 'production',
@@ -11,24 +10,25 @@ const client = createClient({
   useCdn: false,
 })
 
-// Image URL builder
 const builder = imageUrlBuilder(client)
 function urlFor(source: any) {
   return builder.image(source)
 }
 
-// Fetch product data
 async function getProduct(slug: string) {
-  const query = `*[_type == "product" && slug.current == $slug][0]{
-    title,
-    price,
-    image,
-    description
-  }`
-  return await client.fetch(query, { slug }, { cache: 'no-store' })
+  return await client.fetch(
+    `*[_type == "product" && slug.current == $slug][0]{
+      title,
+      price,
+      description,
+      image
+    }`,
+    { slug },
+    { cache: 'no-store' }
+  )
 }
 
-// ✅ FIXED: CORRECT inline typing for `params`
+// ✅ THIS IS THE CORRECT TYPE
 export default async function Page({
   params,
 }: {
@@ -41,23 +41,18 @@ export default async function Page({
   }
 
   return (
-    <main className="p-4 md:p-8 max-w-4xl mx-auto">
-      <div className="flex flex-col md:flex-row gap-8 items-center">
-        {product.image && (
-          <Image
-            src={urlFor(product.image).width(600).height(600).fit('crop').url()}
-            alt={product.title}
-            width={600}
-            height={600}
-            className="w-full md:w-1/2 h-auto object-cover rounded-lg shadow"
-          />
-        )}
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold mb-4">{product.title}</h1>
-          <p className="text-xl text-gray-700 mb-4">${product.price}</p>
-          <p className="text-gray-600 leading-relaxed">{product.description}</p>
-        </div>
-      </div>
+    <main className="p-6">
+      <h1 className="text-2xl font-bold">{product.title}</h1>
+      <p className="text-gray-600">{product.description}</p>
+      <p className="text-lg font-medium">${product.price}</p>
+      {product.image && (
+        <Image
+          src={urlFor(product.image).width(800).url()}
+          alt={product.title}
+          width={800}
+          height={600}
+        />
+      )}
     </main>
   )
 }
