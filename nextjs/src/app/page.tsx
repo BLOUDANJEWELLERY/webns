@@ -29,7 +29,7 @@ export default async function HomePage() {
       
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {products.map((product: any) => (
-          <Link key={product._id} href={`/product/${product.slug}`} className="block group border rounded-xl overflow-hidden shadow hover:shadow-lg transition duration-300">
+          <Link key={product._id} href={`/product/${product.slug.current}`} className="block group border rounded-xl overflow-hidden shadow hover:shadow-lg transition duration-300">
             {product.image && (
               <img
                 src={urlFor(product.image).width(400).height(400).fit('crop').url()}
