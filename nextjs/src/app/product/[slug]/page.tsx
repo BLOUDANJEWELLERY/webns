@@ -22,17 +22,17 @@ interface Product {
   image: any
 }
 
-// ✅ Tell Next.js this is a dynamic route
+// Force this page to always be dynamic
 export const dynamic = 'force-dynamic'
 
-// ✅ The page component
-export default async function ProductPage({ params }: { params: { slug: string } }) {
+// Hardcoded slug: "necklace"
+export default async function ProductPage() {
   const query = `
-    *[_type == "product" && slug.current == $slug][0]{
-     title, price, description, image
+    *[_type == "product" && slug.current == "necklace"][0]{
+      title, price, description, image
     }
   `
-  const product: Product = await client.fetch(query, { slug: params.slug })
+  const product: Product = await client.fetch(query)
 
   if (!product) return notFound()
 
