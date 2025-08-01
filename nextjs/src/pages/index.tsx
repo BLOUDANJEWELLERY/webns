@@ -35,18 +35,18 @@ type Product = {
 
 export default function HomePage({ products }: { products: Product[] }) {
   return (
-    <main className="px-4 py-6 sm:px-6 md:px-10 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold text-center mb-10">My Clothing Collection</h1>
+    <main className="px-2 py-4 sm:px-4 md:px-6 max-w-full">
+      <h1 className="text-2xl font-bold text-center mb-6">Our Clothing Collection</h1>
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         {products.map((product) => (
           <Link
             key={product._id}
             href={`/product/${product.slug}`}
-            className="bg-white border rounded-lg shadow-sm hover:shadow-md transition duration-300 flex flex-col"
+            className="border-[2px] border-gray-300 rounded-lg bg-white shadow-sm hover:shadow-md transition duration-300 overflow-hidden"
           >
             {product.image && (
-              <div className="w-full h-40 overflow-hidden rounded-t-lg">
+              <div className="w-full h-40">
                 <Image
                   src={urlFor(product.image).width(300).height(300).fit('crop').url()}
                   alt={product.title}
