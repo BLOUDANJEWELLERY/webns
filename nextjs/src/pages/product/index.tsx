@@ -18,13 +18,14 @@ const urlFor = (source: any) => builder.image(source)
 
 // === Fetching data server-side ===
 export async function getServerSideProps() {
-  const query = `*[_type == "product"]{
-    _id,
-    title,
-    price,
-    "slug": slug.current,
-    image
-  }`
+  const query = `*[_type == "product"] | order(title asc){
+  _id,
+  title,
+  price,
+  "slug": slug.current,
+  image
+}`
+
   const products = await client.fetch(query)
   return { props: { products } }
 }
