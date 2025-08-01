@@ -1,8 +1,8 @@
-/* styles/HomePage.module.css */
 .mainContainer {
   padding: 1rem;
   max-width: 100%;
   margin: 0 auto;
+  background-color: #F5F3EE; /* Light warm background */
 }
 
 .heading {
@@ -10,6 +10,7 @@
   font-weight: bold;
   text-align: center;
   margin-bottom: 2rem;
+  color: #4E2A0F; /* Deep brown heading */
 }
 
 .grid {
@@ -31,27 +32,28 @@
 }
 
 .card {
-  border: 2px solid #e5e7eb;
+  border: 2px solid #D6BCA6; /* Soft brownish-beige border */
   border-radius: 8px;
   background-color: #fff;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
-  transition: box-shadow 0.3s ease;
+  box-shadow: 0 1px 6px rgba(123, 63, 0, 0.1); /* Subtle brown shadow */
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   text-decoration: none;
   color: inherit;
-  width: 100%; /* now the grid controls the width */
+  width: 100%;
 }
 
 .card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(123, 63, 0, 0.2);
+  transform: translateY(-2px);
 }
 
 .imageWrapper {
   width: 100%;
   aspect-ratio: 1 / 1;
-  background: #f9fafb;
+  background: #F2E9DC;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -67,12 +69,13 @@
 .cardContent {
   padding: 0.75rem;
   text-align: center;
+  background-color: #fffaf5;
 }
 
 .title {
   font-size: 16px;
   font-weight: 600;
-  color: #111827;
+  color: #4E2A0F; /* Rich dark brown */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -80,6 +83,7 @@
 
 .price {
   font-size: 14px;
-  color: #6b7280;
+  color: #C89B3C; /* Golden tone */
   margin-top: 0.25rem;
+  font-weight: 500;
 }
