@@ -1,11 +1,10 @@
-// pages/index.tsx
+// src/pages/product/index.tsx
 
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
-import styles from '../styles/HomePage.module.css'
-
+import styles from '../../styles/HomePage.module.css'
 // === Sanity client ===
 const client = createClient({
   projectId: '3jc8hsku',
