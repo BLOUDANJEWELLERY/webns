@@ -1,9 +1,12 @@
+// src/pages/index.tsx
+
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import styles from '../styles/Home.module.css'
 
+// === Sanity Setup ===
 const client = createClient({
   projectId: '3jc8hsku',
   dataset: 'production',
@@ -14,6 +17,7 @@ const client = createClient({
 const builder = imageUrlBuilder(client)
 const urlFor = (source: any) => builder.image(source)
 
+// === Type ===
 type Collection = {
   _id: string
   name: string
@@ -22,6 +26,7 @@ type Collection = {
   linkTarget: string
 }
 
+// === Server-side Fetch ===
 export async function getServerSideProps() {
   const query = `*[_type == "collection"]{
     _id,
@@ -34,10 +39,11 @@ export async function getServerSideProps() {
   return { props: { collections } }
 }
 
+// === Homepage ===
 export default function Home({ collections }: { collections: Collection[] }) {
   return (
     <main className={styles.container}>
-      {/* Website Name */}
+      {/* Brand Header */}
       <header className={styles.header}>
         <h1 className={styles.siteTitle}>Marvello Threads</h1>
         <p className={styles.siteDescription}>
@@ -45,7 +51,7 @@ export default function Home({ collections }: { collections: Collection[] }) {
         </p>
       </header>
 
-      {/* Collections */}
+      {/* Collections Section */}
       <section className={styles.collections}>
         <h2 className={styles.sectionTitle}>Explore Our Collections</h2>
 
@@ -61,10 +67,10 @@ export default function Home({ collections }: { collections: Collection[] }) {
                   className={styles.collectionImage}
                 />
               )}
-              <h3>{col.name}</h3>
-              <p>{col.description}</p>
+              <h3 className={styles.collectionTitle}>{col.name}</h3>
+              <p className={styles.collectionDescription}>{col.description}</p>
               <Link href={col.linkTarget} className={styles.collectionLink}>
-                View Collection
+                View Collection →
               </Link>
             </div>
           ))}
