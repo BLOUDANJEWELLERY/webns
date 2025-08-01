@@ -37,7 +37,7 @@ type Product = {
 export default function HomePage({ products }: { products: Product[] }) {
   return (
     <main className={styles.mainContainer}>
-      <h1 className={styles.heading}>My Clothing Collection</h1>
+      <h1 className={styles.heading}>Our Clothing Collection</h1>
 
       <div className={styles.grid}>
         {products.map((product) => (
