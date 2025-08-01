@@ -35,28 +35,30 @@ type Product = {
 
 export default function HomePage({ products }: { products: Product[] }) {
   return (
-    <main className="px-4 py-6 sm:px-6 md:px-10 max-w-7xl mx-auto">
+    <main className="px-4 py-6 sm:px-6 md:px-10 max-w-5xl mx-auto">
       <h1 className="text-3xl font-bold text-center mb-8">My Clothing Collection</h1>
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {products.map((product) => (
           <Link
             key={product._id}
             href={`/product/${product.slug}`}
-            className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition duration-300 flex flex-col overflow-hidden"
+            className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition duration-300 flex flex-col sm:flex-row overflow-hidden"
           >
             {product.image && (
-              <Image
-                src={urlFor(product.image).width(400).height(400).fit('crop').url()}
-                alt={product.title}
-                width={400}
-                height={400}
-                className="w-full h-48 object-cover"
-              />
+              <div className="w-full sm:w-1/2 h-48 sm:h-auto">
+                <Image
+                  src={urlFor(product.image).width(400).height(400).fit('crop').url()}
+                  alt={product.title}
+                  width={400}
+                  height={400}
+                  className="w-full h-full object-cover"
+                />
+              </div>
             )}
-            <div className="p-4 flex flex-col items-center">
-              <h2 className="text-md font-semibold text-gray-800 text-center">{product.title}</h2>
-              <p className="text-sm text-gray-600 mt-1">${product.price.toFixed(2)}</p>
+            <div className="p-4 flex flex-col justify-center items-start sm:w-1/2">
+              <h2 className="text-lg font-semibold text-gray-800">{product.title}</h2>
+              <p className="text-sm text-gray-600 mt-2">${product.price.toFixed(2)}</p>
             </div>
           </Link>
         ))}
