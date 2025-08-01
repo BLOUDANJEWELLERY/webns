@@ -1,5 +1,7 @@
 // src/pages/index.tsx
+
 import Link from 'next/link'
+import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 
 export default function Home() {
@@ -15,11 +17,15 @@ export default function Home() {
             Browse Collection
           </Link>
         </div>
+
         <div className={styles.heroImageWrapper}>
-          <img
+          <Image
             src="/hero-fashion.jpg"
             alt="Stylish clothing collection"
+            width={800}
+            height={600}
             className={styles.heroImage}
+            priority
           />
         </div>
       </section>
@@ -35,7 +41,7 @@ export default function Home() {
         </div>
         <div className={styles.featureCard}>
           <h3>Designed in Kuwait</h3>
-          <p>Born in heritage, tailored for today's trendsetters.</p>
+          <p>Born in heritage, tailored for today&apos;s trendsetters.</p>
         </div>
       </section>
     </main>
