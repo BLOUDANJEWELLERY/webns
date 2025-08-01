@@ -20,7 +20,7 @@ export async function getStaticPaths() {
 
   return {
     paths: slugs.map((slug: string) => ({ params: { slug } })),
-    fallback: true, // Fallback loading state
+    fallback: true,
   }
 }
 
@@ -30,12 +30,7 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
     title,
     price,
     description,
-    image {
-      asset-> {
-        _id,
-        url
-      }
-    }
+    image
   }`
 
   const product = await client.fetch(query, { slug: params.slug })
@@ -44,7 +39,7 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
     props: {
       product,
     },
-    revalidate: 60, // ISR: Rebuild every 60s
+    revalidate: 60,
   }
 }
 
@@ -53,11 +48,7 @@ type Product = {
   title: string
   price: number
   description: string
-  image?: {
-    asset?: {
-      url: string
-    }
-  }
+  image?: any // Must be the raw Sanity image object
 }
 
 export default function ProductPage({ product }: { product: Product }) {
@@ -69,7 +60,7 @@ export default function ProductPage({ product }: { product: Product }) {
   return (
     <main className="p-4 md:p-8 max-w-4xl mx-auto">
       <div className="flex flex-col md:flex-row gap-8 items-center">
-        {product.image?.asset?.url && (
+        {product.image && (
           <Image
             src={urlFor(product.image).width(600).height(600).fit('crop').url()}
             alt={product.title}
