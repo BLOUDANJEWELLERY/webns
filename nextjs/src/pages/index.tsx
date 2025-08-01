@@ -48,10 +48,10 @@ export default function HomePage({ products }: { products: Product[] }) {
             {product.image && (
               <div className="w-full sm:w-1/2 h-48 sm:h-auto">
                 <Image
-                  src={urlFor(product.image).width(400).height(400).fit('crop').url()}
+                  src={urlFor(product.image).width(100).height(100).fit('crop').url()}
                   alt={product.title}
-                  width={400}
-                  height={400}
+                  width={100}
+                  height={100}
                   className="w-full h-full object-cover"
                 />
               </div>
