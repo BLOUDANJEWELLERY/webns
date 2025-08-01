@@ -2,6 +2,8 @@ import { useRouter } from 'next/router'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import Image from 'next/image'
+import styles from '../../styles/HomePage.module.css'
+// === Sanity client 
 
 const client = createClient({
   projectId: '3jc8hsku',
