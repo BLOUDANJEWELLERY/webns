@@ -1,47 +1,73 @@
-// src/pages/index.tsx
-
 import Link from 'next/link'
 import Image from 'next/image'
+import { createClient } from 'next-sanity'
+import imageUrlBuilder from '@sanity/image-url'
 import styles from '../styles/Home.module.css'
 
-export default function Home() {
+const client = createClient({
+  projectId: '3jc8hsku',
+  dataset: 'production',
+  apiVersion: '2023-07-30',
+  useCdn: false,
+})
+
+const builder = imageUrlBuilder(client)
+const urlFor = (source: any) => builder.image(source)
+
+type Collection = {
+  _id: string
+  name: string
+  description: string
+  image: any
+  linkTarget: string
+}
+
+export async function getServerSideProps() {
+  const query = `*[_type == "collection"]{
+    _id,
+    name,
+    description,
+    image,
+    linkTarget
+  }`
+  const collections: Collection[] = await client.fetch(query)
+  return { props: { collections } }
+}
+
+export default function Home({ collections }: { collections: Collection[] }) {
   return (
     <main className={styles.container}>
-      <section className={styles.hero}>
-        <div className={styles.heroContent}>
-          <h1 className={styles.title}>Marvello Threads</h1>
-          <p className={styles.subtitle}>
-            Step into a world where timeless fashion meets modern craftsmanship. Discover pieces made to define your style.
-          </p>
-          <Link href="/product" className={styles.ctaButton}>
-            Browse Collection
-          </Link>
-        </div>
+      {/* Website Name */}
+      <header className={styles.header}>
+        <h1 className={styles.siteTitle}>Marvello Threads</h1>
+        <p className={styles.siteDescription}>
+          Where modern elegance meets timeless tradition. Discover statement pieces made to turn heads.
+        </p>
+      </header>
 
-        <div className={styles.heroImageWrapper}>
-          <Image
-            src="/hero-fashion.JPG"
-            alt="Stylish clothing collection"
-            width={800}
-            height={600}
-            className={styles.heroImage}
-            priority
-          />
-        </div>
-      </section>
+      {/* Collections */}
+      <section className={styles.collections}>
+        <h2 className={styles.sectionTitle}>Explore Our Collections</h2>
 
-      <section className={styles.features}>
-        <div className={styles.featureCard}>
-          <h3>Tailored Quality</h3>
-          <p>Premium fabrics and detail-driven design — stitched for confidence.</p>
-        </div>
-        <div className={styles.featureCard}>
-          <h3>Modern Classics</h3>
-          <p>From bold fits to minimalist lines, our looks stand the test of time.</p>
-        </div>
-        <div className={styles.featureCard}>
-          <h3>Designed in Kuwait</h3>
-          <p>Born in heritage, tailored for today&apos;s trendsetters.</p>
+        <div className={styles.collectionGrid}>
+          {collections.map((col) => (
+            <div key={col._id} className={styles.collectionCard}>
+              {col.image && (
+                <Image
+                  src={urlFor(col.image).width(400).height(300).url()}
+                  alt={col.name}
+                  width={400}
+                  height={300}
+                  className={styles.collectionImage}
+                />
+              )}
+              <h3>{col.name}</h3>
+              <p>{col.description}</p>
+              <Link href={col.linkTarget} className={styles.collectionLink}>
+                View Collection
+              </Link>
+            </div>
+          ))}
         </div>
       </section>
     </main>
