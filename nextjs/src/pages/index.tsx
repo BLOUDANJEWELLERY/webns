@@ -37,7 +37,7 @@ export default function HomePage({ products }: { products: Product[] }) {
   return (
     <main className="px-6 py-8 max-w-7xl mx-auto">
       <h1 className="text-4xl font-extrabold text-center mb-12 tracking-wide text-gray-900">
-        Our Exclusive Clothing Collection
+        My Exclusive Clothing Collection
       </h1>
 
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-y-10 gap-x-8">
