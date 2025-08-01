@@ -36,14 +36,16 @@ type Product = {
 export default function HomePage({ products }: { products: Product[] }) {
   return (
     <main className="p-4 md:p-8 max-w-6xl mx-auto">
-      <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center">Our Clothing Collection</h1>
+      <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center">
+        Our Clothing Collection
+      </h1>
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {products.map((product) => (
           <Link
             key={product._id}
             href={`/product/${product.slug}`}
-            className="block group border rounded-xl overflow-hidden shadow hover:shadow-lg transition duration-300"
+            className="block border border-gray-300 rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300"
           >
             {product.image && (
               <Image
