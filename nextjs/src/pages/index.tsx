@@ -1,4 +1,4 @@
-// pages/index.tsx or app/page.tsx (depending on your setup)
+// pages/index.tsx
 
 import Link from 'next/link'
 import Image from 'next/image'
@@ -19,13 +19,14 @@ const urlFor = (source: any) => builder.image(source)
 
 // === Fetching data server-side ===
 export async function getServerSideProps() {
-  const query = `*[_type == "product"]{
-    _id,
-    title,
-    price,
-    "slug": slug.current,
-    image
-  }`
+  const query = `*[_type == "product"] | order(title asc){
+  _id,
+  title,
+  price,
+  "slug": slug.current,
+  image
+}`
+
   const products = await client.fetch(query)
   return { props: { products } }
 }
@@ -51,12 +52,12 @@ export default function HomePage({ products }: { products: Product[] }) {
             {product.image && (
               <div className={styles.imageWrapper}>
                 <Image
-                  src={urlFor(product.image).width(300).height(300).fit('scale').url()}
-                  alt={product.title}
-                  width={300}
-                  height={300}
-                  className={styles.image}
-                />
+src={urlFor(product.image).width(300).height(300).fit('fill').url()}
+alt={product.title}
+width={300}
+height={300}
+className={styles.image}
+/>
               </div>
             )}
             <div className={styles.cardContent}>
