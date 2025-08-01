@@ -14,34 +14,62 @@ const builder = imageUrlBuilder(client)
 const urlFor = (source: any) => builder.image(source)
 
 export async function getStaticPaths() {
-  const slugs = await client.fetch(`*[_type == "product" && defined(slug.current)][].slug.current`)
+  const slugs = await client.fetch(
+    `*[_type == "product" && defined(slug.current)][].slug.current`
+  )
+
   return {
     paths: slugs.map((slug: string) => ({ params: { slug } })),
-    fallback: true,
+    fallback: true, // Fallback loading state
   }
 }
 
 export async function getStaticProps({ params }: { params: { slug: string } }) {
-  const query = `*[_type == "product" && slug.current == $slug][0]`
+  const query = `*[_type == "product" && slug.current == $slug][0]{
+    _id,
+    title,
+    price,
+    description,
+    image {
+      asset-> {
+        _id,
+        url
+      }
+    }
+  }`
+
   const product = await client.fetch(query, { slug: params.slug })
 
   return {
     props: {
       product,
     },
-    revalidate: 60,
+    revalidate: 60, // ISR: Rebuild every 60s
   }
 }
 
-export default function ProductPage({ product }: { product: any }) {
+type Product = {
+  _id: string
+  title: string
+  price: number
+  description: string
+  image?: {
+    asset?: {
+      url: string
+    }
+  }
+}
+
+export default function ProductPage({ product }: { product: Product }) {
   const router = useRouter()
-  if (router.isFallback) return <p>Loading...</p>
-  if (!product) return <p>Product not found</p>
+
+  if (router.isFallback) return <p className="text-center">Loading...</p>
+  if (!product) return <p className="text-center">Product not found</p>
 
   return (
     <main className="p-4 md:p-8 max-w-4xl mx-auto">
       <div className="flex flex-col md:flex-row gap-8 items-center">
-        {product.image && (
+        {product.image?.asset?.url && (
           <Image
             src={urlFor(product.image).width(600).height(600).fit('crop').url()}
             alt={product.title}
