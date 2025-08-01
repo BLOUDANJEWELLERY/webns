@@ -13,15 +13,24 @@
 }
 
 .grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
 }
 
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 .card {
-  width: 48%;
-  max-width: 48%;
   border: 2px solid #e5e7eb;
   border-radius: 8px;
   background-color: #fff;
@@ -32,20 +41,7 @@
   flex-direction: column;
   text-decoration: none;
   color: inherit;
-}
-
-@media (min-width: 768px) {
-  .card {
-    width: 32%;
-    max-width: 32%;
-  }
-}
-
-@media (min-width: 1024px) {
-  .card {
-    width: 24%;
-    max-width: 24%;
-  }
+  width: 100%; /* now the grid controls the width */
 }
 
 .card:hover {
