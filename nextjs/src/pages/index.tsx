@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
+import styles from '../styles/HomePage.module.css'
 
 const client = createClient({
   projectId: '3jc8hsku',
@@ -35,30 +36,26 @@ type Product = {
 
 export default function HomePage({ products }: { products: Product[] }) {
   return (
-    <main className="px-2 py-4 sm:px-4 md:px-6 max-w-full">
-      <h1 className="text-2xl font-bold text-center mb-6">Our Clothing Collection</h1>
+    <main className={styles.mainContainer}>
+      <h1 className={styles.heading}>My Clothing Collection</h1>
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+      <div className={styles.grid}>
         {products.map((product) => (
-          <Link
-            key={product._id}
-            href={`/product/${product.slug}`}
-            className="border-[2px] border-gray-300 rounded-lg bg-white shadow-sm hover:shadow-md transition duration-300 overflow-hidden"
-          >
+          <Link key={product._id} href={`/product/${product.slug}`} className={styles.card}>
             {product.image && (
-              <div className="w-full h-40">
+              <div className={styles.imageWrapper}>
                 <Image
                   src={urlFor(product.image).width(300).height(300).fit('crop').url()}
                   alt={product.title}
                   width={300}
                   height={300}
-                  className="w-full h-full object-cover"
+                  className={styles.image}
                 />
               </div>
             )}
-            <div className="p-3">
-              <h2 className="text-sm font-semibold text-gray-800 truncate">{product.title}</h2>
-              <p className="text-xs text-gray-600 mt-1">${product.price.toFixed(2)}</p>
+            <div className={styles.cardContent}>
+              <h2 className={styles.title}>{product.title}</h2>
+              <p className={styles.price}>${product.price.toFixed(2)}</p>
             </div>
           </Link>
         ))}
