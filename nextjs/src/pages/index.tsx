@@ -51,7 +51,7 @@ export default function HomePage({ products }: { products: Product[] }) {
             {product.image && (
               <div className={styles.imageWrapper}>
                 <Image
-                  src={urlFor(product.image).width(300).height(300).fit('contain').url()}
+                  src={urlFor(product.image).width(300).height(300).fit('scale').url()}
                   alt={product.title}
                   width={300}
                   height={300}
