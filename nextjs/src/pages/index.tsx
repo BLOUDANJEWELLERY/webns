@@ -20,7 +20,7 @@ export default function Home() {
 
         <div className={styles.heroImageWrapper}>
           <Image
-            src="/hero-fashion.jpg"
+            src="/hero-fashion.JPG"
             alt="Stylish clothing collection"
             width={800}
             height={600}
