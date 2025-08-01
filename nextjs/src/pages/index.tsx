@@ -35,49 +35,32 @@ type Product = {
 
 export default function HomePage({ products }: { products: Product[] }) {
   return (
-    <main className="px-6 py-8 max-w-7xl mx-auto">
-      <h1 className="text-4xl font-extrabold text-center mb-12 tracking-wide text-gray-900">
-        My Exclusive Clothing Collection
-      </h1>
+    <main className="p-4 md:p-8 max-w-6xl mx-auto">
+      <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center">Our Clothing Collection</h1>
 
-      <section className="grid grid-cols-1 sm:grid-cols-2 gap-y-10 gap-x-8">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {products.map((product) => (
           <Link
             key={product._id}
             href={`/product/${product.slug}`}
-            className="group flex flex-col border border-gray-300 rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden"
+            className="block group border rounded-xl overflow-hidden shadow hover:shadow-lg transition duration-300"
           >
-            {product.image ? (
-              <div className="relative w-full aspect-square overflow-hidden bg-gray-100">
-                <Image
-                  src={urlFor(product.image).width(600).height(600).fit('crop').url()}
-                  alt={product.title}
-                  fill
-                  sizes="(max-width: 640px) 100vw, 50vw"
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  priority
-                />
-              </div>
-            ) : (
-              <div className="w-full aspect-square bg-gray-200 flex items-center justify-center text-gray-400">
-                No Image
-              </div>
+            {product.image && (
+              <Image
+                src={urlFor(product.image).width(400).height(400).fit('crop').url()}
+                alt={product.title}
+                width={400}
+                height={400}
+                className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+              />
             )}
-
-            <div className="p-6 flex flex-col flex-grow">
-              <h2 className="text-xl font-semibold text-gray-900 mb-2 truncate">{product.title}</h2>
-              <p className="text-gray-700 font-medium text-lg">${product.price.toFixed(2)}</p>
-              <button
-                className="mt-auto mt-4 py-2 px-4 bg-indigo-600 text-white rounded-md font-semibold text-center
-                  hover:bg-indigo-700 transition-colors duration-300"
-                aria-label={`View details of ${product.title}`}
-              >
-                View Details
-              </button>
+            <div className="p-4 text-center">
+              <h2 className="text-lg font-semibold">{product.title}</h2>
+              <p className="text-gray-700 font-medium mt-1">${product.price}</p>
             </div>
           </Link>
         ))}
-      </section>
+      </div>
     </main>
   )
 }
