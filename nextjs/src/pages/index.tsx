@@ -14,15 +14,41 @@ const builder = imageUrlBuilder(client)
 const urlFor = (source: any) => builder.image(source)
 
 export async function getStaticProps() {
-  const query = `*[_type == "product"]{_id, title, price, "slug": slug.current, image}`
+  const query = `*[_type == "product"]{
+    _id,
+    title,
+    price,
+    "slug": slug.current,
+    image {
+      asset-> {
+        _id,
+        url
+      }
+    }
+  }`
   const products = await client.fetch(query)
   return { props: { products } }
 }
 
-export default function HomePage({ products }: { products: any[] }) {
+type Product = {
+  _id: string
+  title: string
+  price: number
+  slug: string
+  image?: {
+    asset?: {
+      url: string
+    }
+  }
+}
+
+export default function HomePage({ products }: { products: Product[] }) {
   return (
     <main className="p-4 md:p-8 max-w-6xl mx-auto">
-      <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center">Our Clothing Collection</h1>
+      <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center">
+        Our Clothing Collection
+      </h1>
+
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {products.map((product) => (
           <Link
@@ -30,7 +56,7 @@ export default function HomePage({ products }: { products: any[] }) {
             href={`/product/${product.slug}`}
             className="block group border rounded-xl overflow-hidden shadow hover:shadow-lg transition duration-300"
           >
-            {product.image && (
+            {product.image?.asset?.url && (
               <Image
                 src={urlFor(product.image).width(400).height(400).fit('crop').url()}
                 alt={product.title}
