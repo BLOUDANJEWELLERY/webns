@@ -43,8 +43,7 @@ export default function HomePage({ products }: { products: Product[] }) {
           <Link
             key={product._id}
             href={`/product/${product.slug}`}
-            className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition duration-300 flex flex-col sm:flex-row overflow-hidden"
-          >
+            className="block group border rounded-xl overflow-hidden shadow hover:shadow-lg transition duration-300">
             {product.image && (
               <div className="w-full sm:w-1/2 h-48 sm:h-auto">
                 <Image
