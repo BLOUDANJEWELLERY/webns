@@ -1,9 +1,12 @@
+// pages/index.tsx or app/page.tsx (depending on your setup)
+
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import styles from '../styles/HomePage.module.css'
 
+// === Sanity client ===
 const client = createClient({
   projectId: '3jc8hsku',
   dataset: 'production',
@@ -14,7 +17,8 @@ const client = createClient({
 const builder = imageUrlBuilder(client)
 const urlFor = (source: any) => builder.image(source)
 
-export async function getStaticProps() {
+// === Fetching data server-side ===
+export async function getServerSideProps() {
   const query = `*[_type == "product"]{
     _id,
     title,
@@ -26,6 +30,7 @@ export async function getStaticProps() {
   return { props: { products } }
 }
 
+// === TypeScript type ===
 type Product = {
   _id: string
   title: string
@@ -34,6 +39,7 @@ type Product = {
   image?: any
 }
 
+// === Main Component ===
 export default function HomePage({ products }: { products: Product[] }) {
   return (
     <main className={styles.mainContainer}>
@@ -45,7 +51,7 @@ export default function HomePage({ products }: { products: Product[] }) {
             {product.image && (
               <div className={styles.imageWrapper}>
                 <Image
-                  src={urlFor(product.image).width(300).height(300).fit('crop').url()}
+                  src={urlFor(product.image).width(300).height(300).fit('contain').url()}
                   alt={product.title}
                   width={300}
                   height={300}
