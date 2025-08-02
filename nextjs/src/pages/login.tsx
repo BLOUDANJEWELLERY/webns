@@ -1,15 +1,29 @@
 import { useState } from 'react'
 import Head from 'next/head'
+import { signIn } from 'next-auth/react'
+import { useRouter } from 'next/router'
 import styles from '../styles/Login.module.css'
 
 export default function Login() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Replace with real authentication logic
-    alert(`Logging in as ${email}`)
+
+    const res = await signIn('credentials', {
+      redirect: false,
+      email,
+      password,
+    })
+
+    if (res?.error) {
+      setError('Invalid email or password')
+    } else {
+      router.push('/') // Redirect to homepage on successful login
+    }
   }
 
   return (
@@ -22,6 +36,8 @@ export default function Login() {
         <div className={styles.card}>
           <h1 className={styles.title}>Welcome Back</h1>
           <p className={styles.subtitle}>Sign in to your account</p>
+
+          {error && <p className={styles.error}>{error}</p>}
 
           <form onSubmit={handleLogin} className={styles.form}>
             <label className={styles.label}>
