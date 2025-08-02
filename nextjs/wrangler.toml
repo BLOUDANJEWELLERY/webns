@@ -1,0 +1,3 @@
+name = "<your-project-name>"
+compatibility_date = "2025-08-01"
+pages_build_output_dir = ".vercel/output/static"
