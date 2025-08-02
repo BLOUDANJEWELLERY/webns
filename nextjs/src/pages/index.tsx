@@ -47,7 +47,7 @@ export default function Home({ collections }: { collections: Collection[] }) {
         <button className={styles.hamburger} onClick={() => setMenuOpen(!menuOpen)}>
           ☰
         </button>
-        <h1 className={styles.siteTitle}>Marvellowp Threads</h1>
+        <h1 className={styles.siteTitle}>Marvello Threads</h1>
         <p className={styles.siteDescription}>
           Where modern elegance meets timeless tradition. Discover statement pieces made to turn heads.
         </p>
