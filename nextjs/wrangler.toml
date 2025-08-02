@@ -5,4 +5,4 @@ compatibility_date = "2025-08-01"
 command = "npm run build"
 
 [pages]
-output_dir = ".vercel/output/static"
+pages_build_output_dir = ".vercel/output/static"
