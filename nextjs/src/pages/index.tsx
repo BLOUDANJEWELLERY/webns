@@ -58,7 +58,7 @@ export default function Home({ collections }: { collections: Collection[] }) {
         <nav className={styles.menu}>
           <button className={styles.closeButton} onClick={() => setMenuOpen(false)}>×</button>
           <Link href="/" onClick={() => setMenuOpen(false)}>Home</Link>
-          <Link href="/product" onClick={() => setMenuOpen(false)}>All Products</Link>
+          <Link href="/product" onClick={() => setMenuOpen(false)}>All Product</Link>
           {collections.map(col => (
             <Link key={col._id} href={col.linkTarget} onClick={() => setMenuOpen(false)}>
               {col.name}
