@@ -1,52 +1,66 @@
-/* Main layout */
-
-/* Sidebar (hamburger) menu */
+/* Hamburger button */
 .hamburger {
   font-size: 28px;
   background: none;
   border: none;
   cursor: pointer;
   margin-right: auto;
+  color: #4e342e;
+  padding: 0.5rem 1rem;
+  z-index: 1001;
 }
 
+/* Sidebar Menu */
 .sidebar {
   position: fixed;
   top: 0;
-  left: -260px;
-  width: 250px;
+  left: 0;
+  transform: translateX(-100%);
+  width: 260px;
   height: 100vh;
-  background-color: #fff;
-  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.2);
-  z-index: 999;
-  transition: left 0.3s ease-in-out;
-  padding: 1rem;
+  background-color: #fff8f5;
+  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  transition: transform 0.3s ease-in-out;
+  padding: 2rem 1.5rem;
   display: flex;
   flex-direction: column;
 }
 
 .sidebar.open {
-  left: 0;
+  transform: translateX(0);
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 2rem;
 }
 
 .menu a {
-  margin: 0.75rem 0;
-  font-size: 16px;
-  color: #333;
+  background-color: #d7ccc8;
+  color: #4e342e;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  text-align: center;
   text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s;
+  font-size: 16px;
+  transition: all 0.3s ease;
 }
 
 .menu a:hover {
-  color: #7b3f00;
+  background-color: #bcaaa4;
+  color: #3e2723;
 }
 
 .closeButton {
+  align-self: flex-end;
   font-size: 24px;
   background: none;
   border: none;
-  align-self: flex-end;
-  margin-bottom: 1rem;
+  color: #4e342e;
   cursor: pointer;
 }
 
