@@ -5,7 +5,7 @@ import Image from 'next/image'
 import styles from '../../styles/details.module.css'
 import { useState, useMemo } from 'react'
 
-// === Sanity client setup
+// === Sanity client setup ===
 const client = createClient({
   projectId: '3jc8hsku',
   dataset: 'production',
@@ -60,37 +60,35 @@ type Product = {
 
 export default function ProductPage({ product }: { product: Product }) {
   const router = useRouter()
-
   const [selectedSize, setSelectedSize] = useState('')
   const [selectedColor, setSelectedColor] = useState('')
 
-  // === Ordered Sizes ===
   const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
-  // === Determine which sizes are in stock
   const inStockSizes = useMemo(() => {
-    const set = new Set<string>()
-    product?.variants?.forEach((v) => {
-      if (v.quantity > 0) set.add(v.size)
+    const result: { [key: string]: boolean } = {}
+    sizeOrder.forEach((size) => {
+      const hasStock = product.variants?.some(
+        (v) => v.size === size && v.quantity > 0
+      )
+      result[size] = hasStock || false
     })
-    return set
-  }, [product?.variants])
+    return result
+  }, [product.variants])
 
-  // === Determine valid colors for selected size
   const validColors = useMemo(() => {
     if (!selectedSize) {
-      const set = new Set(
-        product?.variants?.filter((v) => v.quantity > 0).map((v) => v.color)
-      )
-      return Array.from(set)
+      const allColors = product.variants
+        ?.filter((v) => v.quantity > 0)
+        .map((v) => v.color)
+      return [...new Set(allColors)]
     }
 
-    return (
-      product?.variants
-        ?.filter((v) => v.size === selectedSize && v.quantity > 0)
-        .map((v) => v.color) ?? []
-    )
-  }, [selectedSize, product?.variants])
+    const colors = product.variants
+      ?.filter((v) => v.size === selectedSize && v.quantity > 0)
+      .map((v) => v.color)
+    return [...new Set(colors)]
+  }, [selectedSize, product.variants])
 
   const variantMatch = product.variants?.find(
     (v) => v.size === selectedSize && v.color === selectedColor
@@ -105,7 +103,7 @@ export default function ProductPage({ product }: { product: Product }) {
   }
 
   if (router.isFallback) return <p className="text-center">Loading...</p>
-  if (!product) return <p className="text-center">Product not found</p>
+  if (!product || !product.variants) return <p className="text-center">Product not found</p>
 
   return (
     <main className={styles.pageContainer}>
@@ -132,7 +130,7 @@ export default function ProductPage({ product }: { product: Product }) {
             <label className={styles.selectorLabel}>Select Size:</label>
             <div className={styles.optionRow}>
               {sizeOrder.map((size) => {
-                const isAvailable = inStockSizes.has(size)
+                const isAvailable = inStockSizes[size]
                 return (
                   <button
                     key={size}
@@ -174,27 +172,29 @@ export default function ProductPage({ product }: { product: Product }) {
           </div>
 
           {/* === Color Selector === */}
-          <div className={styles.selectorGroup}>
-            <label className={styles.selectorLabel}>Select Color:</label>
-            <div className={styles.optionRow}>
-              {validColors.map((color) => (
-                <button
-                  key={color}
-                  onClick={() => setSelectedColor(color)}
-                  className={`${styles.colorCircle} ${
-                    selectedColor === color ? styles.selected : ''
-                  }`}
-                  style={{
-                    backgroundColor: color.toLowerCase(),
-                    border: '2px solid #ccc',
-                  }}
-                  title={color}
-                />
-              ))}
+          {validColors.length > 0 && (
+            <div className={styles.selectorGroup}>
+              <label className={styles.selectorLabel}>Select Color:</label>
+              <div className={styles.optionRow}>
+                {validColors.map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => setSelectedColor(color)}
+                    className={`${styles.colorCircle} ${
+                      selectedColor === color ? styles.selected : ''
+                    }`}
+                    style={{
+                      backgroundColor: color.toLowerCase(),
+                      border: '2px solid #ccc',
+                    }}
+                    title={color}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* === Add to Cart Button === */}
+          {/* === Add to Cart === */}
           <button
             className={styles.addToCartButton}
             onClick={handleAddToCart}
