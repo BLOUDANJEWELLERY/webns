@@ -1,80 +1,107 @@
+/* === Container === */
 .pageContainer {
-  padding: 1rem;
+  padding: 2rem 1rem;
   max-width: 1200px;
   margin: 0 auto;
-  background-color: #f5f3ee; /* Light warm beige */
+  background-color: #f8f5f2;
   font-family: 'Segoe UI', sans-serif;
 }
 
+/* === Layout === */
 .productWrapper {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 2.5rem;
+  background-color: #fffdfb;
+  border-radius: 16px;
+  box-shadow: 0 12px 24px rgba(80, 40, 20, 0.08);
+  overflow: hidden;
+  padding: 1rem;
 }
 
 @media (min-width: 768px) {
   .productWrapper {
     flex-direction: row;
-    align-items: center;
+    padding: 2rem;
   }
 }
 
+/* === Image Section === */
 .imageSection {
   flex: 1;
-  background-color: #f2e9dc;
   border-radius: 12px;
+  background: linear-gradient(to bottom right, #f5eee5, #ede1d5);
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(123, 63, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .productImage {
   width: 100%;
   height: auto;
   object-fit: cover;
-  display: block;
+  border-radius: 12px;
+  transition: transform 0.3s ease;
 }
 
+.productImage:hover {
+  transform: scale(1.03);
+}
+
+/* === Details Section === */
 .detailsSection {
   flex: 1;
-  padding: 1rem;
+  padding: 1.5rem;
   background-color: #fffaf5;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(123, 63, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .productTitle {
-  font-size: 2rem;
+  font-size: 2.4rem;
   font-weight: 700;
   color: #4e2a0f;
   margin-bottom: 1rem;
+  line-height: 1.2;
 }
 
 .productPrice {
-  font-size: 1.5rem;
-  color: #c89b3c;
+  font-size: 1.8rem;
   font-weight: 600;
+  color: #c89b3c;
   margin-bottom: 1rem;
 }
 
 .productDescription {
-  font-size: 1rem;
+  font-size: 1.05rem;
   color: #5d4037;
-  line-height: 1.6;
+  line-height: 1.75;
   margin-bottom: 2rem;
+  max-width: 600px;
 }
 
+/* === Add to Cart Button === */
 .addToCartButton {
-  padding: 0.75rem 1.5rem;
   background: linear-gradient(to right, #8d6e63, #6d4c41);
   color: #fff;
-  font-weight: 600;
-  font-size: 1rem;
+  padding: 0.9rem 2rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s ease;
+  box-shadow: 0 4px 10px rgba(100, 50, 30, 0.15);
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .addToCartButton:hover {
   background: linear-gradient(to right, #6d4c41, #4e342e);
+  transform: translateY(-2px);
+}
+
+.addToCartButton:active {
+  transform: scale(0.98);
 }
