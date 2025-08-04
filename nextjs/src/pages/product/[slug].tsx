@@ -65,6 +65,10 @@ export default function ProductPage({ product }: { product: Product }) {
 
   const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
+  if (router.isFallback) return <p className="text-center">Loading...</p>
+  if (!product || !product.variants) return <p className="text-center">Product not found</p>
+
+  // Determine availability of sizes (true if any variant with quantity > 0 exists)
   const inStockSizes = useMemo(() => {
     const result: { [key: string]: boolean } = {}
     sizeOrder.forEach((size) => {
@@ -74,19 +78,20 @@ export default function ProductPage({ product }: { product: Product }) {
       result[size] = hasStock || false
     })
     return result
-  }, [product.variants])
+  }, [product.variants, sizeOrder])
 
+  // Determine available colors for selected size (only those with quantity > 0)
   const validColors = useMemo(() => {
     if (!selectedSize) {
       const allColors = product.variants
         ?.filter((v) => v.quantity > 0)
-        .map((v) => v.color)
+        .map((v) => v.color) ?? []
       return [...new Set(allColors)]
     }
 
     const colors = product.variants
       ?.filter((v) => v.size === selectedSize && v.quantity > 0)
-      .map((v) => v.color)
+      .map((v) => v.color) ?? []
     return [...new Set(colors)]
   }, [selectedSize, product.variants])
 
@@ -101,9 +106,6 @@ export default function ProductPage({ product }: { product: Product }) {
     if (!selectedSize || !selectedColor) return
     alert(`Added ${selectedSize}/${selectedColor} to cart`)
   }
-
-  if (router.isFallback) return <p className="text-center">Loading...</p>
-  if (!product || !product.variants) return <p className="text-center">Product not found</p>
 
   return (
     <main className={styles.pageContainer}>
@@ -129,30 +131,42 @@ export default function ProductPage({ product }: { product: Product }) {
           <div className={styles.selectorGroup}>
             <label className={styles.selectorLabel}>Select Size:</label>
             <div className={styles.optionRow}>
-{sizeOrder.map((size) => {
-  const isAvailable = inStockSizes[size]
-  return (
-    <button
-      key={size}
-      onClick={() => {
-        if (isAvailable) {
-          setSelectedSize(size)
-          setSelectedColor('')
-        }
-      }}
-      disabled={!isAvailable}
-      className={`${styles.circleOption} ${
-        selectedSize === size ? styles.selected : ''
-      } ${!isAvailable ? styles.disabled : ''}`}
-      style={{
-        position: 'relative',
-        cursor: isAvailable ? 'pointer' : 'not-allowed',
-      }}
-    >
-      {size}
-    </button>
-  )
-})}
+              {sizeOrder.map((size) => {
+                const isAvailable = inStockSizes[size]
+                return (
+                  <button
+                    key={size}
+                    onClick={() => {
+                      if (isAvailable) {
+                        setSelectedSize(size)
+                        setSelectedColor('')
+                      }
+                    }}
+                    disabled={!isAvailable}
+                    className={`${styles.circleOption} ${
+                      selectedSize === size ? styles.selected : ''
+                    } ${!isAvailable ? styles.disabled : ''}`}
+                    style={{ position: 'relative', cursor: isAvailable ? 'pointer' : 'not-allowed' }}
+                  >
+                    {size}
+                    {/* Draw slash if disabled */}
+                    {!isAvailable && (
+                      <span
+                        style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          width: '70%',
+                          height: '2px',
+                          backgroundColor: '#a1887f',
+                          transform: 'translate(-50%, -50%) rotate(-45deg)',
+                          pointerEvents: 'none',
+                        }}
+                      />
+                    )}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
