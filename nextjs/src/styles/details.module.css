@@ -1,187 +1,175 @@
-import { useRouter } from 'next/router'
-import { useState, useEffect } from 'react'
-import { createClient } from 'next-sanity'
-import imageUrlBuilder from '@sanity/image-url'
-import Image from 'next/image'
-import styles from '../../styles/details.module.css'
 
-const client = createClient({
-  projectId: '3jc8hsku',
-  dataset: 'production',
-  apiVersion: '2023-07-30',
-  useCdn: false,
-})
+/* === Container === */
+.pageContainer {
+  padding: 2rem 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: #f8f5f2;
+  font-family: 'Segoe UI', sans-serif;
+}
 
-const builder = imageUrlBuilder(client)
-const urlFor = (source: any) => builder.image(source)
+/* === Layout === */
+.productWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  background-color: #fffdfb;
+  border-radius: 16px;
+  box-shadow: 0 12px 24px rgba(80, 40, 20, 0.08);
+  overflow: hidden;
+  padding: 1rem;
+}
 
-export async function getStaticPaths() {
-  const slugs = await client.fetch(
-    `*[_type == "product" && defined(slug.current)][].slug.current`
-  )
-  return {
-    paths: slugs.map((slug: string) => ({ params: { slug } })),
-    fallback: true,
+@media (min-width: 768px) {
+  .productWrapper {
+    flex-direction: row;
+    padding: 2rem;
   }
 }
 
-export async function getStaticProps({ params }: { params: { slug: string } }) {
-  const query = `*[_type == "product" && slug.current == $slug][0]{
-    _id,
-    title,
-    price,
-    description,
-    image,
-    variants,
-  }`
+/* === Image Section === */
+.imageSection {
+  flex: 1;
+  border-radius: 12px;
+  background: linear-gradient(to bottom right, #f5eee5, #ede1d5);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  const product = await client.fetch(query, { slug: params.slug })
+.productImage {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 12px;
+  transition: transform 0.3s ease;
+}
 
-  return {
-    props: {
-      product,
-    },
-    revalidate: 60,
+.productImage:hover {
+  transform: scale(1.03);
+}
+
+/* === Details Section === */
+.detailsSection {
+  flex: 1;
+  padding: 1.5rem;
+  background-color: #fffaf5;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.productTitle {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: #4e2a0f;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.productPrice {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #c89b3c;
+  margin-bottom: 1rem;
+}
+
+.productDescription {
+  font-size: 1.05rem;
+  color: #5d4037;
+  line-height: 1.75;
+  margin-bottom: 2rem;
+  max-width: 600px;
+}
+
+/* === Add to Cart Button === */
+.addToCartButton {
+  background: linear-gradient(to right, #8d6e63, #6d4c41);
+  color: #fff;
+  padding: 0.9rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(100, 50, 30, 0.15);
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.addToCartButton:hover {
+  background: linear-gradient(to right, #6d4c41, #4e342e);
+  transform: translateY(-2px);
+}
+
+.addToCartButton:active {
+  transform: scale(0.98);
+}
+
+/* === Form Labels === */
+.label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  color: #4e2a0f;
+  margin-bottom: 1.25rem;
+  font-size: 1.1rem;
+  max-width: 300px;
+}
+
+/* === Select Dropdowns === */
+.select {
+  margin-top: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  border: 2px solid #d6bca6;
+  border-radius: 8px;
+  background-color: #fffaf5;
+  color: #4e2a0f;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.select:hover,
+.select:focus {
+  border-color: #c89b3c;
+  box-shadow: 0 0 8px rgba(200, 155, 60, 0.4);
+  outline: none;
+}
+
+/* === Quantity Input === */
+.input {
+  margin-top: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  border: 2px solid #d6bca6;
+  border-radius: 8px;
+  background-color: #fffaf5;
+  color: #4e2a0f;
+  width: 100px;
+  max-width: 100%;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input:hover,
+.input:focus {
+  border-color: #c89b3c;
+  box-shadow: 0 0 8px rgba(200, 155, 60, 0.4);
+  outline: none;
+}
+
+/* === Stock Info Text === */
+.stockInfo {
+  font-size: 0.85rem;
+  color: #8d6e63;
+  margin-top: 0.3rem;
+  font-style: italic;
+}
+
+/* === Responsive tweaks for labels to stack nicely on smaller screens === */
+@media (max-width: 600px) {
+  .label {
+    max-width: 100%;
   }
-}
-
-type Variant = {
-  size: string
-  color: string
-  sku: string
-  quantity: number
-  overridePrice?: number
-}
-
-type Product = {
-  _id: string
-  title: string
-  price: number
-  description: string
-  image?: any
-  variants?: Variant[]
-}
-
-export default function ProductPage({ product }: { product: Product }) {
-  const router = useRouter()
-
-  const [selectedSize, setSelectedSize] = useState('')
-  const [selectedColor, setSelectedColor] = useState('')
-  const [quantity, setQuantity] = useState(1)
-  const [availableQuantity, setAvailableQuantity] = useState<number | null>(null)
-  const [priceToShow, setPriceToShow] = useState(product.price)
-
-  useEffect(() => {
-    if (!product.variants) return
-
-    const matchedVariant = product.variants.find(
-      (v) => v.size === selectedSize && v.color === selectedColor
-    )
-
-    if (matchedVariant) {
-      setAvailableQuantity(matchedVariant.quantity)
-      setPriceToShow(matchedVariant.overridePrice ?? product.price)
-    } else {
-      setAvailableQuantity(null)
-      setPriceToShow(product.price)
-    }
-  }, [selectedSize, selectedColor, product])
-
-  if (router.isFallback) return <p className="text-center">Loading...</p>
-  if (!product) return <p className="text-center">Product not found</p>
-
-  const canAddToCart =
-    selectedSize !== '' &&
-    selectedColor !== '' &&
-    quantity > 0 &&
-    (availableQuantity === null || quantity <= availableQuantity)
-
-  return (
-    <main className={styles.pageContainer}>
-      <div className={styles.productWrapper}>
-        {product.image && (
-          <div className={styles.imageSection}>
-            <Image
-              src={urlFor(product.image).width(600).height(600).fit('crop').url()}
-              alt={product.title}
-              width={600}
-              height={600}
-              className={styles.productImage}
-            />
-          </div>
-        )}
-
-        <div className={styles.detailsSection}>
-          <h1 className={styles.productTitle}>{product.title}</h1>
-          <p className={styles.productPrice}>${priceToShow.toFixed(2)}</p>
-          <p className={styles.productDescription}>{product.description}</p>
-
-          {/* Size Selector */}
-          <label className={styles.label} htmlFor="size-select">
-            Size
-            <select
-              id="size-select"
-              className={styles.select}
-              value={selectedSize}
-              onChange={(e) => setSelectedSize(e.target.value)}
-            >
-              <option value="">Select size</option>
-              {[...new Set(product.variants?.map((v) => v.size))].map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          {/* Color Selector */}
-          <label className={styles.label} htmlFor="color-select">
-            Color
-            <select
-              id="color-select"
-              className={styles.select}
-              value={selectedColor}
-              onChange={(e) => setSelectedColor(e.target.value)}
-            >
-              <option value="">Select color</option>
-              {[...new Set(product.variants?.map((v) => v.color))].map((color) => (
-                <option key={color} value={color}>
-                  {color}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          {/* Quantity Input */}
-          <label className={styles.label} htmlFor="quantity-input">
-            Quantity
-            <input
-              id="quantity-input"
-              type="number"
-              className={styles.input}
-              min={1}
-              max={availableQuantity ?? 100}
-              value={quantity}
-              onChange={(e) => setQuantity(Number(e.target.value))}
-            />
-            {availableQuantity !== null && (
-              <small className={styles.stockInfo}>
-                {availableQuantity} item{availableQuantity !== 1 ? 's' : ''} available
-              </small>
-            )}
-          </label>
-
-          {/* Add to Cart Button */}
-          <button
-            className={styles.addToCartButton}
-            disabled={!canAddToCart}
-            onClick={() => alert(`Added ${quantity} ${selectedColor} ${selectedSize} to cart`)}
-            title={!canAddToCart ? 'Please select size, color, and valid quantity' : undefined}
-          >
-            Add to Cart
-          </button>
-        </div>
-      </div>
-    </main>
-  )
 }
