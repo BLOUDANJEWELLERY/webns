@@ -1,2 +1,133 @@
-.a{
+/* === Cart Page Layout === */
+.cartContainer {
+  padding: 2rem 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: #f8f5f2;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* === Cart Heading === */
+.cartHeading {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #4e2a0f;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+/* === Cart Item Wrapper === */
+.cartItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #fffdfb;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 16px rgba(80, 40, 20, 0.06);
+  gap: 1rem;
+}
+
+.cartItemImage {
+  border-radius: 10px;
+  background-color: #f5eee5;
+  object-fit: cover;
+}
+
+/* === Cart Item Details === */
+.cartDetails {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.cartTitle {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #4e2a0f;
+}
+
+.cartMeta {
+  font-size: 0.95rem;
+  color: #5d4037;
+}
+
+.cartPrice {
+  font-size: 1.1rem;
+  color: #c89b3c;
+  font-weight: 600;
+}
+
+/* === Quantity Controls === */
+.cartQuantity {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.quantityButton {
+  background-color: #f5eee5;
+  border: 1px solid #c89b3c;
+  color: #4e2a0f;
+  font-weight: 600;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.quantityButton:hover {
+  background-color: #fff2d8;
+}
+
+/* === Remove Button === */
+.removeButton {
+  background: none;
+  border: none;
+  color: #a84444;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95rem;
+  margin-left: 1rem;
+}
+
+.removeButton:hover {
+  text-decoration: underline;
+}
+
+/* === Total Section === */
+.cartTotal {
+  text-align: right;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #4e2a0f;
+  margin-top: 2rem;
+}
+
+/* === Empty Cart Message === */
+.emptyCart {
+  text-align: center;
+  padding: 4rem 1rem;
+  color: #5d4037;
+  font-size: 1.2rem;
+}
+
+/* === Responsive === */
+@media (max-width: 600px) {
+  .cartItem {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cartQuantity {
+    margin-top: 0.75rem;
+  }
+
+  .cartTotal {
+    text-align: center;
+  }
 }
