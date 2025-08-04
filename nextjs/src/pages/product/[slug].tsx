@@ -61,49 +61,49 @@ type Product = {
 export default function ProductPage({ product }: { product: Product }) {
   const router = useRouter()
 
-  // Memoize sizeOrder array to keep it stable for useMemo dependencies
+  // Memoize sizeOrder for stable dependency in useMemo hooks
   const sizeOrder = useMemo(() => ['XS', 'S', 'M', 'L', 'XL', 'XXL'], [])
 
-  // State hooks for user selections
+  // State for selected options
   const [selectedSize, setSelectedSize] = useState('')
   const [selectedColor, setSelectedColor] = useState('')
 
-  // Always call hooks before any conditional returns
-  if (router.isFallback) return <p className="text-center">Loading...</p>
-  if (!product || !product.variants) return <p className="text-center">Product not found</p>
-
-  // Compute available sizes based on stock
+  // Compute sizes in stock
   const inStockSizes = useMemo(() => {
     const availability: { [key: string]: boolean } = {}
-    sizeOrder.forEach((size) => {
-      availability[size] = product.variants?.some(v => v.size === size && v.quantity > 0) || false
+    sizeOrder.forEach(size => {
+      availability[size] = product?.variants?.some(v => v.size === size && v.quantity > 0) ?? false
     })
     return availability
   }, [product.variants, sizeOrder])
 
-  // Compute valid colors for the selected size or all if none selected
+  // Compute valid colors based on selected size or all available if none selected
   const validColors = useMemo(() => {
     if (!selectedSize) {
-      const allColors = product.variants
+      const colors = product?.variants
         ?.filter(v => v.quantity > 0)
         .map(v => v.color) ?? []
-      return Array.from(new Set(allColors))
+      return Array.from(new Set(colors))
     }
-    const filteredColors = product.variants
+    const colors = product?.variants
       ?.filter(v => v.size === selectedSize && v.quantity > 0)
       .map(v => v.color) ?? []
-    return Array.from(new Set(filteredColors))
+    return Array.from(new Set(colors))
   }, [selectedSize, product.variants])
 
-  // Find variant matching the selected size and color
-  const variantMatch = product.variants?.find(
+  // Find variant matching selected size and color
+  const variantMatch = product?.variants?.find(
     v => v.size === selectedSize && v.color === selectedColor
   )
 
   const displayPrice = variantMatch?.overridePrice ?? product.price
-  const stock = variantMatch?.quantity || 0
+  const stock = variantMatch?.quantity ?? 0
 
-  // Add to Cart handler
+  // Early returns after hooks
+  if (router.isFallback) return <p className="text-center">Loading...</p>
+  if (!product || !product.variants) return <p className="text-center">Product not found</p>
+
+  // Handler for adding to cart
   const handleAddToCart = () => {
     if (!selectedSize || !selectedColor) return
     alert(`Added ${selectedSize}/${selectedColor} to cart`)
