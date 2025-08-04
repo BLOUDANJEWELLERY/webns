@@ -1,15 +1,17 @@
-// /schemas/product.ts
 export default {
   name: 'product',
   title: 'Product',
   type: 'document',
   fields: [
+    { name: 'title', title: 'Title', type: 'string' },
+    { name: 'price', title: 'Price', type: 'number' },
     {
-      name: 'title',
-      title: 'Title',
-      type: 'string',
-      validation: (Rule) => Rule.required().max(100),
+      name: 'image',
+      title: 'Image',
+      type: 'image',
+      options: { hotspot: true },
     },
+    { name: 'description', title: 'Description', type: 'text' },
     {
       name: 'slug',
       title: 'Slug',
@@ -18,92 +20,38 @@ export default {
         source: 'title',
         maxLength: 96,
       },
-      validation: (Rule) => Rule.required(),
     },
     {
-      name: 'image',
-      title: 'Image',
-      type: 'image',
-      options: {
-        hotspot: true,
-      },
-      validation: (Rule) => Rule.required(),
-    },
-    {
-      name: 'description',
-      title: 'Description',
-      type: 'text',
-      validation: (Rule) => Rule.required(),
-    },
-    {
-      name: 'basePrice',
-      title: 'Base Price (KWD)',
-      type: 'number',
-      validation: (Rule) => Rule.required().positive(),
-    },
-    {
-      name: 'colors',
-      title: 'Available Colors',
-      type: 'array',
-      of: [{ type: 'string' }],
-      options: {
-        layout: 'tags',
-      },
-    },
-    {
-      name: 'sizes',
-      title: 'Sizes & Inventory',
+      name: 'variants',
+      title: 'Variants',
       type: 'array',
       of: [
         {
           type: 'object',
           fields: [
+            { name: 'size', title: 'Size', type: 'string' },
+            { name: 'color', title: 'Color', type: 'string' },
             {
-              name: 'size',
-              title: 'Size',
+              name: 'sku',
+              title: 'SKU',
               type: 'string',
-              options: {
-                list: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+              readOnly: true,
+              initialValue: (parent, context) => {
+                const timestamp = Date.now().toString(36).toUpperCase()
+                const base = context.document?.title?.substring(0, 3).toUpperCase() || 'SKU'
+                return `${base}-${timestamp}`
               },
             },
+            { name: 'quantity', title: 'Quantity', type: 'number' },
             {
-              name: 'quantity',
-              title: 'Quantity',
+              name: 'overridePrice',
+              title: 'Override Price',
               type: 'number',
-              validation: (Rule) => Rule.min(0),
+              description: 'Optional override price for this variant.',
             },
           ],
         },
       ],
     },
-    {
-      name: 'sku',
-      title: 'SKU',
-      type: 'string',
-      readOnly: true,
-    },
   ],
-
-  preview: {
-    select: {
-      title: 'title',
-      media: 'image',
-      sku: 'sku',
-    },
-    prepare({ title, media, sku }) {
-      return {
-        title,
-        subtitle: sku ? `SKU: ${sku}` : 'SKU not set',
-        media,
-      }
-    },
-  },
-
-  // Automatically generate SKU on product creation
-  initialValue: async () => {
-    const uniqueSuffix = Math.floor(1000 + Math.random() * 9000)
-    return {
-      sku: `SKU-${Date.now()}-${uniqueSuffix}`,
-    }
-  },
 }
