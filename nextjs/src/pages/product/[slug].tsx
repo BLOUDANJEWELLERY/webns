@@ -5,7 +5,7 @@ import Image from 'next/image'
 import styles from '../../styles/details.module.css'
 import { useState, useMemo } from 'react'
 
-// === Sanity client
+// === Sanity client setup
 const client = createClient({
   projectId: '3jc8hsku',
   dataset: 'production',
@@ -63,17 +63,20 @@ export default function ProductPage({ product }: { product: Product }) {
   const [selectedSize, setSelectedSize] = useState('')
   const [selectedColor, setSelectedColor] = useState('')
 
-  if (router.isFallback) return <p className="text-center">Loading...</p>
-  if (!product) return <p className="text-center">Product not found</p>
-
-  const uniqueSizes = [...new Set(product.variants?.map((v) => v.size) ?? [])]
+  // Hooks must be called unconditionally before any returns:
+  const uniqueSizes = useMemo(() => {
+    return [...new Set(product?.variants?.map((v) => v.size) ?? [])]
+  }, [product?.variants])
 
   const validColors = useMemo(() => {
     if (!selectedSize) return []
-    return product.variants
+    return product?.variants
       ?.filter((v) => v.size === selectedSize)
       .map((v) => v.color)
-  }, [selectedSize, product.variants])
+  }, [selectedSize, product?.variants])
+
+  if (router.isFallback) return <p className="text-center">Loading...</p>
+  if (!product) return <p className="text-center">Product not found</p>
 
   const variantMatch = product.variants?.find(
     (v) => v.size === selectedSize && v.color === selectedColor
@@ -116,7 +119,7 @@ export default function ProductPage({ product }: { product: Product }) {
                   key={size}
                   onClick={() => {
                     setSelectedSize(size)
-                    setSelectedColor('') // reset color
+                    setSelectedColor('') // Reset color on size change
                   }}
                   className={`${styles.circleOption} ${
                     selectedSize === size ? styles.selected : ''
