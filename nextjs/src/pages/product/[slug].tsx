@@ -60,10 +60,10 @@ export default function ProductPage({ product }: { product: Product }) {
   if (!product) return <p className="text-center">Product not found</p>
 
   return (
-   <main className={styles.container}>
+<main className={styles.pageContainer}>
   <div className={styles.productWrapper}>
     {product.image && (
-      <div className={styles.imageBox}>
+      <div className={styles.imageSection}>
         <Image
           src={urlFor(product.image).width(600).height(600).fit('crop').url()}
           alt={product.title}
@@ -73,11 +73,12 @@ export default function ProductPage({ product }: { product: Product }) {
         />
       </div>
     )}
-    <div className={styles.detailsBox}>
-      <h1 className={styles.title}>{product.title}</h1>
-      <p className={styles.price}>${product.price}</p>
-      <p className={styles.description}>{product.description}</p>
-      <button className={styles.cartButton}>Add to Cart</button>
+
+    <div className={styles.detailsSection}>
+      <h1 className={styles.productTitle}>{product.title}</h1>
+      <p className={styles.productPrice}>${product.price}</p>
+      <p className={styles.productDescription}>{product.description}</p>
+      <button className={styles.addToCartButton}>Add to Cart</button>
     </div>
   </div>
 </main>
