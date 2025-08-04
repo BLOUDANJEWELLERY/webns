@@ -60,48 +60,50 @@ type Product = {
 
 export default function ProductPage({ product }: { product: Product }) {
   const router = useRouter()
+
+  // Memoize sizeOrder array to keep it stable for useMemo dependencies
+  const sizeOrder = useMemo(() => ['XS', 'S', 'M', 'L', 'XL', 'XXL'], [])
+
+  // State hooks for user selections
   const [selectedSize, setSelectedSize] = useState('')
   const [selectedColor, setSelectedColor] = useState('')
 
-  const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
-
+  // Always call hooks before any conditional returns
   if (router.isFallback) return <p className="text-center">Loading...</p>
   if (!product || !product.variants) return <p className="text-center">Product not found</p>
 
-  // Determine availability of sizes (true if any variant with quantity > 0 exists)
+  // Compute available sizes based on stock
   const inStockSizes = useMemo(() => {
-    const result: { [key: string]: boolean } = {}
+    const availability: { [key: string]: boolean } = {}
     sizeOrder.forEach((size) => {
-      const hasStock = product.variants?.some(
-        (v) => v.size === size && v.quantity > 0
-      )
-      result[size] = hasStock || false
+      availability[size] = product.variants?.some(v => v.size === size && v.quantity > 0) || false
     })
-    return result
+    return availability
   }, [product.variants, sizeOrder])
 
-  // Determine available colors for selected size (only those with quantity > 0)
+  // Compute valid colors for the selected size or all if none selected
   const validColors = useMemo(() => {
     if (!selectedSize) {
       const allColors = product.variants
-        ?.filter((v) => v.quantity > 0)
-        .map((v) => v.color) ?? []
-      return [...new Set(allColors)]
+        ?.filter(v => v.quantity > 0)
+        .map(v => v.color) ?? []
+      return Array.from(new Set(allColors))
     }
-
-    const colors = product.variants
-      ?.filter((v) => v.size === selectedSize && v.quantity > 0)
-      .map((v) => v.color) ?? []
-    return [...new Set(colors)]
+    const filteredColors = product.variants
+      ?.filter(v => v.size === selectedSize && v.quantity > 0)
+      .map(v => v.color) ?? []
+    return Array.from(new Set(filteredColors))
   }, [selectedSize, product.variants])
 
+  // Find variant matching the selected size and color
   const variantMatch = product.variants?.find(
-    (v) => v.size === selectedSize && v.color === selectedColor
+    v => v.size === selectedSize && v.color === selectedColor
   )
 
   const displayPrice = variantMatch?.overridePrice ?? product.price
   const stock = variantMatch?.quantity || 0
 
+  // Add to Cart handler
   const handleAddToCart = () => {
     if (!selectedSize || !selectedColor) return
     alert(`Added ${selectedSize}/${selectedColor} to cart`)
@@ -127,11 +129,11 @@ export default function ProductPage({ product }: { product: Product }) {
           <p className={styles.productPrice}>${displayPrice.toFixed(2)}</p>
           <p className={styles.productDescription}>{product.description}</p>
 
-          {/* === Size Selector === */}
+          {/* Size Selector */}
           <div className={styles.selectorGroup}>
             <label className={styles.selectorLabel}>Select Size:</label>
             <div className={styles.optionRow}>
-              {sizeOrder.map((size) => {
+              {sizeOrder.map(size => {
                 const isAvailable = inStockSizes[size]
                 return (
                   <button
@@ -146,10 +148,12 @@ export default function ProductPage({ product }: { product: Product }) {
                     className={`${styles.circleOption} ${
                       selectedSize === size ? styles.selected : ''
                     } ${!isAvailable ? styles.disabled : ''}`}
-                    style={{ position: 'relative', cursor: isAvailable ? 'pointer' : 'not-allowed' }}
+                    style={{
+                      position: 'relative',
+                      cursor: isAvailable ? 'pointer' : 'not-allowed',
+                    }}
                   >
                     {size}
-                    {/* Draw slash if disabled */}
                     {!isAvailable && (
                       <span
                         style={{
@@ -170,22 +174,19 @@ export default function ProductPage({ product }: { product: Product }) {
             </div>
           </div>
 
-          {/* === Color Selector === */}
+          {/* Color Selector */}
           {validColors.length > 0 && (
             <div className={styles.selectorGroup}>
               <label className={styles.selectorLabel}>Select Color:</label>
               <div className={styles.optionRow}>
-                {validColors.map((color) => (
+                {validColors.map(color => (
                   <button
                     key={color}
                     onClick={() => setSelectedColor(color)}
                     className={`${styles.colorCircle} ${
                       selectedColor === color ? styles.selected : ''
                     }`}
-                    style={{
-                      backgroundColor: color.toLowerCase(),
-                      border: '2px solid #ccc',
-                    }}
+                    style={{ backgroundColor: color.toLowerCase(), border: '2px solid #ccc' }}
                     title={color}
                   />
                 ))}
@@ -193,7 +194,7 @@ export default function ProductPage({ product }: { product: Product }) {
             </div>
           )}
 
-          {/* === Add to Cart === */}
+          {/* Add to Cart Button */}
           <button
             className={styles.addToCartButton}
             onClick={handleAddToCart}
