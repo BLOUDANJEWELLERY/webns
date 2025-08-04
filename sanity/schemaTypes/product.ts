@@ -16,5 +16,34 @@ export default {
         maxLength: 96,
       },
     },
+    {
+      name: 'variants',
+      title: 'Size Variants',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          title: 'Size & Inventory',
+          fields: [
+            {
+              name: 'size',
+              title: 'Size',
+              type: 'string',
+              options: {
+                list: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+                layout: 'dropdown',
+              },
+              validation: (Rule: any) => Rule.required(),
+            },
+            {
+              name: 'quantity',
+              title: 'Quantity in Stock',
+              type: 'number',
+              validation: (Rule: any) => Rule.min(0),
+            },
+          ],
+        },
+      ],
+    },
   ],
 }
