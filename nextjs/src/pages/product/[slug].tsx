@@ -63,7 +63,7 @@ export default function ProductPage({ product }: { product: Product }) {
   const [selectedSize, setSelectedSize] = useState('')
   const [selectedColor, setSelectedColor] = useState('')
 
-  // Hooks must be called unconditionally before any returns:
+  // Hooks called unconditionally
   const uniqueSizes = useMemo(() => {
     return [...new Set(product?.variants?.map((v) => v.size) ?? [])]
   }, [product?.variants])
@@ -119,7 +119,7 @@ export default function ProductPage({ product }: { product: Product }) {
                   key={size}
                   onClick={() => {
                     setSelectedSize(size)
-                    setSelectedColor('') // Reset color on size change
+                    setSelectedColor('') // reset color on size change
                   }}
                   className={`${styles.circleOption} ${
                     selectedSize === size ? styles.selected : ''
@@ -136,7 +136,7 @@ export default function ProductPage({ product }: { product: Product }) {
             <div className={styles.selectorGroup}>
               <label className={styles.selectorLabel}>Select Color:</label>
               <div className={styles.optionRow}>
-                {validColors.map((color) => (
+                {(validColors ?? []).map((color) => (
                   <button
                     key={color}
                     onClick={() => setSelectedColor(color)}
