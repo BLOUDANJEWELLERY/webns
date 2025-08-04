@@ -1,11 +1,9 @@
-// pages/product/[slug].tsx
-
 import { useRouter } from 'next/router'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import Image from 'next/image'
 import styles from '../../styles/details.module.css'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 
 // === Sanity client
 const client = createClient({
@@ -38,14 +36,9 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
 
   const product = await client.fetch(query, { slug: params.slug })
 
-  if (!product) {
-    return { notFound: true }
-  }
+  if (!product) return { notFound: true }
 
-  return {
-    props: { product },
-    revalidate: 60,
-  }
+  return { props: { product }, revalidate: 60 }
 }
 
 type Variant = {
@@ -73,15 +66,26 @@ export default function ProductPage({ product }: { product: Product }) {
   if (router.isFallback) return <p className="text-center">Loading...</p>
   if (!product) return <p className="text-center">Product not found</p>
 
+  const uniqueSizes = [...new Set(product.variants?.map((v) => v.size) ?? [])]
+
+  const validColors = useMemo(() => {
+    if (!selectedSize) return []
+    return product.variants
+      ?.filter((v) => v.size === selectedSize)
+      .map((v) => v.color)
+  }, [selectedSize, product.variants])
+
   const variantMatch = product.variants?.find(
     (v) => v.size === selectedSize && v.color === selectedColor
   )
 
   const displayPrice = variantMatch?.overridePrice ?? product.price
-  const isAddDisabled = !selectedSize || !selectedColor || variantMatch?.quantity === 0
+  const stock = variantMatch?.quantity || 0
 
-  const uniqueSizes = [...new Set(product.variants?.map((v) => v.size) ?? [])]
-  const uniqueColors = [...new Set(product.variants?.map((v) => v.color) ?? [])]
+  const handleAddToCart = () => {
+    if (!selectedSize || !selectedColor) return
+    alert(`Added ${selectedSize}/${selectedColor} to cart`)
+  }
 
   return (
     <main className={styles.pageContainer}>
@@ -103,39 +107,40 @@ export default function ProductPage({ product }: { product: Product }) {
           <p className={styles.productPrice}>${displayPrice.toFixed(2)}</p>
           <p className={styles.productDescription}>{product.description}</p>
 
-          {/* === Size Circles === */}
-          {uniqueSizes.length > 0 && (
-            <div className={styles.selectorGroup}>
-              <label className={styles.selectorLabel}>Size:</label>
-              <div className={styles.optionRow}>
-                {uniqueSizes.map((size) => (
-                  <button
-                    key={size}
-                    className={`${styles.circleOption} ${
-                      selectedSize === size ? styles.selected : ''
-                    }`}
-                    onClick={() => setSelectedSize(size)}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
+          {/* === Size Selector === */}
+          <div className={styles.selectorGroup}>
+            <label className={styles.selectorLabel}>Select Size:</label>
+            <div className={styles.optionRow}>
+              {uniqueSizes.map((size) => (
+                <button
+                  key={size}
+                  onClick={() => {
+                    setSelectedSize(size)
+                    setSelectedColor('') // reset color
+                  }}
+                  className={`${styles.circleOption} ${
+                    selectedSize === size ? styles.selected : ''
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
             </div>
-          )}
+          </div>
 
-          {/* === Color Circles === */}
-          {uniqueColors.length > 0 && (
+          {/* === Color Selector === */}
+          {selectedSize && (
             <div className={styles.selectorGroup}>
-              <label className={styles.selectorLabel}>Color:</label>
+              <label className={styles.selectorLabel}>Select Color:</label>
               <div className={styles.optionRow}>
-                {uniqueColors.map((color) => (
+                {validColors.map((color) => (
                   <button
                     key={color}
+                    onClick={() => setSelectedColor(color)}
                     className={`${styles.colorCircle} ${
                       selectedColor === color ? styles.selected : ''
                     }`}
                     style={{ backgroundColor: color.toLowerCase() }}
-                    onClick={() => setSelectedColor(color)}
                     title={color}
                   />
                 ))}
@@ -146,13 +151,13 @@ export default function ProductPage({ product }: { product: Product }) {
           {/* === Add to Cart === */}
           <button
             className={styles.addToCartButton}
-            disabled={isAddDisabled}
-            onClick={() => alert(`Added ${selectedSize}/${selectedColor} to cart`)}
+            onClick={handleAddToCart}
+            disabled={!selectedSize || !selectedColor || stock === 0}
           >
-            {isAddDisabled
-              ? variantMatch?.quantity === 0
-                ? 'Out of Stock'
-                : 'Select Variant'
+            {!selectedSize || !selectedColor
+              ? 'Select Size & Color'
+              : stock === 0
+              ? 'Out of Stock'
               : 'Add to Cart'}
           </button>
         </div>
