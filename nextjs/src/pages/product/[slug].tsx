@@ -129,45 +129,30 @@ export default function ProductPage({ product }: { product: Product }) {
           <div className={styles.selectorGroup}>
             <label className={styles.selectorLabel}>Select Size:</label>
             <div className={styles.optionRow}>
-              {sizeOrder.map((size) => {
-                const isAvailable = inStockSizes[size]
-                return (
-                  <button
-                    key={size}
-                    onClick={() => {
-                      if (isAvailable) {
-                        setSelectedSize(size)
-                        setSelectedColor('')
-                      }
-                    }}
-                    disabled={!isAvailable}
-                    className={`${styles.circleOption} ${
-                      selectedSize === size ? styles.selected : ''
-                    }`}
-                    style={{
-                      opacity: isAvailable ? 1 : 0.4,
-                      position: 'relative',
-                      cursor: isAvailable ? 'pointer' : 'not-allowed',
-                    }}
-                  >
-                    {size}
-                    {!isAvailable && (
-                      <span
-                        style={{
-                          position: 'absolute',
-                          top: '50%',
-                          left: '50%',
-                          width: '70%',
-                          height: '2px',
-                          backgroundColor: '#a1887f',
-                          transform: 'translate(-50%, -50%) rotate(-45deg)',
-                          pointerEvents: 'none',
-                        }}
-                      />
-                    )}
-                  </button>
-                )
-              })}
+{sizeOrder.map((size) => {
+  const isAvailable = inStockSizes[size]
+  return (
+    <button
+      key={size}
+      onClick={() => {
+        if (isAvailable) {
+          setSelectedSize(size)
+          setSelectedColor('')
+        }
+      }}
+      disabled={!isAvailable}
+      className={`${styles.circleOption} ${
+        selectedSize === size ? styles.selected : ''
+      } ${!isAvailable ? styles.disabled : ''}`}
+      style={{
+        position: 'relative',
+        cursor: isAvailable ? 'pointer' : 'not-allowed',
+      }}
+    >
+      {size}
+    </button>
+  )
+})}
             </div>
           </div>
 
