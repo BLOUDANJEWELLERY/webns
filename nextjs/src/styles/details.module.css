@@ -105,3 +105,69 @@
 .addToCartButton:active {
   transform: scale(0.98);
 }
+/* === Form Labels === */
+.label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  color: #4e2a0f;
+  margin-bottom: 1.25rem;
+  font-size: 1.1rem;
+  max-width: 300px;
+}
+
+/* === Select Dropdowns === */
+.select {
+  margin-top: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  border: 2px solid #d6bca6;
+  border-radius: 8px;
+  background-color: #fffaf5;
+  color: #4e2a0f;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.select:hover,
+.select:focus {
+  border-color: #c89b3c;
+  box-shadow: 0 0 8px rgba(200, 155, 60, 0.4);
+  outline: none;
+}
+
+/* === Quantity Input === */
+.input {
+  margin-top: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  border: 2px solid #d6bca6;
+  border-radius: 8px;
+  background-color: #fffaf5;
+  color: #4e2a0f;
+  width: 100px;
+  max-width: 100%;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input:hover,
+.input:focus {
+  border-color: #c89b3c;
+  box-shadow: 0 0 8px rgba(200, 155, 60, 0.4);
+  outline: none;
+}
+
+/* === Stock Info Text === */
+.stockInfo {
+  font-size: 0.85rem;
+  color: #8d6e63;
+  margin-top: 0.3rem;
+  font-style: italic;
+}
+
+/* === Responsive tweaks for labels to stack nicely on smaller screens === */
+@media (max-width: 600px) {
+  .label {
+    max-width: 100%;
+  }
+}
