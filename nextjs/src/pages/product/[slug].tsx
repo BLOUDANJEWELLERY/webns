@@ -60,11 +60,10 @@ type Product = {
 
 export default function ProductPage({ product }: { product: Product }) {
   const router = useRouter()
+
+  // === Hooks must come before all return statements ===
   const [selectedSize, setSelectedSize] = useState('')
   const [selectedColor, setSelectedColor] = useState('')
-
-  if (router.isFallback) return <p className="text-center">Loading...</p>
-  if (!product) return <p className="text-center">Product not found</p>
 
   const uniqueSizes = useMemo(() => {
     return [...new Set(product?.variants?.map((v) => v.size) ?? [])]
@@ -74,7 +73,6 @@ export default function ProductPage({ product }: { product: Product }) {
     if (!selectedSize) {
       return [...new Set(product?.variants?.map((v) => v.color) ?? [])]
     }
-
     return product?.variants
       ?.filter((v) => v.size === selectedSize)
       .map((v) => v.color) ?? []
@@ -91,6 +89,10 @@ export default function ProductPage({ product }: { product: Product }) {
     if (!selectedSize || !selectedColor) return
     alert(`Added ${selectedSize}/${selectedColor} to cart`)
   }
+
+  // === Conditional returns come after hooks ===
+  if (router.isFallback) return <p className="text-center">Loading...</p>
+  if (!product) return <p className="text-center">Product not found</p>
 
   return (
     <main className={styles.pageContainer}>
@@ -133,7 +135,7 @@ export default function ProductPage({ product }: { product: Product }) {
             </div>
           </div>
 
-          {/* === Color Selector (Always Shown) === */}
+          {/* === Color Selector === */}
           <div className={styles.selectorGroup}>
             <label className={styles.selectorLabel}>Select Color:</label>
             <div className={styles.optionRow}>
@@ -144,14 +146,17 @@ export default function ProductPage({ product }: { product: Product }) {
                   className={`${styles.colorCircle} ${
                     selectedColor === color ? styles.selected : ''
                   }`}
-                  style={{ backgroundColor: color.toLowerCase() }}
+                  style={{
+                    backgroundColor: color.toLowerCase(),
+                    border: '2px solid #ccc', // Optional: ensure visibility for light colors
+                  }}
                   title={color}
                 />
               ))}
             </div>
           </div>
 
-          {/* === Add to Cart Button === */}
+          {/* === Add to Cart === */}
           <button
             className={styles.addToCartButton}
             onClick={handleAddToCart}
