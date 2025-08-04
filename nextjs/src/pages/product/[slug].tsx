@@ -60,23 +60,26 @@ export default function ProductPage({ product }: { product: Product }) {
   if (!product) return <p className="text-center">Product not found</p>
 
   return (
-    <main className="p-4 md:p-8 max-w-4xl mx-auto">
-      <div className="flex flex-col md:flex-row gap-8 items-center">
-        {product.image && (
-          <Image
-            src={urlFor(product.image).width(600).height(600).fit('crop').url()}
-            alt={product.title}
-            width={600}
-            height={600}
-            className="w-full md:w-1/2 h-auto object-cover rounded-lg shadow"
-          />
-        )}
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold mb-4">{product.title}</h1>
-          <p className="text-xl text-gray-700 mb-4">${product.price}</p>
-          <p className="text-gray-600 leading-relaxed">{product.description}</p>
-        </div>
+   <main className={styles.container}>
+  <div className={styles.productWrapper}>
+    {product.image && (
+      <div className={styles.imageBox}>
+        <Image
+          src={urlFor(product.image).width(600).height(600).fit('crop').url()}
+          alt={product.title}
+          width={600}
+          height={600}
+          className={styles.productImage}
+        />
       </div>
-    </main>
+    )}
+    <div className={styles.detailsBox}>
+      <h1 className={styles.title}>{product.title}</h1>
+      <p className={styles.price}>${product.price}</p>
+      <p className={styles.description}>{product.description}</p>
+      <button className={styles.cartButton}>Add to Cart</button>
+    </div>
+  </div>
+</main>
   )
 }
