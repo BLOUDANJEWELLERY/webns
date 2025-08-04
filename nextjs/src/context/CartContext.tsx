@@ -1,56 +1,56 @@
-// context/CartContext.tsx
+// src/context/CartContext.tsx
 import { createContext, useContext, useState, ReactNode } from 'react'
 
 type CartItem = {
+  productId: string
   title: string
+  price: number
+  image?: any
   size: string
   color: string
-  quantity: number
-  price: number
   sku: string
+  quantity: number
 }
 
 type CartContextType = {
-  cartItems: CartItem[]
+  cart: CartItem[]
   addToCart: (item: CartItem) => void
-  removeFromCart: (index: number) => void
-  clearCart: () => void
+  removeFromCart: (sku: string) => void
 }
 
-export const CartContext = createContext<CartContextType>({
-  cartItems: [],
-  addToCart: () => {},
-  removeFromCart: () => {},
-  clearCart: () => {},
-})
+const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const [cart, setCart] = useState<CartItem[]>([])
 
   const addToCart = (item: CartItem) => {
-    setCartItems(prev => {
-      // Check if item with same sku, size, and color already exists
-      const existingIndex = prev.findIndex(
-        i => i.sku === item.sku && i.size === item.size && i.color === item.color
-      )
-      if (existingIndex !== -1) {
-        const updated = [...prev]
-        updated[existingIndex].quantity += item.quantity
-        return updated
+    setCart(prev => {
+      const existing = prev.find(p => p.sku === item.sku)
+      if (existing) {
+        return prev.map(p =>
+          p.sku === item.sku ? { ...p, quantity: p.quantity + 1 } : p
+        )
       }
       return [...prev, item]
     })
   }
 
-  const removeFromCart = (index: number) => {
-    setCartItems(prev => prev.filter((_, i) => i !== index))
+  const removeFromCart = (sku: string) => {
+    setCart(prev => prev.filter(item => item.sku !== sku))
   }
 
-  const clearCart = () => setCartItems([])
-
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, clearCart }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart }}>
       {children}
     </CartContext.Provider>
   )
+}
+
+// 🔥 THIS IS THE MISSING EXPORT
+export const useCart = () => {
+  const context = useContext(CartContext)
+  if (!context) {
+    throw new Error('useCart must be used within a CartProvider')
+  }
+  return context
 }
