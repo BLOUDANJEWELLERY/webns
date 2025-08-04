@@ -38,7 +38,10 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
 
   if (!product) return { notFound: true }
 
-  return { props: { product }, revalidate: 60 }
+  return {
+    props: { product },
+    revalidate: 60,
+  }
 }
 
 type Variant = {
@@ -58,56 +61,45 @@ type Product = {
   variants?: Variant[]
 }
 
-export default function ProductPage({ product }: { product: Product }) {
+export default function ProductPage({ product }: { product: Product | null }) {
   const router = useRouter()
 
-  // Memoize sizeOrder for stable dependency in useMemo hooks
   const sizeOrder = useMemo(() => ['XS', 'S', 'M', 'L', 'XL', 'XXL'], [])
 
-  // State for selected options
   const [selectedSize, setSelectedSize] = useState('')
   const [selectedColor, setSelectedColor] = useState('')
 
-  // Compute sizes in stock
+  // Hook placement must be unconditional
+  const variants = product?.variants || []
+
   const inStockSizes = useMemo(() => {
-    const availability: { [key: string]: boolean } = {}
+    const availability: Record<string, boolean> = {}
     sizeOrder.forEach(size => {
-      availability[size] = product?.variants?.some(v => v.size === size && v.quantity > 0) ?? false
+      availability[size] = variants.some(v => v.size === size && v.quantity > 0)
     })
     return availability
-  }, [product.variants, sizeOrder])
+  }, [variants, sizeOrder])
 
-  // Compute valid colors based on selected size or all available if none selected
   const validColors = useMemo(() => {
     if (!selectedSize) {
-      const colors = product?.variants
-        ?.filter(v => v.quantity > 0)
-        .map(v => v.color) ?? []
+      const colors = variants.filter(v => v.quantity > 0).map(v => v.color)
       return Array.from(new Set(colors))
     }
-    const colors = product?.variants
-      ?.filter(v => v.size === selectedSize && v.quantity > 0)
-      .map(v => v.color) ?? []
-    return Array.from(new Set(colors))
-  }, [selectedSize, product.variants])
+    const filtered = variants.filter(v => v.size === selectedSize && v.quantity > 0).map(v => v.color)
+    return Array.from(new Set(filtered))
+  }, [selectedSize, variants])
 
-  // Find variant matching selected size and color
-  const variantMatch = product?.variants?.find(
-    v => v.size === selectedSize && v.color === selectedColor
-  )
-
-  const displayPrice = variantMatch?.overridePrice ?? product.price
+  const variantMatch = variants.find(v => v.size === selectedSize && v.color === selectedColor)
+  const displayPrice = variantMatch?.overridePrice ?? product?.price ?? 0
   const stock = variantMatch?.quantity ?? 0
 
-  // Early returns after hooks
-  if (router.isFallback) return <p className="text-center">Loading...</p>
-  if (!product || !product.variants) return <p className="text-center">Product not found</p>
-
-  // Handler for adding to cart
   const handleAddToCart = () => {
     if (!selectedSize || !selectedColor) return
     alert(`Added ${selectedSize}/${selectedColor} to cart`)
   }
+
+  if (router.isFallback) return <p className="text-center">Loading...</p>
+  if (!product || !product.title) return <p className="text-center">Product not found</p>
 
   return (
     <main className={styles.pageContainer}>
@@ -186,7 +178,10 @@ export default function ProductPage({ product }: { product: Product }) {
                     className={`${styles.colorCircle} ${
                       selectedColor === color ? styles.selected : ''
                     }`}
-                    style={{ backgroundColor: color.toLowerCase(), border: '2px solid #ccc' }}
+                    style={{
+                      backgroundColor: color.toLowerCase(),
+                      border: '2px solid #ccc',
+                    }}
                     title={color}
                   />
                 ))}
@@ -194,7 +189,7 @@ export default function ProductPage({ product }: { product: Product }) {
             </div>
           )}
 
-          {/* Add to Cart Button */}
+          {/* Add to Cart */}
           <button
             className={styles.addToCartButton}
             onClick={handleAddToCart}
