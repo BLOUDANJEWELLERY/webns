@@ -4,6 +4,7 @@ import imageUrlBuilder from '@sanity/image-url'
 import Image from 'next/image'
 import styles from '../../styles/details.module.css'
 import { useState, useMemo } from 'react'
+import { useCart } from '../../context/CartContext' // 👈 Add this
 
 // === Sanity client setup ===
 const client = createClient({
@@ -63,13 +64,13 @@ type Product = {
 
 export default function ProductPage({ product }: { product: Product | null }) {
   const router = useRouter()
+  const { addToCart } = useCart() // 👈 Use cart context
 
   const sizeOrder = useMemo(() => ['XS', 'S', 'M', 'L', 'XL', 'XXL'], [])
 
   const [selectedSize, setSelectedSize] = useState('')
   const [selectedColor, setSelectedColor] = useState('')
 
-  // Hook placement must be unconditional
   const variants = product?.variants || []
 
   const inStockSizes = useMemo(() => {
@@ -93,9 +94,23 @@ export default function ProductPage({ product }: { product: Product | null }) {
   const displayPrice = variantMatch?.overridePrice ?? product?.price ?? 0
   const stock = variantMatch?.quantity ?? 0
 
+  // ✅ Real Add to Cart
   const handleAddToCart = () => {
-    if (!selectedSize || !selectedColor) return
-    alert(`Added ${selectedSize}/${selectedColor} to cart`)
+    if (!selectedSize || !selectedColor || !variantMatch || !product) return
+
+    const cartItem = {
+      productId: product._id,
+      title: product.title,
+      price: displayPrice,
+      image: product.image,
+      size: selectedSize,
+      color: selectedColor,
+      sku: variantMatch.sku,
+      quantity: 1,
+    }
+
+    addToCart(cartItem)
+    alert('Added to cart!')
   }
 
   if (router.isFallback) return <p className="text-center">Loading...</p>
