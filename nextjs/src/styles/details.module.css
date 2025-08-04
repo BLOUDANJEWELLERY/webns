@@ -1,5 +1,4 @@
-
-/* === Container === */
+/* === Base Layout === */
 .pageContainer {
   padding: 2rem 1rem;
   max-width: 1200px;
@@ -8,7 +7,7 @@
   font-family: 'Segoe UI', sans-serif;
 }
 
-/* === Layout === */
+/* === Product Wrapper === */
 .productWrapper {
   display: flex;
   flex-direction: column;
@@ -84,96 +83,7 @@
   max-width: 600px;
 }
 
-/* === Add to Cart Button === */
-.addToCartButton {
-  background: linear-gradient(to right, #8d6e63, #6d4c41);
-  color: #fff;
-  padding: 0.9rem 2rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(100, 50, 30, 0.15);
-  transition: background 0.3s ease, transform 0.2s ease;
-}
-
-.addToCartButton:hover {
-  background: linear-gradient(to right, #6d4c41, #4e342e);
-  transform: translateY(-2px);
-}
-
-.addToCartButton:active {
-  transform: scale(0.98);
-}
-
-/* === Form Labels === */
-.label {
-  display: flex;
-  flex-direction: column;
-  font-weight: 600;
-  color: #4e2a0f;
-  margin-bottom: 1.25rem;
-  font-size: 1.1rem;
-  max-width: 300px;
-}
-
-/* === Select Dropdowns === */
-.select {
-  margin-top: 0.4rem;
-  padding: 0.5rem 0.75rem;
-  font-size: 1rem;
-  border: 2px solid #d6bca6;
-  border-radius: 8px;
-  background-color: #fffaf5;
-  color: #4e2a0f;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
-}
-
-.select:hover,
-.select:focus {
-  border-color: #c89b3c;
-  box-shadow: 0 0 8px rgba(200, 155, 60, 0.4);
-  outline: none;
-}
-
-/* === Quantity Input === */
-.input {
-  margin-top: 0.4rem;
-  padding: 0.5rem 0.75rem;
-  font-size: 1rem;
-  border: 2px solid #d6bca6;
-  border-radius: 8px;
-  background-color: #fffaf5;
-  color: #4e2a0f;
-  width: 100px;
-  max-width: 100%;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.input:hover,
-.input:focus {
-  border-color: #c89b3c;
-  box-shadow: 0 0 8px rgba(200, 155, 60, 0.4);
-  outline: none;
-}
-
-/* === Stock Info Text === */
-.stockInfo {
-  font-size: 0.85rem;
-  color: #8d6e63;
-  margin-top: 0.3rem;
-  font-style: italic;
-}
-
-/* === Responsive tweaks for labels to stack nicely on smaller screens === */
-@media (max-width: 600px) {
-  .label {
-    max-width: 100%;
-  }
-}
-/* === Variant Selectors === */
+/* === Selector Groups === */
 .selectorGroup {
   margin-bottom: 1.5rem;
 }
@@ -192,7 +102,7 @@
   flex-wrap: wrap;
 }
 
-/* === Size Circle === */
+/* === Size Circles === */
 .circleOption {
   min-width: 40px;
   height: 40px;
@@ -218,7 +128,7 @@
   background-color: #fff2d8;
 }
 
-/* === Color Circle === */
+/* === Color Circles === */
 .colorCircle {
   width: 36px;
   height: 36px;
@@ -236,4 +146,33 @@
 .colorCircle.selected {
   border-color: #c89b3c;
   box-shadow: 0 0 0 2px #fffaf5, 0 0 0 4px #c89b3c;
+}
+
+/* === Add to Cart Button === */
+.addToCartButton {
+  background: linear-gradient(to right, #8d6e63, #6d4c41);
+  color: #fff;
+  padding: 0.9rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(100, 50, 30, 0.15);
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.addToCartButton:hover {
+  background: linear-gradient(to right, #6d4c41, #4e342e);
+  transform: translateY(-2px);
+}
+
+.addToCartButton:disabled {
+  background: #d7ccc8;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.addToCartButton:active {
+  transform: scale(0.98);
 }
