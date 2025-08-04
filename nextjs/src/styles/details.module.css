@@ -149,6 +149,26 @@
   box-shadow: 0 0 0 2px #fffaf5, 0 0 0 4px #c89b3c;
 }
 
+/* === Disabled Size Option === */
+.circleOption.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  position: relative;
+  pointer-events: none;
+}
+
+/* Slash across the disabled size */
+.circleOption.disabled::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 70%;
+  height: 2px;
+  background-color: #a1887f;
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
 /* === Add to Cart Button === */
 .addToCartButton {
   background: linear-gradient(to right, #8d6e63, #6d4c41);
