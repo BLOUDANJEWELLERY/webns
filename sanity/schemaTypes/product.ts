@@ -1,3 +1,5 @@
+// /schemas/product.ts
+
 export default {
   name: 'product',
   title: 'Product',
@@ -29,8 +31,22 @@ export default {
         {
           type: 'object',
           fields: [
-            { name: 'size', title: 'Size', type: 'string' },
-            { name: 'color', title: 'Color', type: 'string' },
+            {
+              name: 'size',
+              title: 'Size',
+              type: 'string',
+              options: {
+                list: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+              },
+            },
+            {
+              name: 'color',
+              title: 'Color',
+              type: 'string',
+              options: {
+                list: ['Black', 'White', 'Beige', 'Brown', 'Navy', 'Olive', 'Gold'],
+              },
+            },
             {
               name: 'sku',
               title: 'SKU',
