@@ -4,9 +4,8 @@
   "private": true,
  "scripts": {
   "dev": "next dev",
-  "build": "next build && next-on-pages --experimental-minify",
+  "build": "next build",
   "start": "next start",
-  "deploy": "wrangler pages deploy .vercel/output/static --project-name=clothingstore",
   "lint": "next lint"
 },
   "dependencies": {
