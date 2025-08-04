@@ -61,21 +61,35 @@ type Product = {
 export default function ProductPage({ product }: { product: Product }) {
   const router = useRouter()
 
-  // === Hooks must come before all return statements ===
   const [selectedSize, setSelectedSize] = useState('')
   const [selectedColor, setSelectedColor] = useState('')
 
-  const uniqueSizes = useMemo(() => {
-    return [...new Set(product?.variants?.map((v) => v.size) ?? [])]
+  // === Ordered Sizes ===
+  const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+
+  // === Determine which sizes are in stock
+  const inStockSizes = useMemo(() => {
+    const set = new Set<string>()
+    product?.variants?.forEach((v) => {
+      if (v.quantity > 0) set.add(v.size)
+    })
+    return set
   }, [product?.variants])
 
+  // === Determine valid colors for selected size
   const validColors = useMemo(() => {
     if (!selectedSize) {
-      return [...new Set(product?.variants?.map((v) => v.color) ?? [])]
+      const set = new Set(
+        product?.variants?.filter((v) => v.quantity > 0).map((v) => v.color)
+      )
+      return Array.from(set)
     }
-    return product?.variants
-      ?.filter((v) => v.size === selectedSize)
-      .map((v) => v.color) ?? []
+
+    return (
+      product?.variants
+        ?.filter((v) => v.size === selectedSize && v.quantity > 0)
+        .map((v) => v.color) ?? []
+    )
   }, [selectedSize, product?.variants])
 
   const variantMatch = product.variants?.find(
@@ -90,7 +104,6 @@ export default function ProductPage({ product }: { product: Product }) {
     alert(`Added ${selectedSize}/${selectedColor} to cart`)
   }
 
-  // === Conditional returns come after hooks ===
   if (router.isFallback) return <p className="text-center">Loading...</p>
   if (!product) return <p className="text-center">Product not found</p>
 
@@ -118,20 +131,45 @@ export default function ProductPage({ product }: { product: Product }) {
           <div className={styles.selectorGroup}>
             <label className={styles.selectorLabel}>Select Size:</label>
             <div className={styles.optionRow}>
-              {uniqueSizes.map((size) => (
-                <button
-                  key={size}
-                  onClick={() => {
-                    setSelectedSize(size)
-                    setSelectedColor('')
-                  }}
-                  className={`${styles.circleOption} ${
-                    selectedSize === size ? styles.selected : ''
-                  }`}
-                >
-                  {size}
-                </button>
-              ))}
+              {sizeOrder.map((size) => {
+                const isAvailable = inStockSizes.has(size)
+                return (
+                  <button
+                    key={size}
+                    onClick={() => {
+                      if (isAvailable) {
+                        setSelectedSize(size)
+                        setSelectedColor('')
+                      }
+                    }}
+                    disabled={!isAvailable}
+                    className={`${styles.circleOption} ${
+                      selectedSize === size ? styles.selected : ''
+                    }`}
+                    style={{
+                      opacity: isAvailable ? 1 : 0.4,
+                      position: 'relative',
+                      cursor: isAvailable ? 'pointer' : 'not-allowed',
+                    }}
+                  >
+                    {size}
+                    {!isAvailable && (
+                      <span
+                        style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          width: '70%',
+                          height: '2px',
+                          backgroundColor: '#a1887f',
+                          transform: 'translate(-50%, -50%) rotate(-45deg)',
+                          pointerEvents: 'none',
+                        }}
+                      />
+                    )}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
@@ -148,7 +186,7 @@ export default function ProductPage({ product }: { product: Product }) {
                   }`}
                   style={{
                     backgroundColor: color.toLowerCase(),
-                    border: '2px solid #ccc', // Optional: ensure visibility for light colors
+                    border: '2px solid #ccc',
                   }}
                   title={color}
                 />
@@ -156,7 +194,7 @@ export default function ProductPage({ product }: { product: Product }) {
             </div>
           </div>
 
-          {/* === Add to Cart === */}
+          {/* === Add to Cart Button === */}
           <button
             className={styles.addToCartButton}
             onClick={handleAddToCart}
