@@ -129,22 +129,23 @@
 }
 
 /* === Color Circles === */
+/* === Color Circles === */
 .colorCircle {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 2px solid transparent;
+  border: 2px solid #bfb1a3; /* subtle warm gray border for visibility */
   cursor: pointer;
   transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
 .colorCircle:hover {
   transform: scale(1.1);
-  border-color: #d6bca6;
+  border-color: #d6bca6; /* warm highlight on hover */
 }
 
 .colorCircle.selected {
-  border-color: #c89b3c;
+  border-color: #c89b3c; /* golden highlight when selected */
   box-shadow: 0 0 0 2px #fffaf5, 0 0 0 4px #c89b3c;
 }
 
