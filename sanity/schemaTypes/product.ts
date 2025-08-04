@@ -4,8 +4,19 @@ export default {
   type: 'document',
   fields: [
     { name: 'title', title: 'Title', type: 'string' },
-    { name: 'price', title: 'Price', type: 'number' },
-    { name: 'image', title: 'Image', type: 'image' },
+    { name: 'price', title: 'Base Price', type: 'number' },
+    {
+      name: 'priceOverride',
+      title: 'Price Override',
+      type: 'number',
+      description: 'If set, this price will override the base price on the frontend.',
+    },
+    {
+      name: 'image',
+      title: 'Image',
+      type: 'image',
+      options: { hotspot: true },
+    },
     { name: 'description', title: 'Description', type: 'text' },
     {
       name: 'slug',
@@ -18,28 +29,31 @@ export default {
     },
     {
       name: 'variants',
-      title: 'Size Variants',
+      title: 'Variants',
       type: 'array',
       of: [
         {
           type: 'object',
-          title: 'Size & Inventory',
           fields: [
+            { name: 'size', title: 'Size', type: 'string' },
+            { name: 'color', title: 'Color', type: 'string' },
             {
-              name: 'size',
-              title: 'Size',
+              name: 'sku',
+              title: 'SKU',
               type: 'string',
-              options: {
-                list: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
-                layout: 'dropdown',
+              readOnly: true,
+              initialValue: (parent, context) => {
+                const timestamp = Date.now().toString(36).toUpperCase()
+                const base = context.document?.title?.substring(0, 3).toUpperCase() || 'SKU'
+                return `${base}-${timestamp}`
               },
-              validation: (Rule: any) => Rule.required(),
             },
+            { name: 'quantity', title: 'Quantity', type: 'number' },
             {
-              name: 'quantity',
-              title: 'Quantity in Stock',
+              name: 'overridePrice',
+              title: 'Override Price',
               type: 'number',
-              validation: (Rule: any) => Rule.min(0),
+              description: 'Optional override price for this variant.',
             },
           ],
         },
