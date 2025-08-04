@@ -1,7 +1,8 @@
-.container {
-  padding: 1.5rem;
+.pageContainer {
+  padding: 1rem;
   max-width: 1200px;
   margin: 0 auto;
+  background-color: #f5f3ee; /* Light warm beige */
   font-family: 'Segoe UI', sans-serif;
 }
 
@@ -14,62 +15,66 @@
 @media (min-width: 768px) {
   .productWrapper {
     flex-direction: row;
-    align-items: flex-start;
+    align-items: center;
   }
 }
 
-.imageBox {
+.imageSection {
   flex: 1;
-  max-width: 600px;
+  background-color: #f2e9dc;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(123, 63, 0, 0.1);
 }
 
 .productImage {
   width: 100%;
   height: auto;
-  border-radius: 12px;
   object-fit: cover;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  display: block;
 }
 
-.detailsBox {
+.detailsSection {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  padding: 1rem;
+  background-color: #fffaf5;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(123, 63, 0, 0.08);
 }
 
-.title {
+.productTitle {
   font-size: 2rem;
   font-weight: 700;
-  color: #3e2723;
+  color: #4e2a0f;
+  margin-bottom: 1rem;
 }
 
-.price {
+.productPrice {
   font-size: 1.5rem;
-  font-weight: 500;
-  color: #795548;
-}
-
-.description {
-  color: #555;
-  line-height: 1.6;
-  font-size: 1rem;
-}
-
-.cartButton {
-  background: linear-gradient(to right, #7b3f00, #a97142);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  font-size: 1rem;
+  color: #c89b3c;
   font-weight: 600;
-  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.productDescription {
+  font-size: 1rem;
+  color: #5d4037;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.addToCartButton {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(to right, #8d6e63, #6d4c41);
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
   transition: background 0.3s ease;
-  margin-top: 1rem;
-  width: fit-content;
 }
 
-.cartButton:hover {
-  background: linear-gradient(to right, #5e2900, #905b2c);
+.addToCartButton:hover {
+  background: linear-gradient(to right, #6d4c41, #4e342e);
 }
