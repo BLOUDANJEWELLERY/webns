@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import styles from '../../styles/HomePage.module.css'
-import Header from '../components/header.tsx'
+import Header from '../components/header'
 
 // === Sanity client ===
 const client = createClient({
