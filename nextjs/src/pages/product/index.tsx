@@ -18,7 +18,7 @@ const client = createClient({
 const builder = imageUrlBuilder(client)
 const urlFor = (source: any) => builder.image(source)
 
-// === Type ===
+// === Types ===
 type Product = {
   _id: string
   title: string
@@ -27,9 +27,15 @@ type Product = {
   image?: any
 }
 
+type Collection = {
+  _id: string
+  name: string
+  linkTarget: string
+}
+
 // === Server-Side Data Fetching ===
 export async function getServerSideProps() {
-  const query = `*[_type == "product"] | order(title asc){
+  const productQuery = `*[_type == "product"] | order(title asc){
     _id,
     title,
     price,
@@ -37,15 +43,31 @@ export async function getServerSideProps() {
     image
   }`
 
-  const products: Product[] = await client.fetch(query)
-  return { props: { products } }
+  const collectionQuery = `*[_type == "collection"]{
+    _id,
+    name,
+    linkTarget
+  }`
+
+  const [products, collections]: [Product[], Collection[]] = await Promise.all([
+    client.fetch(productQuery),
+    client.fetch(collectionQuery)
+  ])
+
+  return { props: { products, collections } }
 }
 
 // === Page Component ===
-export default function ProductListPage({ products }: { products: Product[] }) {
+export default function ProductListPage({
+  products,
+  collections
+}: {
+  products: Product[]
+  collections: Collection[]
+}) {
   return (
     <div>
-      <Header />
+      <Header collections={collections} />
 
       <main className={styles.mainContainer}>
         <h1 className={styles.heading}>Our Clothing Collection</h1>
