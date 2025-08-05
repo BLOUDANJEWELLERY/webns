@@ -10,7 +10,7 @@ type Collection = {
   linkTarget: string
 }
 
-export default function Header({ collections }: { collections: Collection[] }) {
+export default function Header({ collections = [] }: { collections?: Collection[] }) {
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
@@ -30,10 +30,12 @@ export default function Header({ collections }: { collections: Collection[] }) {
 
       <aside className={`${styles.sidebar} ${menuOpen ? styles.open : ''}`}>
         <nav className={styles.menu}>
-          <button className={styles.closeButton} onClick={() => setMenuOpen(false)}>×</button>
+          <button className={styles.closeButton} onClick={() => setMenuOpen(false)}>
+            ×
+          </button>
           <Link href="/" onClick={() => setMenuOpen(false)}>Home</Link>
           <Link href="/product" onClick={() => setMenuOpen(false)}>All Products</Link>
-          {collections.map((col) => (
+          {collections.map(col => (
             <Link key={col._id} href={col.linkTarget} onClick={() => setMenuOpen(false)}>
               {col.name}
             </Link>
