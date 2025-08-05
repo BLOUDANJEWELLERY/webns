@@ -102,7 +102,7 @@ export default function ProductPage({ product }: { product: Product | null }) {
       productId: product._id,
       title: product.title,
       price: displayPrice,
-      image: product.image,
+      image: urlFor(product.image).width(200).height(200).url(), // ✅ Now a usable URL
       size: selectedSize,
       color: selectedColor,
       sku: variantMatch.sku,
