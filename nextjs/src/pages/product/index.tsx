@@ -5,6 +5,9 @@ import Image from 'next/image'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import styles from '../../styles/HomePage.module.css'
+import Header from '../../components/Header' // Adjust path if needed
+
+
 // === Sanity client ===
 const client = createClient({
   projectId: '3jc8hsku',
@@ -42,6 +45,7 @@ type Product = {
 // === Main Component ===
 export default function HomePage({ products }: { products: Product[] }) {
   return (
+<Header />
     <main className={styles.mainContainer}>
       <h1 className={styles.heading}>Our Clothing Collection</h1>
 
