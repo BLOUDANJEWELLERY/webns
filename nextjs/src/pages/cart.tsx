@@ -2,65 +2,67 @@
 import React from 'react'
 import { useCart } from '../context/CartContext'
 import Image from 'next/image'
-import styles from '../styles/cart.module.css' // optional
+import styles from '../styles/cart.module.css'
 
 export default function CartPage() {
-  const { cartItems, removeFromCart, updateQuantity } = useCart()
+  const { cart, addToCart, removeFromCart } = useCart()
 
-  const total = cartItems.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0
-  )
+  const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0)
 
-  if (cartItems.length === 0) {
+  if (cart.length === 0) {
     return (
-      <main style={{ padding: '2rem', textAlign: 'center' }}>
-        <h1>My Cart</h1>
+      <main className={styles.emptyCart}>
+        <h1>Your Cart</h1>
         <p>Your cart is empty.</p>
       </main>
     )
   }
 
   return (
-    <main style={{ padding: '2rem' }}>
-      <h1 style={{ textAlign: 'center' }}>Your Cart</h1>
-      <div>
-        {cartItems.map(item => (
-          <div
-            key={item.sku}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              borderBottom: '1px solid #ccc',
-              padding: '1rem 0',
-            }}
-          >
+    <main className={styles.cartPage}>
+      <h1 className={styles.title}>Your Cart</h1>
+      <div className={styles.cartList}>
+        {cart.map(item => (
+          <div key={item.sku} className={styles.cartItem}>
             <Image
               src={item.image}
               alt={item.title}
               width={100}
               height={100}
-              style={{ objectFit: 'cover', marginRight: '1rem' }}
+              className={styles.cartImage}
             />
-            <div style={{ flex: 1 }}>
+            <div className={styles.cartDetails}>
               <h3>{item.title}</h3>
               <p>
                 Size: {item.size} | Color: {item.color}
               </p>
               <p>KWD {item.price.toFixed(2)}</p>
-              <div>
-                <button onClick={() => updateQuantity(item.sku, item.quantity - 1)} disabled={item.quantity <= 1}>
+              <div className={styles.cartActions}>
+                <button
+                  onClick={() => {
+                    if (item.quantity > 1) {
+                      removeFromCart(item.sku)
+                      addToCart({ ...item, quantity: item.quantity - 1 })
+                    }
+                  }}
+                  disabled={item.quantity <= 1}
+                >
                   -
                 </button>
-                <span style={{ margin: '0 0.5rem' }}>{item.quantity}</span>
-                <button onClick={() => updateQuantity(item.sku, item.quantity + 1)}>
+                <span>{item.quantity}</span>
+                <button
+                  onClick={() => {
+                    removeFromCart(item.sku)
+                    addToCart({ ...item, quantity: item.quantity + 1 })
+                  }}
+                >
                   +
                 </button>
               </div>
             </div>
             <button
               onClick={() => removeFromCart(item.sku)}
-              style={{ color: 'red', marginLeft: '1rem' }}
+              className={styles.removeButton}
             >
               Remove
             </button>
@@ -68,9 +70,7 @@ export default function CartPage() {
         ))}
       </div>
 
-      <h2 style={{ textAlign: 'right', marginTop: '2rem' }}>
-        Total: KWD {total.toFixed(2)}
-      </h2>
+      <h2 className={styles.total}>Total: KWD {total.toFixed(2)}</h2>
     </main>
   )
 }
