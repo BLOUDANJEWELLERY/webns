@@ -5,7 +5,7 @@ import Image from 'next/image'
 import styles from '../styles/cart.module.css'
 
 export default function CartPage() {
-  const { cart, addToCart, removeFromCart } = useCart()
+  const { cart, removeFromCart, updateQuantity } = useCart()
 
   const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0)
 
@@ -21,6 +21,7 @@ export default function CartPage() {
   return (
     <main className={styles.cartPage}>
       <h1 className={styles.title}>Your Cart</h1>
+
       <div className={styles.cartList}>
         {cart.map(item => (
           <div key={item.sku} className={styles.cartItem}>
@@ -37,29 +38,23 @@ export default function CartPage() {
                 Size: {item.size} | Color: {item.color}
               </p>
               <p>KWD {item.price.toFixed(2)}</p>
+
               <div className={styles.cartActions}>
                 <button
-                  onClick={() => {
-                    if (item.quantity > 1) {
-                      removeFromCart(item.sku)
-                      addToCart({ ...item, quantity: item.quantity - 1 })
-                    }
-                  }}
+                  onClick={() => updateQuantity(item.sku, item.quantity - 1)}
                   disabled={item.quantity <= 1}
                 >
                   -
                 </button>
                 <span>{item.quantity}</span>
                 <button
-                  onClick={() => {
-                    removeFromCart(item.sku)
-                    addToCart({ ...item, quantity: item.quantity + 1 })
-                  }}
+                  onClick={() => updateQuantity(item.sku, item.quantity + 1)}
                 >
                   +
                 </button>
               </div>
             </div>
+
             <button
               onClick={() => removeFromCart(item.sku)}
               className={styles.removeButton}
