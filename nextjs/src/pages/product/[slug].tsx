@@ -33,7 +33,7 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
     description,
     image,
     variants,
-    slug
+    "slug": slug.current,
   }`
 
   const product = await client.fetch(query, { slug: params.slug })
