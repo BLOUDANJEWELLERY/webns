@@ -22,33 +22,40 @@ export default function CartPage() {
     <main className={styles.cartPage}>
       <h1 className={styles.title}>Your Cart</h1>
 
-      <div className={styles.cartList}>
+      <section className={styles.cartList}>
         {cart.map(item => (
-          <div key={item.sku} className={styles.cartItem}>
-            <Image
-              src={item.image}
-              alt={item.title}
-              width={100}
-              height={100}
-              className={styles.cartImage}
-            />
-            <div className={styles.cartDetails}>
-              <h3>{item.title}</h3>
-              <p>
-                Size: {item.size} | Color: {item.color}
-              </p>
-              <p>KWD {item.price.toFixed(2)}</p>
+          <article key={item.sku} className={styles.cartItem}>
+            <div className={styles.imageWrapper}>
+              <Image
+                src={item.image}
+                alt={item.title}
+                width={100}
+                height={100}
+                className={styles.cartImage}
+              />
+            </div>
 
-              <div className={styles.cartActions}>
+            <div className={styles.cartDetails}>
+              <h3 className={styles.cartTitle}>{item.title}</h3>
+              <p className={styles.cartMeta}>
+                Size: <span>{item.size}</span> | Color: <span>{item.color}</span>
+              </p>
+              <p className={styles.cartPrice}>KWD {item.price.toFixed(2)}</p>
+
+              <div className={styles.cartQuantity}>
                 <button
+                  className={styles.quantityButton}
                   onClick={() => updateQuantity(item.sku, item.quantity - 1)}
                   disabled={item.quantity <= 1}
+                  aria-label={`Decrease quantity of ${item.title}`}
                 >
-                  -
+                  −
                 </button>
-                <span>{item.quantity}</span>
+                <span className={styles.quantityNumber}>{item.quantity}</span>
                 <button
+                  className={styles.quantityButton}
                   onClick={() => updateQuantity(item.sku, item.quantity + 1)}
+                  aria-label={`Increase quantity of ${item.title}`}
                 >
                   +
                 </button>
@@ -58,14 +65,17 @@ export default function CartPage() {
             <button
               onClick={() => removeFromCart(item.sku)}
               className={styles.removeButton}
+              aria-label={`Remove ${item.title} from cart`}
             >
               Remove
             </button>
-          </div>
+          </article>
         ))}
-      </div>
+      </section>
 
-      <h2 className={styles.total}>Total: KWD {total.toFixed(2)}</h2>
+      <footer className={styles.cartTotal}>
+        Total: KWD {total.toFixed(2)}
+      </footer>
     </main>
   )
 }
