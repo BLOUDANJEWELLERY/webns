@@ -45,7 +45,7 @@ type Product = {
 // === Main Component ===
 export default function HomePage({ products }: { products: Product[] }) {
   return (
-<Header />
+<Header /> {}
     <main className={styles.mainContainer}>
       <h1 className={styles.heading}>Our Clothing Collection</h1>
 
