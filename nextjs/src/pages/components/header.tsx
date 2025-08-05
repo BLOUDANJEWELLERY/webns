@@ -2,10 +2,15 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import styles from '../styles/header.module.css' // You'll create this next
-import { collections } from '../data/collections' // Or pass as prop if fetched dynamically
+import styles from '../styles/header.module.css'
 
-export default function Header() {
+type Collection = {
+  _id: string
+  name: string
+  linkTarget: string
+}
+
+export default function Header({ collections }: { collections: Collection[] }) {
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
@@ -25,12 +30,10 @@ export default function Header() {
 
       <aside className={`${styles.sidebar} ${menuOpen ? styles.open : ''}`}>
         <nav className={styles.menu}>
-          <button className={styles.closeButton} onClick={() => setMenuOpen(false)}>
-            ×
-          </button>
+          <button className={styles.closeButton} onClick={() => setMenuOpen(false)}>×</button>
           <Link href="/" onClick={() => setMenuOpen(false)}>Home</Link>
           <Link href="/product" onClick={() => setMenuOpen(false)}>All Products</Link>
-          {collections.map(col => (
+          {collections.map((col) => (
             <Link key={col._id} href={col.linkTarget} onClick={() => setMenuOpen(false)}>
               {col.name}
             </Link>
