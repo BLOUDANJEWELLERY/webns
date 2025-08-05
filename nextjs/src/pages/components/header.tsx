@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import styles from '../styles/header.module.css'
+import styles from '../../styles/header.module.css'
 
 type Collection = {
   _id: string
