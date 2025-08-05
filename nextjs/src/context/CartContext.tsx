@@ -17,6 +17,7 @@ type CartItem = {
   color: string
   sku: string
   quantity: number
+  slug: string
 }
 
 type CartContextType = {
