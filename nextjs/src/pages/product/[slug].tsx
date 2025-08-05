@@ -108,7 +108,7 @@ export default function ProductPage({ product }: { product: Product | null }) {
       size: selectedSize,
       color: selectedColor,
       sku: variantMatch.sku,
-      slug: product.slug.current,
+      slug: product.slug,
       quantity: 1,
     }
 
