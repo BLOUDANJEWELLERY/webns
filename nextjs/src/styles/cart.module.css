@@ -214,7 +214,6 @@
 .cartLink {
   text-decoration: none;
   color: inherit;
-  display: block;
   transition: box-shadow 0.2s ease;
 }
 
