@@ -1,5 +1,11 @@
 // src/context/CartContext.tsx
-import { createContext, useContext, useState, ReactNode } from 'react'
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from 'react'
 
 type CartItem = {
   productId: string
@@ -23,12 +29,27 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([])
 
+  // Load from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem('cart')
+    if (stored) {
+      setCart(JSON.parse(stored))
+    }
+  }, [])
+
+  // Save to localStorage whenever cart changes
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart))
+  }, [cart])
+
   const addToCart = (item: CartItem) => {
     setCart(prev => {
       const existing = prev.find(p => p.sku === item.sku)
       if (existing) {
         return prev.map(p =>
-          p.sku === item.sku ? { ...p, quantity: p.quantity + 1 } : p
+          p.sku === item.sku
+            ? { ...p, quantity: p.quantity + item.quantity }
+            : p
         )
       }
       return [...prev, item]
@@ -46,7 +67,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   )
 }
 
-// 🔥 THIS IS THE MISSING EXPORT
 export const useCart = () => {
   const context = useContext(CartContext)
   if (!context) {
