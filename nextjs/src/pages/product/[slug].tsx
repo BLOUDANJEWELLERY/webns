@@ -61,6 +61,7 @@ type Product = {
   description: string
   image?: any
   variants?: Variant[]
+  slug: string
 }
 
 export default function ProductPage({ product }: { product: Product | null }) {
