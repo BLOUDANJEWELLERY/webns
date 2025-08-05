@@ -5,6 +5,7 @@ import {
   useState,
   ReactNode,
   useEffect,
+  useRef,
 } from 'react'
 
 type CartItem = {
@@ -22,24 +23,33 @@ type CartContextType = {
   cart: CartItem[]
   addToCart: (item: CartItem) => void
   removeFromCart: (sku: string) => void
+  updateQuantity: (sku: string, quantity: number) => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([])
+  const hasMounted = useRef(false)
 
-  // Load from localStorage on mount
+  // ✅ Load from localStorage once on first mount
   useEffect(() => {
     const stored = localStorage.getItem('cart')
     if (stored) {
-      setCart(JSON.parse(stored))
+      try {
+        setCart(JSON.parse(stored))
+      } catch {
+        setCart([])
+      }
     }
+    hasMounted.current = true
   }, [])
 
-  // Save to localStorage whenever cart changes
+  // ✅ Save only after first mount to avoid overwriting on first load
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart))
+    if (hasMounted.current) {
+      localStorage.setItem('cart', JSON.stringify(cart))
+    }
   }, [cart])
 
   const addToCart = (item: CartItem) => {
@@ -60,8 +70,19 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setCart(prev => prev.filter(item => item.sku !== sku))
   }
 
+  const updateQuantity = (sku: string, quantity: number) => {
+    if (quantity < 1) return
+    setCart(prev =>
+      prev.map(item =>
+        item.sku === sku ? { ...item, quantity } : item
+      )
+    )
+  }
+
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart }}>
+    <CartContext.Provider
+      value={{ cart, addToCart, removeFromCart, updateQuantity }}
+    >
       {children}
     </CartContext.Provider>
   )
