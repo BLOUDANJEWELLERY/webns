@@ -32,7 +32,8 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
     price,
     description,
     image,
-    variants
+    variants,
+    slug
   }`
 
   const product = await client.fetch(query, { slug: params.slug })
@@ -106,6 +107,7 @@ export default function ProductPage({ product }: { product: Product | null }) {
       size: selectedSize,
       color: selectedColor,
       sku: variantMatch.sku,
+      slug: product.slug.current,
       quantity: 1,
     }
 
