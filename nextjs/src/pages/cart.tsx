@@ -15,7 +15,7 @@ export default function CartPage() {
   if (cartItems.length === 0) {
     return (
       <main style={{ padding: '2rem', textAlign: 'center' }}>
-        <h1>Your Cart</h1>
+        <h1>My Cart</h1>
         <p>Your cart is empty.</p>
       </main>
     )
