@@ -1,0 +1,84 @@
+/* Hamburger button */
+.hamburger {
+  font-size: 26px;
+  background: linear-gradient(to right, #8d6e63, #6d4c41);
+  border: none;
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.5rem 0.8rem;
+  cursor: pointer;
+  margin-right: auto;
+  z-index: 1001;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: background 0.3s ease;
+}
+
+.hamburger:hover {
+  background: linear-gradient(to right, #a1887f, #5d4037);
+}
+
+/* Sidebar Menu */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  transform: translateX(-100%);
+  width: 270px;
+  height: 100vh;
+  backdrop-filter: blur(10px);
+  background: linear-gradient(to bottom, #fbe9e7, #fff3e0);
+  border-right: 2px solid #d7ccc8;
+  box-shadow: 6px 0 20px rgba(0, 0, 0, 0.25);
+  z-index: 1000;
+  transition: transform 0.35s ease-in-out;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(10px);
+}
+
+.sidebar.open {
+  transform: translateX(0);
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.menu a {
+  background: linear-gradient(to right, #efebe9, #d7ccc8);
+  border: 1px solid #a1887f;
+  color: #4e342e;
+  padding: 0.75rem 1.2rem;
+  border-radius: 10px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.menu a:hover {
+  background: linear-gradient(to right, #bcaaa4, #a1887f);
+  color: #3e2723;
+  transform: translateX(4px);
+}
+
+/* Close Button */
+.closeButton {
+  align-self: flex-end;
+  font-size: 28px;
+  background: none;
+  border: none;
+  color: #4e342e;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.closeButton:hover {
+  transform: rotate(90deg);
+}
