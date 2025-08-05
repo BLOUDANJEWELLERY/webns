@@ -2,6 +2,7 @@
 import React from 'react'
 import { useCart } from '../context/CartContext'
 import Image from 'next/image'
+import Link from 'next/link'
 import styles from '../styles/cart.module.css'
 
 export default function CartPage() {
@@ -25,45 +26,61 @@ export default function CartPage() {
       <section className={styles.cartList}>
         {cart.map(item => (
           <article key={item.sku} className={styles.cartItem}>
-            <div className={styles.imageWrapper}>
-              <Image
-                src={item.image}
-                alt={item.title}
-                width={100}
-                height={100}
-                className={styles.cartImage}
-              />
-            </div>
+            <Link href={`/product/${item.slug}`} passHref legacyBehavior>
+              <a className={styles.cartLink}>
+                <div className={styles.imageWrapper}>
+                  <Image
+                    src={item.image}
+                    alt={item.title}
+                    width={100}
+                    height={100}
+                    className={styles.cartImage}
+                  />
+                </div>
 
-            <div className={styles.cartDetails}>
-              <h3 className={styles.cartTitle}>{item.title}</h3>
-              <p className={styles.cartMeta}>
-                Size: <span>{item.size}</span> | Color: <span>{item.color}</span>
-              </p>
-              <p className={styles.cartPrice}>KWD {item.price.toFixed(2)}</p>
+                <div className={styles.cartDetails}>
+                  <h3 className={styles.cartTitle}>{item.title}</h3>
+                  <p className={styles.cartMeta}>
+                    Size: <span>{item.size}</span> | Color: <span>{item.color}</span>
+                  </p>
+                  <p className={styles.cartPrice}>KWD {item.price.toFixed(2)}</p>
+                </div>
+              </a>
+            </Link>
 
-              <div className={styles.cartQuantity}>
-                <button
-                  className={styles.quantityButton}
-                  onClick={() => updateQuantity(item.sku, item.quantity - 1)}
-                  disabled={item.quantity <= 1}
-                  aria-label={`Decrease quantity of ${item.title}`}
-                >
-                  −
-                </button>
-                <span className={styles.quantityNumber}>{item.quantity}</span>
-                <button
-                  className={styles.quantityButton}
-                  onClick={() => updateQuantity(item.sku, item.quantity + 1)}
-                  aria-label={`Increase quantity of ${item.title}`}
-                >
-                  +
-                </button>
-              </div>
+            <div className={styles.cartQuantity}>
+              <button
+                className={styles.quantityButton}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  updateQuantity(item.sku, item.quantity - 1)
+                }}
+                disabled={item.quantity <= 1}
+                aria-label={`Decrease quantity of ${item.title}`}
+              >
+                −
+              </button>
+              <span className={styles.quantityNumber}>{item.quantity}</span>
+              <button
+                className={styles.quantityButton}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  updateQuantity(item.sku, item.quantity + 1)
+                }}
+                aria-label={`Increase quantity of ${item.title}`}
+              >
+                +
+              </button>
             </div>
 
             <button
-              onClick={() => removeFromCart(item.sku)}
+              onClick={(e) => {
+                e.stopPropagation()
+                e.preventDefault()
+                removeFromCart(item.sku)
+              }}
               className={styles.removeButton}
               aria-label={`Remove ${item.title} from cart`}
             >
