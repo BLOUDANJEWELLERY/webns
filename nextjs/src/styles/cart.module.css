@@ -211,4 +211,13 @@
     margin-top: 2.5rem;
   }
 }
+.cartLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: box-shadow 0.2s ease;
+}
 
+.cartLink:hover {
+  box-shadow: 0 0 0 2px #c89b3c50;
+}
