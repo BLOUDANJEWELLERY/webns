@@ -24,7 +24,7 @@
   position: sticky;
   align-items: center;
   justify-content: space-between;
-  padding: 0.3rem 1.5rem;
+  padding: 0.5rem 1.5rem;
   background-color: #fffdfb;/*#fbe9e7;*/
   border-bottom: 2px solid #fbe9e7;/*#d7ccc8;*/
   top: 0;
@@ -35,7 +35,8 @@
   font-size: 1.3rem;
   font-weight: 700;
   color: #4e342e;
-  text-decoration: none; 
+  text-decoration: none;
+  margin: 0 auto; 
 }
 
 .hamburger {
