@@ -1,16 +1,17 @@
 
 
 .mainContainer {
-  padding: 1rem;
+  padding: 0rem;
   max-width: 100%;
   margin: 0 auto;
-  background-color: #F5F3EE; /* Light warm background */
+  background-color: #4E2A0F; /* Light warm background */
 }
 
 .heading {
   font-size: 28px;
   font-weight: bold;
   text-align: center;
+  padding: 0.5rem;
   margin-bottom: 2rem;
   color: #4E2A0F; /* Deep brown heading */
 }
