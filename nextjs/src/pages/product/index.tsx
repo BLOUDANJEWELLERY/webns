@@ -72,21 +72,6 @@ const { cart, addToCart } = useCart()
     <div>
       <Header collections={collections} />
 
-<header className={styles.productHeader}>
-    <div className={styles.leftNav}>
-      <Link href="/" className={styles.logo}>Bloudan</Link>
-      <nav className={styles.breadcrumbs}>
-        <Link href="/">Home</Link> &gt; <span>All Products</span>
-      </nav>
-    </div>
-
-    <div className={styles.rightNav}>
-      <Link href="/cart" className={styles.cartIcon}>
-        🛒 <span className={styles.cartCount}>{cart.length}</span>
-      </Link>
-    </div>
-  </header>
-
       <main className={styles.mainContainer}>
         <h1 className={styles.heading}>Our Clothing Collection</h1>
 
