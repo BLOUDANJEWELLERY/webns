@@ -73,8 +73,14 @@ type Product = {
   slug: string
 }
 
-export default function ProductPage({ product }: { product: Product | null }) {
-  const router = useRouter()
+export default function ProductPage({
+  product,
+  collections,
+}: {
+  product: Product | null
+  collections: any[]
+}) {
+const router = useRouter()
   const { cart, addToCart } = useCart()
 
   const sizeOrder = useMemo(() => ['XS', 'S', 'M', 'L', 'XL', 'XXL'], [])
