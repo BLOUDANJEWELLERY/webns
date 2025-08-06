@@ -120,6 +120,7 @@ export default function ProductPage({ product }: { product: Product | null }) {
   if (!product || !product.title) return <p className="text-center">Product not found</p>
 
   return (
+<>
 <header className={styles.productHeader}>
   <div className={styles.leftNav}>
     <Link href="/" className={styles.logo}>Bloudan</Link>
@@ -239,5 +240,6 @@ export default function ProductPage({ product }: { product: Product | null }) {
         </div>
       </div>
     </main>
+</>
   )
 }
