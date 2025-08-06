@@ -41,16 +41,16 @@
   font-size: 24px;
   background: #fffdfb;:/*linear-gradient(to right, #8d6e63, #6d4c41);*/
   border: none;
-  color: #fff;
+  color: #4e342e;/*#fff;*/
   border-radius: 8px;
   padding: 0.4rem 0.8rem;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  transition: background 0.3s ease;
+  /*box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: background 0.3s ease;*/
 }
 
 .hamburger:hover {
-  background: linear-gradient(to right, #a1887f, #5d4037);
+  background: #fffdfb;/*linear-gradient(to right, #a1887f, #5d4037);*/
 }
 
 .sidebar {
