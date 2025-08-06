@@ -67,7 +67,7 @@ type Product = {
 
 export default function ProductPage({ product }: { product: Product | null }) {
   const router = useRouter()
-  const { addToCart } = useCart() // 👈 Use cart context
+  const { cart, addToCart } = useCart()
 
   const sizeOrder = useMemo(() => ['XS', 'S', 'M', 'L', 'XL', 'XXL'], [])
 
