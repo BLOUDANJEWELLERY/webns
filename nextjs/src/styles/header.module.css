@@ -24,7 +24,10 @@
   position: sticky;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem 1.5rem;
+  padding-top: 0.5rem;
+padding-bottom: 0.5rem;
+padding-left: 1rem;
+padding-right: 1.5rem;
   background-color: #fffdfb;/*#fbe9e7;*/
   border-bottom: 2px solid #fbe9e7;/*#d7ccc8;*/
   top: 0;
