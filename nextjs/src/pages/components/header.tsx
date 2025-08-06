@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import styles from '../../styles/header.module.css'
+import { useCart } from '@/context/CartContext' // ✅ Import cart context
 
 type Collection = {
   _id: string
@@ -12,6 +13,7 @@ type Collection = {
 
 export default function Header({ collections = [] }: { collections?: Collection[] }) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const { cart } = useCart() // ✅ Access cart state
 
   return (
     <>
@@ -23,8 +25,16 @@ export default function Header({ collections = [] }: { collections?: Collection[
         >
           ☰
         </button>
+
         <Link href="/" className={styles.brand}>
           Marvello Threads
+        </Link>
+
+        <Link href="/cart" className={styles.cartIcon}>
+          🛒
+          {cart.length > 0 && (
+            <span className={styles.cartCount}>{cart.length}</span>
+          )}
         </Link>
       </header>
 
@@ -36,7 +46,11 @@ export default function Header({ collections = [] }: { collections?: Collection[
           <Link href="/" onClick={() => setMenuOpen(false)}>Home</Link>
           <Link href="/product" onClick={() => setMenuOpen(false)}>All Products</Link>
           {collections.map(col => (
-            <Link key={col._id} href={col.linkTarget} onClick={() => setMenuOpen(false)}>
+            <Link
+              key={col._id}
+              href={col.linkTarget}
+              onClick={() => setMenuOpen(false)}
+            >
               {col.name}
             </Link>
           ))}
