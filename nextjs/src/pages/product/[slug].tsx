@@ -38,18 +38,19 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
     "slug": slug.current,
   }`
 
-const collectionQuery = `*[_type == "collection"]{
+  const collectionQuery = `*[_type == "collection"]{
     _id,
     name,
     linkTarget
   }`
 
   const product = await client.fetch(query, { slug: params.slug })
+  const collections = await client.fetch(collectionQuery)
 
   if (!product) return { notFound: true }
 
   return {
-    props: { product },
+    props: { product, collections },
     revalidate: 60,
   }
 }
