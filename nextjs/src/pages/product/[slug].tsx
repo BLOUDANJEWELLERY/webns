@@ -6,6 +6,7 @@ import Link from 'next/link'
 import styles from '../../styles/details.module.css'
 import { useState, useMemo } from 'react'
 import { useCart } from '../../context/CartContext' // 👈 Add this
+import Header from '../components/header'
 
 // === Sanity client setup ===
 const client = createClient({
@@ -35,6 +36,12 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
     image,
     variants,
     "slug": slug.current,
+  }`
+
+const collectionQuery = `*[_type == "collection"]{
+    _id,
+    name,
+    linkTarget
   }`
 
   const product = await client.fetch(query, { slug: params.slug })
@@ -122,6 +129,7 @@ export default function ProductPage({ product }: { product: Product | null }) {
 
   return (
 <>
+<Header collections={collections} title="All Products" titleHref="/product" />
     <main className={styles.pageContainer}>
       <div className={styles.productWrapper}>
         {product.image && (
