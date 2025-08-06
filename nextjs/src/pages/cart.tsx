@@ -90,6 +90,15 @@ export default function CartPage() {
         ))}
       </section>
 
+<div className={styles.cartActions}>
+  <Link href="/product" className={styles.continueButton}>
+    Continue Shopping
+  </Link>
+  <button className={styles.checkoutButton}>
+    Proceed to Checkout
+  </button>
+</div>
+
       <footer className={styles.cartTotal}>
         Total: KWD {total.toFixed(2)}
       </footer>
