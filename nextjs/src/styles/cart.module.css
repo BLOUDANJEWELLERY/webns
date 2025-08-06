@@ -110,10 +110,10 @@
 
 /* === Quantity Controls === */
 .cartQuantity {
-  margin-top: 0.75rem;
+  margin-top: 0.5rem;
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: 0.5rem;
 }
 
 .quantityButton {
@@ -257,7 +257,7 @@
   background-color: #fff6e4;
   color: #4e2a0f;
   border: 2px solid #c89b3c;
-  padding: 0.7rem 1.3rem;
+  padding: 0.6rem 1.1rem;
   font-size: 1.1rem;
   font-weight: 600;
   border-radius: 10px;
@@ -297,7 +297,7 @@
 
   .continueButton,
   .checkoutButton {
-    width: 100%;
+    width: 90%;
     text-align: center;
   }
 }
