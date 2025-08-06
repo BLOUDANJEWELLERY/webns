@@ -242,3 +242,62 @@
 .cartLink:hover {
   box-shadow: 0 0 0 2px #c89b3c50;
 }
+
+/* === Cart Action Buttons === */
+.cartActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.continueButton {
+  background-color: #fff6e4;
+  color: #4e2a0f;
+  border: 2px solid #c89b3c;
+  padding: 0.8rem 1.4rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.continueButton:hover {
+  background-color: #fbe8d6;
+  color: #3c1f0f;
+}
+
+.checkoutButton {
+  background-color: #c89b3c;
+  color: #fffdfb;
+  border: none;
+  padding: 0.85rem 1.6rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.checkoutButton:hover {
+  background-color: #b5872f;
+  transform: translateY(-1px);
+}
+
+/* Responsive stacking on mobile */
+@media (max-width: 768px) {
+  .cartActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .continueButton,
+  .checkoutButton {
+    width: 100%;
+    text-align: center;
+  }
+}
