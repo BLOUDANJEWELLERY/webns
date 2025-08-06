@@ -126,9 +126,9 @@ export default function ProductPage({ product }: { product: Product | null }) {
   <div className={styles.leftNav}>
     <Link href="/" className={styles.logo}>Marvello Thread</Link>
     <nav className={styles.breadcrumbs}>
-      <Link href="/">Home</Link> &gt; 
-      <Link href="/product">All Products</Link> &gt; 
-      <span>{product.title}</span>
+      <Link href="/"> Home</Link> &gt; 
+      <Link href="/product"> All Products</Link> &gt; 
+      <span> {product.title}</span>
     </nav>
   </div>
 
