@@ -17,7 +17,6 @@ const client = createClient({
 
 const builder = imageUrlBuilder(client)
 const urlFor = (source: any) => builder.image(source)
-const { cart, addToCart } = useCart()
 
 // === Types ===
 type Product = {
@@ -66,6 +65,9 @@ export default function ProductListPage({
   products: Product[]
   collections: Collection[]
 }) {
+
+const { cart, addToCart } = useCart()
+
   return (
     <div>
       <Header collections={collections} />
