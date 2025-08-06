@@ -26,6 +26,7 @@ export default function CartPage() {
       <section className={styles.cartList}>
         {cart.map(item => (
           <article key={item.sku} className={styles.cartItem}>
+<div className={styles.itemMain}>
             <Link href={`/product/${item.slug}`} passHref legacyBehavior>
               <a className={styles.cartLink}>
                 <div className={styles.imageWrapper}>
@@ -86,6 +87,7 @@ export default function CartPage() {
             >
               Remove
             </button>
+</div>
           </article>
         ))}
       </section>
