@@ -243,27 +243,34 @@
   box-shadow: 0 0 0 2px #c89b3c50;
 }
 
-/* === Cart Action Buttons === */
+/* === Cart Action Buttons Container === */
 .cartActions {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 2rem;
-  flex-wrap: wrap;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
-.continueButton {
-  background-color: #fff6e4;
-  color: #4e2a0f;
-  border: 2px solid #c89b3c;
-  padding: 0.6rem 1.1rem;
+/* === Base Button Styling === */
+.cartButton {
+  padding: 0.8rem 1.6rem;
   font-size: 1.1rem;
   font-weight: 600;
   border-radius: 10px;
   cursor: pointer;
   text-decoration: none;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  text-align: center;
+  min-width: 200px;
+  transition: all 0.3s ease;
+}
+
+/* === Continue Shopping === */
+.continueButton {
+  background-color: #fff6e4;
+  color: #4e2a0f;
+  border: 2px solid #c89b3c;
 }
 
 .continueButton:hover {
@@ -271,33 +278,28 @@
   color: #3c1f0f;
 }
 
+/* === Proceed to Checkout === */
 .checkoutButton {
   background-color: #c89b3c;
   color: #fffdfb;
-  border: none;
-  padding: 0.85rem 1.6rem;
-  font-size: 1.15rem;
+  border: 2px solid #c89b3c;
   font-weight: 700;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .checkoutButton:hover {
   background-color: #b5872f;
+  border-color: #b5872f;
   transform: translateY(-1px);
 }
 
-/* Responsive stacking on mobile */
+/* === Responsive: Stack on Small Screens === */
 @media (max-width: 768px) {
   .cartActions {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .continueButton,
-  .checkoutButton {
-    width: 90%;
-    text-align: center;
+  .cartButton {
+    width: 100%;
   }
 }
