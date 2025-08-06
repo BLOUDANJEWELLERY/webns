@@ -120,6 +120,23 @@ export default function ProductPage({ product }: { product: Product | null }) {
   if (!product || !product.title) return <p className="text-center">Product not found</p>
 
   return (
+<header className={styles.productHeader}>
+  <div className={styles.leftNav}>
+    <Link href="/" className={styles.logo}>Bloudan</Link>
+    <nav className={styles.breadcrumbs}>
+      <Link href="/">Home</Link> &gt; 
+      <Link href="/product">All Products</Link> &gt; 
+      <span>{product.title}</span>
+    </nav>
+  </div>
+
+  <div className={styles.rightNav}>
+    <Link href="/cart" className={styles.cartIcon}>
+      🛒<span className={styles.cartCount}>{cart.length}</span>
+    </Link>
+  </div>
+</header>
+
     <main className={styles.pageContainer}>
       <div className={styles.productWrapper}>
         {product.image && (
