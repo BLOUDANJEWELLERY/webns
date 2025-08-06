@@ -124,7 +124,7 @@ export default function ProductPage({ product }: { product: Product | null }) {
 <>
 <header className={styles.productHeader}>
   <div className={styles.leftNav}>
-    <Link href="/" className={styles.logo}>Bloudan</Link>
+    <Link href="/" className={styles.logo}>Marvello Thread</Link>
     <nav className={styles.breadcrumbs}>
       <Link href="/">Home</Link> &gt; 
       <Link href="/product">All Products</Link> &gt; 
