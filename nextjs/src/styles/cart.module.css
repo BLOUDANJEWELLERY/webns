@@ -86,7 +86,24 @@
   font-weight: 700;
   color: #4e2a0f;
   text-shadow: 0.3px 0.3px #e6dcd2;
-  margin: 0;
+  margin-bottom: 0.3rem;
+}
+
+/* 👇 New block to align details + quantity side by side */
+.cartInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+}
+
+@media (max-width: 768px) {
+  .cartInfo {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 .cartMeta {
