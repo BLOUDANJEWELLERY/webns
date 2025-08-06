@@ -1,9 +1,10 @@
+// src/components/header.tsx
 'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
 import styles from '../../styles/header.module.css'
-import { useCart } from '@/context/CartContext' // ✅ Import cart context
+import { useCart } from '@/context/CartContext'
 
 type Collection = {
   _id: string
@@ -11,9 +12,15 @@ type Collection = {
   linkTarget: string
 }
 
-export default function Header({ collections = [] }: { collections?: Collection[] }) {
+type HeaderProps = {
+  collections?: Collection[]
+  title?: string
+  titleHref?: string
+}
+
+export default function Header({ collections = [], title = 'Marvello Threads', titleHref = '/' }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const { cart } = useCart() // ✅ Access cart state
+  const { cart } = useCart()
 
   return (
     <>
@@ -26,8 +33,8 @@ export default function Header({ collections = [] }: { collections?: Collection[
           ☰
         </button>
 
-        <Link href="/" className={styles.brand}>
-          Marvello Threads
+        <Link href={titleHref} className={styles.brand}>
+          {title}
         </Link>
 
         <Link href="/cart" className={styles.cartIcon}>
