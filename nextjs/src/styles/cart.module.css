@@ -28,15 +28,10 @@
   gap: 2rem;
 }
 
-.itemMain {
-  display: flex;
-  flex: 1;
-}
-
 /* === Individual Cart Item === */
 .cartItem {
   display: flex;
-  align-items: flex-start; /* Align top instead of center */
+  align-items: center; /* Align top instead of center */
   background-color: #fffdfb;
   border-radius: 18px;
   box-shadow: 0 10px 24px rgba(80, 40, 20, 0.06);
