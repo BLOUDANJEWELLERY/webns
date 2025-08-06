@@ -91,10 +91,10 @@ export default function CartPage() {
       </section>
 
 <div className={styles.cartActions}>
-  <Link href="/product" className={styles.continueButton}>
+  <Link href="/product" className={styles.cartButton + ' ' + styles.continueButton}>
     Continue Shopping
   </Link>
-  <button className={styles.checkoutButton}>
+  <button className={styles.cartButton + ' ' + styles.checkoutButton}>
     Proceed to Checkout
   </button>
 </div>
