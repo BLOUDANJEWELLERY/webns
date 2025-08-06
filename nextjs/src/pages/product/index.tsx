@@ -70,8 +70,7 @@ const { cart, addToCart } = useCart()
 
   return (
     <div>
-      <Header collections={collections} />
-
+      <Header collections={collections} title="Marvello Threads" titleHref="/" />
       <main className={styles.mainContainer}>
         <h1 className={styles.heading}>Our Clothing Collection</h1>
 
