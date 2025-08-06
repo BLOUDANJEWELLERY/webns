@@ -2,6 +2,7 @@ import { useRouter } from 'next/router'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import Image from 'next/image'
+import Link from 'next/link'
 import styles from '../../styles/details.module.css'
 import { useState, useMemo } from 'react'
 import { useCart } from '../../context/CartContext' // 👈 Add this
