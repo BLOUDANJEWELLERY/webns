@@ -7,7 +7,6 @@ import styles from '../styles/cart.module.css'
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity } = useCart()
-
   const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0)
 
   if (cart.length === 0) {
@@ -50,10 +49,10 @@ export default function CartPage() {
                     </p>
                   </a>
                 </Link>
-                <p className={styles.cartPrice}>KWD {item.price.toFixed(2)}</p>
               </div>
 
               <div className={styles.cartQuantity}>
+                <p className={styles.cartPrice}>KWD {item.price.toFixed(2)}</p>
                 <button
                   className={styles.quantityButton}
                   onClick={(e) => {
