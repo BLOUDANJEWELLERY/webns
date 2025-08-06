@@ -1,5 +1,5 @@
 // src/pages/product/index.tsx
-
+import { useCart } from '@/context/CartContext'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from 'next-sanity'
@@ -17,6 +17,7 @@ const client = createClient({
 
 const builder = imageUrlBuilder(client)
 const urlFor = (source: any) => builder.image(source)
+const { cart, addToCart } = useCart()
 
 // === Types ===
 type Product = {
@@ -68,6 +69,21 @@ export default function ProductListPage({
   return (
     <div>
       <Header collections={collections} />
+
+<header className={styles.productHeader}>
+    <div className={styles.leftNav}>
+      <Link href="/" className={styles.logo}>Bloudan</Link>
+      <nav className={styles.breadcrumbs}>
+        <Link href="/">Home</Link> &gt; <span>All Products</span>
+      </nav>
+    </div>
+
+    <div className={styles.rightNav}>
+      <Link href="/cart" className={styles.cartIcon}>
+        🛒 <span className={styles.cartCount}>{cart.length}</span>
+      </Link>
+    </div>
+  </header>
 
       <main className={styles.mainContainer}>
         <h1 className={styles.heading}>Our Clothing Collection</h1>
