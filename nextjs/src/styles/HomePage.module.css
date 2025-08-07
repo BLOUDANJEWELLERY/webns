@@ -1,4 +1,12 @@
+.zoom-overlay {
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+}
 
+.productImage {
+  border-radius: 12px;
+  transition: transform 0.3s ease;
+}
 
 .mainContainer {
   padding: 1rem;
