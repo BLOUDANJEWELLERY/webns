@@ -1,10 +1,34 @@
 // src/pages/cart.tsx
+import { createClient } from 'next-sanity'
 import React from 'react'
 import { useCart } from '../context/CartContext'
 import Image from 'next/image'
 import Link from 'next/link'
 import styles from '../styles/cart.module.css'
 import Header from 'components/header'
+
+// === Sanity client setup ===
+const client = createClient({
+  projectId: '3jc8hsku',
+  dataset: 'production',
+  apiVersion: '2023-07-30',
+  useCdn: false,
+})
+
+export async function getStaticProps() {
+  const collectionQuery = `*[_type == "collection"]{
+    _id,
+    name,
+    linkTarget
+  }`
+
+  const collections = await client.fetch(collectionQuery)
+
+  return {
+    props: { collections },
+    revalidate: 60,
+  }
+}
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity } = useCart()
@@ -22,7 +46,7 @@ export default function CartPage() {
 
   return (
 <>
-<Header collections={collections} title="All Product" titleHref="/product" />
+<Header collections={collections} title="All Products" titleHref="/product" />
     
     <main className={styles.cartPage}>
       <h1 className={styles.title}>Your Cart</h1>
