@@ -143,7 +143,7 @@ const router = useRouter()
     <main className={styles.pageContainer}>
       <div className={styles.productWrapper}>
         {product.image && (
-         <div className={styles.imageSection}>
+         <div className={styles.imageWrapper}>
   <Zoom>
     <Image
       src={urlFor(product.image).width(1200).height(1200).fit('max').url()}
