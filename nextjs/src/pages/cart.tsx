@@ -4,6 +4,7 @@ import { useCart } from '../context/CartContext'
 import Image from 'next/image'
 import Link from 'next/link'
 import styles from '../styles/cart.module.css'
+import Header from 'components/header'
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity } = useCart()
@@ -20,6 +21,9 @@ export default function CartPage() {
   }
 
   return (
+<>
+<Header collections={collections} title="All Product" titleHref="/product" />
+    
     <main className={styles.cartPage}>
       <h1 className={styles.title}>Your Cart</h1>
 
@@ -103,5 +107,6 @@ export default function CartPage() {
         Total: KWD {total.toFixed(2)}
       </footer>
     </main>
+</>
   )
 }
