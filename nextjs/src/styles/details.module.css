@@ -36,6 +36,7 @@
   border-radius: 12px;
   background: linear-gradient(to bottom right, #f5eee5, #ede1d5);
   overflow: hidden;
+  display:block;
 }
 
 .productImage {
