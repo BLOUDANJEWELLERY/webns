@@ -1,19 +1,22 @@
-// /schemas/product.ts
-
 export default {
   name: 'product',
   title: 'Product',
   type: 'document',
   fields: [
     { name: 'title', title: 'Title', type: 'string' },
-    { name: 'price', title: 'Price', type: 'number' },
+    { name: 'price', title: 'Base Price', type: 'number' },
     {
-      name: 'image',
-      title: 'Image',
+      name: 'defaultImage',
+      title: 'Default Image',
       type: 'image',
       options: { hotspot: true },
+      description: 'Used when no color variant is selected.',
     },
-    { name: 'description', title: 'Description', type: 'text' },
+    {
+      name: 'description',
+      title: 'Description',
+      type: 'text',
+    },
     {
       name: 'slug',
       title: 'Slug',
@@ -48,6 +51,13 @@ export default {
               },
             },
             {
+              name: 'images',
+              title: 'Images for this Variant',
+              type: 'array',
+              of: [{ type: 'image', options: { hotspot: true } }],
+              options: { layout: 'grid' },
+            },
+            {
               name: 'sku',
               title: 'SKU',
               type: 'string',
@@ -58,7 +68,11 @@ export default {
                 return `${base}-${timestamp}`
               },
             },
-            { name: 'quantity', title: 'Quantity', type: 'number' },
+            {
+              name: 'quantity',
+              title: 'Quantity',
+              type: 'number',
+            },
             {
               name: 'overridePrice',
               title: 'Override Price',
