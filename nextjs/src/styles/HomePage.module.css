@@ -1,12 +1,3 @@
-.zoom-overlay {
-  background-color: rgba(0, 0, 0, 0.8);
-  z-index: 1000;
-}
-
-.productImage {
-  border-radius: 12px;
-  transition: transform 0.3s ease;
-}
 
 .mainContainer {
   padding: 1rem;
@@ -60,6 +51,16 @@
   transform: translateY(-2px);
 }
 
+.zoom-overlay {
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+}
+
+.productImage {
+  border-radius: 12px;
+  transition: transform 0.3s ease;
+}
+
 .imageWrapper {
   width: 100%;
   aspect-ratio: 1 / 1;
@@ -68,12 +69,17 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  position: relative; /* Required for next/image with fill */
 }
 
-.image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.productImage {
+  border-radius: 12px;
+  transition: transform 0.3s ease;
+}
+
+.zoom-overlay {
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
 }
 
 .cardContent {
