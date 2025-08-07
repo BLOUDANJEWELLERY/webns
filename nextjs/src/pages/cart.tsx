@@ -71,7 +71,7 @@ export default function CartPage({ collections }: { collections: any[] }) {
                       <p className={styles.cartMeta}>
                         Size: <span>{item.size}</span> | Color: <span>{item.color}</span>
                       </p>
-                      <p className={styles.cartPrice}>KWD {item.price.toFixed(2)}</p>
+                      <p className={styles.cartPrice}>$ {item.price.toFixed(2)}</p>
                     </div>
                   </a>
                 </Link>
