@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo
+    container_name: local-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: waleedsheeraz06@gmail.com
+      MONGO_INITDB_ROOT_PASSWORD: Auth@2025
+
+volumes:
+  mongo-data:
