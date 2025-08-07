@@ -1,10 +1,10 @@
 
-/*.mainContainer {
+.mainContainer {
   padding: 1rem;
   max-width: 100%;
   margin: 0 auto;
   background-color: #fffdfb; /* Light warm background */
-/*}*/
+}
 
 .heading {
   font-size: 28px;
