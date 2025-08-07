@@ -8,6 +8,8 @@ import { useState, useMemo } from 'react'
 import { useCart } from '../../context/CartContext' // 👈 Add this
 import Header from '../components/header'
 import { toast } from 'react-hot-toast'
+import Zoom from 'react-medium-image-zoom'
+import 'react-medium-image-zoom/dist/styles.css'
 
 // === Sanity client setup ===
 const client = createClient({
@@ -141,15 +143,18 @@ const router = useRouter()
     <main className={styles.pageContainer}>
       <div className={styles.productWrapper}>
         {product.image && (
-          <div className={styles.imageSection}>
-            <Image
-              src={urlFor(product.image).width(600).height(600).fit('crop').url()}
-              alt={product.title}
-              width={600}
-              height={600}
-              className={styles.productImage}
-            />
-          </div>
+         <div className={styles.imageSection}>
+  <Zoom>
+    <Image
+      src={urlFor(product.image).width(1200).height(1200).fit('max').url()}
+      alt={product.title}
+      width={600}
+      height={600}
+      className={styles.productImage}
+      style={{ objectFit: 'cover', cursor: 'zoom-in' }}
+    />
+  </Zoom>
+</div>
         )}
 
         <div className={styles.detailsSection}>
