@@ -7,6 +7,7 @@ import styles from '../../styles/details.module.css'
 import { useState, useMemo } from 'react'
 import { useCart } from '../../context/CartContext' // 👈 Add this
 import Header from '../components/header'
+import { toast } from 'react-hot-toast'
 
 // === Sanity client setup ===
 const client = createClient({
@@ -128,7 +129,7 @@ const router = useRouter()
     }
 
     addToCart(cartItem)
-    alert('Added to cart!')
+    toast.success('Added to cart!')
   }
 
   if (router.isFallback) return <p className="text-center">Loading...</p>
