@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext'
 import Image from 'next/image'
 import Link from 'next/link'
 import styles from '../styles/cart.module.css'
-import Header from 'components/header'
+import Header from './components/header'
 
 // === Sanity client setup ===
 const client = createClient({
