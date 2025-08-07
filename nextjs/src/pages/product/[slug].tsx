@@ -148,8 +148,7 @@ const router = useRouter()
     <Image
       src={urlFor(product.image).width(1200).height(1200).fit('max').url()}
       alt={product.title}
-      width={600}
-      height={600}
+      fill
       className={styles.productImage}
       style={{ objectFit: 'cover', cursor: 'zoom-in' }}
     />
