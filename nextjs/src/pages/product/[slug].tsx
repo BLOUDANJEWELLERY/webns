@@ -136,7 +136,7 @@ const router = useRouter()
 
   return (
 <>
-<Header collections={collections} title="All Product" titleHref="/product" />
+<Header collections={collections} title="All Products" titleHref="/product" />
     <main className={styles.pageContainer}>
       <div className={styles.productWrapper}>
         {product.image && (
