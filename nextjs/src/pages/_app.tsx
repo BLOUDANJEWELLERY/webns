@@ -7,7 +7,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   return (
     <CartProvider>
       <Toaster
-        position="top-center"
+        position="bottom-center"
         toastOptions={{
           style: {
             background: '#fffaf2', // warm background
