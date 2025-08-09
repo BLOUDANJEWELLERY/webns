@@ -10,33 +10,23 @@ export default defineType({
       name: 'title',
       title: 'Title',
       type: 'string',
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
-      name: 'slug',
-      title: 'Slug',
-      type: 'slug',
-      options: {
-        source: 'title',
-        maxLength: 96,
-      },
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
-      name: 'price',
-      title: 'Base Price',
-      type: 'number',
-      validation: (Rule) => Rule.required().positive(),
-    }),
-    defineField({
-      name: 'defaultImage',
-      title: 'Default Image',
-      type: 'image',
-      options: { hotspot: true },
-      validation: (Rule) => Rule.required(),
+      validation: Rule => Rule.required()
     }),
 
-    // ✅ Colors section
+    defineField({
+      name: 'description',
+      title: 'Description',
+      type: 'text',
+      rows: 4,
+    }),
+
+    defineField({
+      name: 'basePrice',
+      title: 'Base Price',
+      type: 'number',
+      validation: Rule => Rule.required().positive()
+    }),
+
     defineField({
       name: 'colors',
       title: 'Available Colors',
@@ -45,14 +35,22 @@ export default defineType({
         {
           type: 'object',
           fields: [
-            { name: 'color', title: 'Color Name', type: 'string' },
-            { name: 'image', title: 'Color Image', type: 'image', options: { hotspot: true } },
-          ],
-        },
-      ],
+            {
+              name: 'colorName',
+              title: 'Color Name',
+              type: 'string'
+            },
+            {
+              name: 'image',
+              title: 'Image for This Color',
+              type: 'image',
+              options: { hotspot: true }
+            }
+          ]
+        }
+      ]
     }),
 
-    // ✅ Variants without image
     defineField({
       name: 'variants',
       title: 'Variants',
@@ -66,14 +64,8 @@ export default defineType({
               title: 'Color',
               type: 'string',
               options: {
-                list: [
-                  { title: 'Red', value: 'red' },
-                  { title: 'Blue', value: 'blue' },
-                  { title: 'Green', value: 'green' },
-                  // Add more or pull dynamically if needed
-                ],
-              },
-              validation: (Rule) => Rule.required(),
+                list: [], // Will be dynamically populated in the Studio
+              }
             },
             {
               name: 'size',
@@ -81,34 +73,39 @@ export default defineType({
               type: 'string',
               options: {
                 list: [
-                  { title: 'Small', value: 'S' },
-                  { title: 'Medium', value: 'M' },
-                  { title: 'Large', value: 'L' },
-                ],
-              },
-              validation: (Rule) => Rule.required(),
-            },
-            {
-              name: 'sku',
-              title: 'SKU',
-              type: 'string',
-              readOnly: true,
-              initialValue: () => `SKU-${Date.now()}`,
+                  { title: 'XS', value: 'XS' },
+                  { title: 'S', value: 'S' },
+                  { title: 'M', value: 'M' },
+                  { title: 'L', value: 'L' },
+                  { title: 'XL', value: 'XL' },
+                  { title: 'XXL', value: 'XXL' },
+                ]
+              }
             },
             {
               name: 'quantity',
               title: 'Quantity',
               type: 'number',
-              validation: (Rule) => Rule.min(0),
+              validation: Rule => Rule.min(0)
             },
             {
               name: 'overridePrice',
               title: 'Override Price',
               type: 'number',
-            },
-          ],
-        },
-      ],
+            }
+          ]
+        }
+      ]
     }),
-  ],
+
+    defineField({
+      name: 'slug',
+      title: 'Slug',
+      type: 'slug',
+      options: {
+        source: 'title',
+        maxLength: 96
+      }
+    })
+  ]
 })
