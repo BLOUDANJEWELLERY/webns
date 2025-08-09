@@ -1,33 +1,26 @@
-// /schemas/product.ts
-import { defineType, defineField } from 'sanity'
-
-export default defineType({
+// product.js (Sanity schema)
+export default {
   name: 'product',
   title: 'Product',
   type: 'document',
   fields: [
-    defineField({
+    {
       name: 'title',
-      title: 'Product Title',
+      title: 'Title',
       type: 'string',
-      validation: Rule => Rule.required()
-    }),
-
-    defineField({
+    },
+    {
       name: 'description',
       title: 'Description',
       type: 'text',
-      rows: 4
-    }),
-
-    defineField({
+    },
+    {
       name: 'defaultImage',
       title: 'Default Image',
       type: 'image',
-      options: { hotspot: true }
-    }),
-
-    defineField({
+      options: { hotspot: true },
+    },
+    {
       name: 'colors',
       title: 'Available Colors',
       type: 'array',
@@ -35,14 +28,22 @@ export default defineType({
         {
           type: 'object',
           fields: [
-            { name: 'colorName', title: 'Color Name', type: 'string' },
-            { name: 'colorImage', title: 'Image for this Color', type: 'image', options: { hotspot: true } }
+            {
+              name: 'colorName',
+              title: 'Color Name',
+              type: 'string',
+            },
+            {
+              name: 'image',
+              title: 'Image for Color',
+              type: 'image',
+              options: { hotspot: true },
+            }
           ]
         }
       ]
-    }),
-
-    defineField({
+    },
+    {
       name: 'variants',
       title: 'Variants',
       type: 'array',
@@ -55,7 +56,14 @@ export default defineType({
               title: 'Color',
               type: 'string',
               options: {
-                list: [], // Will be populated dynamically via Studio custom input
+                list: ({ parent, document }) => {
+                  // Pull colors from the main colors field
+                  if (!document?.colors) return [];
+                  return document.colors.map(c => ({
+                    title: c.colorName,
+                    value: c.colorName
+                  }));
+                }
               }
             },
             {
@@ -69,43 +77,18 @@ export default defineType({
                   { title: 'M', value: 'M' },
                   { title: 'L', value: 'L' },
                   { title: 'XL', value: 'XL' },
-                  { title: 'XXL', value: 'XXL' }
+                  { title: 'XXL', value: 'XXL' },
                 ]
               }
             },
             {
               name: 'quantity',
               title: 'Quantity',
-              type: 'number',
-              validation: Rule => Rule.min(0)
-            },
-            {
-              name: 'sku',
-              title: 'SKU',
-              type: 'string'
-            },
-            {
-              name: 'overridePrice',
-              title: 'Override Price',
               type: 'number'
             }
           ]
         }
       ]
-    }),
-
-    defineField({
-      name: 'price',
-      title: 'Base Price',
-      type: 'number',
-      validation: Rule => Rule.min(0)
-    }),
-
-    defineField({
-      name: 'slug',
-      title: 'Slug',
-      type: 'slug',
-      options: { source: 'title', maxLength: 96 }
-    })
+    }
   ]
-})
+}
