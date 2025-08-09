@@ -1,23 +1,18 @@
-export default {
+// schemas/product.ts
+import { defineType, defineField } from 'sanity'
+
+export default defineType({
   name: 'product',
   title: 'Product',
   type: 'document',
   fields: [
-    { name: 'title', title: 'Title', type: 'string' },
-    { name: 'price', title: 'Base Price', type: 'number' },
-    {
-      name: 'defaultImage',
-      title: 'Default Image',
-      type: 'image',
-      options: { hotspot: true },
-      description: 'Used when no color variant is selected.',
-    },
-    {
-      name: 'description',
-      title: 'Description',
-      type: 'text',
-    },
-    {
+    defineField({
+      name: 'title',
+      title: 'Title',
+      type: 'string',
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
       name: 'slug',
       title: 'Slug',
       type: 'slug',
@@ -25,8 +20,40 @@ export default {
         source: 'title',
         maxLength: 96,
       },
-    },
-    {
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'price',
+      title: 'Base Price',
+      type: 'number',
+      validation: (Rule) => Rule.required().positive(),
+    }),
+    defineField({
+      name: 'defaultImage',
+      title: 'Default Image',
+      type: 'image',
+      options: { hotspot: true },
+      validation: (Rule) => Rule.required(),
+    }),
+
+    // ✅ Colors section
+    defineField({
+      name: 'colors',
+      title: 'Available Colors',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            { name: 'color', title: 'Color Name', type: 'string' },
+            { name: 'image', title: 'Color Image', type: 'image', options: { hotspot: true } },
+          ],
+        },
+      ],
+    }),
+
+    // ✅ Variants without image
+    defineField({
       name: 'variants',
       title: 'Variants',
       type: 'array',
@@ -35,53 +62,53 @@ export default {
           type: 'object',
           fields: [
             {
-              name: 'size',
-              title: 'Size',
-              type: 'string',
-              options: {
-                list: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
-              },
-            },
-            {
               name: 'color',
               title: 'Color',
               type: 'string',
               options: {
-                list: ['Black', 'White', 'Beige', 'Brown', 'Navy', 'Olive', 'Gold'],
+                list: [
+                  { title: 'Red', value: 'red' },
+                  { title: 'Blue', value: 'blue' },
+                  { title: 'Green', value: 'green' },
+                  // Add more or pull dynamically if needed
+                ],
               },
+              validation: (Rule) => Rule.required(),
             },
             {
-              name: 'images',
-              title: 'Images for this Variant',
-              type: 'array',
-              of: [{ type: 'image', options: { hotspot: true } }],
-              options: { layout: 'grid' },
+              name: 'size',
+              title: 'Size',
+              type: 'string',
+              options: {
+                list: [
+                  { title: 'Small', value: 'S' },
+                  { title: 'Medium', value: 'M' },
+                  { title: 'Large', value: 'L' },
+                ],
+              },
+              validation: (Rule) => Rule.required(),
             },
             {
               name: 'sku',
               title: 'SKU',
               type: 'string',
               readOnly: true,
-              initialValue: (parent, context) => {
-                const timestamp = Date.now().toString(36).toUpperCase()
-                const base = context.document?.title?.substring(0, 3).toUpperCase() || 'SKU'
-                return `${base}-${timestamp}`
-              },
+              initialValue: () => `SKU-${Date.now()}`,
             },
             {
               name: 'quantity',
               title: 'Quantity',
               type: 'number',
+              validation: (Rule) => Rule.min(0),
             },
             {
               name: 'overridePrice',
               title: 'Override Price',
               type: 'number',
-              description: 'Optional override price for this variant.',
             },
           ],
         },
       ],
-    },
+    }),
   ],
-}
+})
