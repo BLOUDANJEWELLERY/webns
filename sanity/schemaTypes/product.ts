@@ -1,4 +1,5 @@
-import { defineField, defineType } from 'sanity'
+// /schemas/product.ts
+import { defineType, defineField } from 'sanity'
 
 export default defineType({
   name: 'product',
@@ -9,20 +10,7 @@ export default defineType({
       name: 'title',
       title: 'Title',
       type: 'string',
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
-      name: 'defaultImage',
-      title: 'Default Image',
-      type: 'image',
-      options: { hotspot: true },
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
-      name: 'price',
-      title: 'Base Price',
-      type: 'number',
-      validation: (Rule) => Rule.required().positive(),
+      validation: Rule => Rule.required()
     }),
     defineField({
       name: 'description',
@@ -30,27 +18,42 @@ export default defineType({
       type: 'text',
     }),
     defineField({
+      name: 'defaultImage',
+      title: 'Default Image',
+      type: 'image',
+      options: { hotspot: true },
+    }),
+    defineField({
       name: 'colors',
       title: 'Available Colors',
+      type: 'array',
+      of: [{ type: 'string' }],
+      options: {
+        list: [
+          { title: 'White', value: 'white' },
+          { title: 'Black', value: 'black' },
+          { title: 'Red', value: 'red' },
+          { title: 'Blue', value: 'blue' },
+          { title: 'Green', value: 'green' },
+          { title: 'Yellow', value: 'yellow' },
+          { title: 'Brown', value: 'brown' },
+          { title: 'Grey', value: 'grey' },
+        ],
+      },
+    }),
+    defineField({
+      name: 'colorImages',
+      title: 'Image for Each Color',
       type: 'array',
       of: [
         {
           type: 'object',
           fields: [
-            {
-              name: 'colorName',
-              title: 'Color Name',
-              type: 'string',
-            },
-            {
-              name: 'image',
-              title: 'Image for this Color',
-              type: 'image',
-              options: { hotspot: true },
-            },
-          ],
-        },
-      ],
+            { name: 'color', title: 'Color', type: 'string' },
+            { name: 'image', title: 'Image', type: 'image', options: { hotspot: true } }
+          ]
+        }
+      ]
     }),
     defineField({
       name: 'variants',
@@ -65,16 +68,8 @@ export default defineType({
               title: 'Color',
               type: 'string',
               options: {
-                list: [
-                  { title: 'Black', value: 'Black' },
-                  { title: 'White', value: 'White' },
-                  { title: 'Beige', value: 'Beige' },
-                  { title: 'Brown', value: 'Brown' },
-                  { title: 'Navy', value: 'Navy' },
-                  { title: 'Olive', value: 'Olive' },
-                  { title: 'Gold', value: 'Gold' },
-                ],
-              },
+                list: [], // We'll populate this dynamically
+              }
             },
             {
               name: 'size',
@@ -91,41 +86,31 @@ export default defineType({
                 ],
               },
             },
-            {
-              name: 'sku',
-              title: 'SKU',
-              type: 'string',
-              readOnly: true,
-            },
-            {
-              name: 'quantity',
-              title: 'Quantity',
-              type: 'number',
-              validation: (Rule) => Rule.min(0),
-            },
-            {
-              name: 'priceOverride',
-              title: 'Price Override',
-              type: 'number',
-            },
+            { name: 'sku', title: 'SKU', type: 'string', readOnly: true },
+            { name: 'quantity', title: 'Quantity', type: 'number' },
+            { name: 'priceOverride', title: 'Price Override', type: 'number' },
           ],
         },
       ],
     }),
     defineField({
+      name: 'price',
+      title: 'Base Price',
+      type: 'number',
+      validation: Rule => Rule.required(),
+    }),
+    defineField({
       name: 'slug',
       title: 'Slug',
       type: 'slug',
-      options: {
-        source: 'title',
-        maxLength: 96,
-      },
+      options: { source: 'title', maxLength: 96 },
     }),
   ],
   preview: {
     select: {
       title: 'title',
-      media: 'defaultImage',
-    },
-  },
+      subtitle: 'price',
+      media: 'defaultImage'
+    }
+  }
 })
