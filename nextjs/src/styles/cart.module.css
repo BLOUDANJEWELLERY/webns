@@ -1,42 +1,45 @@
-/* === Modal Overlay: full screen dimmed background === */
+/* === Modal Overlay === */
 .modalOverlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(78, 42, 15, 0.75); /* darker brownish semi-transparent */
+  background: rgba(78, 42, 15, 0.75);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
+  padding: 1rem; /* ensures space even on tiny screens */
+  box-sizing: border-box;
 }
 
 /* === Modal Container === */
 .modal {
-  background-color: #fffdfb; /* matching cart item bg */
-  padding: 2rem 2.5rem;
-  border-radius: 18px;
+  background-color: #fffdfb;
+  padding: 1.5rem;
+  border-radius: 16px;
   box-shadow: 0 12px 36px rgba(80, 40, 20, 0.15);
+  width: 100%;
   max-width: 420px;
-  width: 90%;
   font-family: 'Segoe UI', sans-serif;
   color: #4e2a0f;
   text-align: center;
+  box-sizing: border-box;
 }
 
-/* === Modal Title === */
+/* === Title === */
 .modal h2 {
-  font-size: 2rem;
+  font-size: 1.6rem;
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem;
   text-shadow: 0.3px 0.3px #e6dcd2;
 }
 
-/* === Modal Message === */
+/* === Message === */
 .modal p {
-  font-size: 1.2rem;
-  margin-bottom: 2rem;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
   color: #5d4037;
   font-weight: 600;
 }
@@ -44,8 +47,9 @@
 /* === Buttons Container === */
 .modalButtons {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  gap: 1.2rem;
+  gap: 0.8rem;
 }
 
 /* === Cancel Button === */
@@ -54,11 +58,11 @@
   border: 2px solid #c89b3c;
   color: #4e2a0f;
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 1rem;
   border-radius: 10px;
-  padding: 0.6rem 1.8rem;
+  padding: 0.5rem 1.4rem;
   cursor: pointer;
-  min-width: 110px;
+  min-width: 100px;
   transition: background-color 0.3s ease, box-shadow 0.2s ease, transform 0.2s ease;
   user-select: none;
 }
@@ -69,17 +73,17 @@
   transform: scale(1.05);
 }
 
-/* === Confirm (Remove) Button === */
+/* === Confirm Button === */
 .confirmBtn {
   background-color: #c89b3c;
   border: 2px solid #c89b3c;
   color: #fffdfb;
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 1rem;
   border-radius: 10px;
-  padding: 0.6rem 1.8rem;
+  padding: 0.5rem 1.4rem;
   cursor: pointer;
-  min-width: 110px;
+  min-width: 100px;
   transition: background-color 0.3s ease, box-shadow 0.2s ease, transform 0.2s ease;
   user-select: none;
 }
@@ -89,6 +93,29 @@
   border-color: #b5872f;
   box-shadow: 0 3px 12px rgba(180, 130, 45, 0.6);
   transform: translateY(-1px);
+}
+
+/* === Small screens adjustments === */
+@media (max-width: 480px) {
+  .modal {
+    padding: 1.2rem;
+    border-radius: 12px;
+  }
+
+  .modal h2 {
+    font-size: 1.4rem;
+  }
+
+  .modal p {
+    font-size: 0.95rem;
+  }
+
+  .cancelBtn,
+  .confirmBtn {
+    flex: 1; /* make buttons stretch evenly */
+    min-width: auto;
+    font-size: 0.95rem;
+  }
 }
 
 
