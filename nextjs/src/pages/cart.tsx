@@ -1,6 +1,6 @@
 // pages/cart.tsx
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { createClient } from 'next-sanity'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -36,7 +36,42 @@ export async function getStaticProps() {
 export default function CartPage({ collections }: { collections: any[] }) {
   const { cart, removeFromCart, updateQuantity } = useCart()
 
+  // Dynamically inject Bootstrap CSS ONLY on this page
+  useEffect(() => {
+    const link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'
+    link.integrity = 'sha384-ENjdO4Dr2bkBIFxQpeoQZ1Pv4ylpZ9jv3paXtkKtu6ug5TOeNV6gBiFeWPGFN9Muh'
+    link.crossOrigin = 'anonymous'
+    document.head.appendChild(link)
+
+    return () => {
+      document.head.removeChild(link)
+    }
+  }, [])
+
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [pendingRemoveSKU, setPendingRemoveSKU] = useState<string | null>(null)
+
   const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0)
+
+  function handleRemoveClick(sku: string) {
+    setPendingRemoveSKU(sku)
+    setShowConfirm(true)
+  }
+
+  function confirmRemove() {
+    if (pendingRemoveSKU) {
+      removeFromCart(pendingRemoveSKU)
+    }
+    setShowConfirm(false)
+    setPendingRemoveSKU(null)
+  }
+
+  function cancelRemove() {
+    setShowConfirm(false)
+    setPendingRemoveSKU(null)
+  }
 
   return (
     <>
@@ -107,7 +142,7 @@ export default function CartPage({ collections }: { collections: any[] }) {
                   onClick={(e) => {
                     e.stopPropagation()
                     e.preventDefault()
-                    removeFromCart(item.sku)
+                    handleRemoveClick(item.sku)
                   }}
                   className={styles.removeButton}
                   aria-label={`Remove ${item.title} from cart`}
@@ -130,6 +165,45 @@ export default function CartPage({ collections }: { collections: any[] }) {
           <footer className={styles.cartTotal}>
             Total: KWD {total.toFixed(2)}
           </footer>
+
+          {/* Bootstrap Modal for Remove Confirmation */}
+          {showConfirm && (
+            <div
+              className="modal fade show"
+              style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}
+              tabIndex={-1}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="confirmModalLabel"
+            >
+              <div className="modal-dialog" role="document">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title" id="confirmModalLabel">
+                      Confirm Removal
+                    </h5>
+                    <button
+                      type="button"
+                      className="btn-close"
+                      aria-label="Close"
+                      onClick={cancelRemove}
+                    />
+                  </div>
+                  <div className="modal-body">
+                    Are you sure you want to remove this item from your cart?
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={cancelRemove}>
+                      Cancel
+                    </button>
+                    <button type="button" className="btn btn-danger" onClick={confirmRemove}>
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
       )}
     </>
