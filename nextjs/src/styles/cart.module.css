@@ -1,3 +1,97 @@
+/* === Modal Overlay: full screen dimmed background === */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(78, 42, 15, 0.75); /* darker brownish semi-transparent */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+/* === Modal Container === */
+.modal {
+  background-color: #fffdfb; /* matching cart item bg */
+  padding: 2rem 2.5rem;
+  border-radius: 18px;
+  box-shadow: 0 12px 36px rgba(80, 40, 20, 0.15);
+  max-width: 420px;
+  width: 90%;
+  font-family: 'Segoe UI', sans-serif;
+  color: #4e2a0f;
+  text-align: center;
+}
+
+/* === Modal Title === */
+.modal h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-shadow: 0.3px 0.3px #e6dcd2;
+}
+
+/* === Modal Message === */
+.modal p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  color: #5d4037;
+  font-weight: 600;
+}
+
+/* === Buttons Container === */
+.modalButtons {
+  display: flex;
+  justify-content: center;
+  gap: 1.2rem;
+}
+
+/* === Cancel Button === */
+.cancelBtn {
+  background-color: #f5eee5;
+  border: 2px solid #c89b3c;
+  color: #4e2a0f;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border-radius: 10px;
+  padding: 0.6rem 1.8rem;
+  cursor: pointer;
+  min-width: 110px;
+  transition: background-color 0.3s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  user-select: none;
+}
+
+.cancelBtn:hover {
+  background-color: #fff6e4;
+  box-shadow: 0 2px 8px rgba(200, 155, 60, 0.3);
+  transform: scale(1.05);
+}
+
+/* === Confirm (Remove) Button === */
+.confirmBtn {
+  background-color: #c89b3c;
+  border: 2px solid #c89b3c;
+  color: #fffdfb;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border-radius: 10px;
+  padding: 0.6rem 1.8rem;
+  cursor: pointer;
+  min-width: 110px;
+  transition: background-color 0.3s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  user-select: none;
+}
+
+.confirmBtn:hover {
+  background-color: #b5872f;
+  border-color: #b5872f;
+  box-shadow: 0 3px 12px rgba(180, 130, 45, 0.6);
+  transform: translateY(-1px);
+}
+
+
 /* === Cart Page Container === */
 .cartPage {
   max-width: 1200px;
