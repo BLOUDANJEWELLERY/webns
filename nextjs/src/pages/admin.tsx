@@ -1,6 +1,9 @@
 import { useState } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from 'next-sanity'
-import styles from '../styles/HomePage.module.css'
+import imageUrlBuilder from '@sanity/image-url'
+import styles from '../../styles/HomePage.module.css'
 
 // Sanity client for reading only (SSR)
 const client = createClient({
@@ -10,10 +13,15 @@ const client = createClient({
   useCdn: false,
 })
 
+const builder = imageUrlBuilder(client)
+const urlFor = (source: any) => builder.image(source)
+
 type Product = {
   _id: string
   title: string
   price: number
+  slug: string
+  image?: any
 }
 
 export default function AdminPage({ products: initialProducts }: { products: Product[] }) {
@@ -23,14 +31,13 @@ export default function AdminPage({ products: initialProducts }: { products: Pro
 
   const fetchProducts = async () => {
     const data: Product[] = await client.fetch(
-      `*[_type == "product"] | order(title asc){_id, title, price}`
+      `*[_type == "product"] | order(title asc){_id, title, price, "slug": slug.current, defaultImage}`
     )
     setProducts(data)
   }
 
   const addProduct = async () => {
     if (!newTitle || !newPrice) return
-
     try {
       const res = await fetch('/api/products/create', {
         method: 'POST',
@@ -82,22 +89,42 @@ export default function AdminPage({ products: initialProducts }: { products: Pro
         <button onClick={addProduct}>Add Product</button>
       </div>
 
-      <h2>Existing Products</h2>
-      <ul>
-        {products.map((p) => (
-          <li key={p._id} style={{ marginBottom: '1rem' }}>
-            {p.title} - KWD {p.price.toFixed(2)}{' '}
-            <button onClick={() => deleteProduct(p._id)}>Delete</button>
-          </li>
+      <h2>All Products</h2>
+      <div className={styles.grid}>
+        {products.map((product) => (
+          <div key={product._id} className={styles.card}>
+            {product.image?.asset && (
+              <div className={styles.imageWrapper}>
+                <Image
+                  src={urlFor(product.image).width(300).height(300).fit('scale').url()}
+                  alt={product.title}
+                  width={300}
+                  height={300}
+                  className={styles.image}
+                />
+              </div>
+            )}
+            <div className={styles.cardContent}>
+              <h2 className={styles.title}>{product.title}</h2>
+              <p className={styles.price}>KWD {product.price.toFixed(2)}</p>
+              <div style={{ marginTop: '0.5rem' }}>
+                <button
+                  onClick={() => deleteProduct(product._id)}
+                  style={{ background: 'red', color: 'white', padding: '0.5rem' }}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   )
 }
 
-// Server-side fetch
 export async function getServerSideProps() {
-  const productQuery = `*[_type == "product"] | order(title asc){_id, title, price}`
+  const productQuery = `*[_type == "product"] | order(title asc){_id, title, price, "slug": slug.current, defaultImage}`
   const products: Product[] = await client.fetch(productQuery)
   return { props: { products } }
 }
