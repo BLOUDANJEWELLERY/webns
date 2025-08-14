@@ -4,9 +4,10 @@ import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import styles from '../../styles/HomePage.module.css'
 
+// Sanity Client
 const client = createClient({
-  projectId: '3jc8hsku',
-  dataset: 'production',
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
   apiVersion: '2023-07-30',
   useCdn: false,
 })
@@ -19,7 +20,12 @@ type Product = {
   title: string
   price: number
   slug: string
-  defaultImage?: any
+  defaultImage?: {
+    asset?: {
+      _ref: string
+      _type: string
+    }
+  }
 }
 
 export default function AdminPage({ products: initialProducts }: { products: Product[] }) {
@@ -31,28 +37,35 @@ export default function AdminPage({ products: initialProducts }: { products: Pro
   const [editPrice, setEditPrice] = useState('')
   const [editImage, setEditImage] = useState<File | null>(null)
 
+  // Fetch all products
   const fetchProducts = async () => {
-    const data: Product[] = await client.fetch(
-      `*[_type == "product"] | order(title asc){
-        _id,
-        title,
-        price,
-        "slug": slug.current,
-        defaultImage
-      }`
-    )
-    setProducts(data)
+    try {
+      const data: Product[] = await client.fetch(
+        `*[_type == "product"] | order(title asc){
+          _id,
+          title,
+          price,
+          "slug": slug.current,
+          defaultImage
+        }`
+      )
+      setProducts(data)
+    } catch (err) {
+      console.error('Error fetching products:', err)
+      alert('Could not fetch products')
+    }
   }
 
+  // Create new product
   const addProduct = async () => {
-    if (!newTitle || !newPrice) return
+    if (!newTitle.trim() || !newPrice) return alert('Please fill in all fields')
     try {
       const res = await fetch('/api/products/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newTitle, price: Number(newPrice) }),
+        body: JSON.stringify({ title: newTitle.trim(), price: Number(newPrice) }),
       })
-      if (!res.ok) throw new Error('Failed to create product')
+      if (!res.ok) throw new Error(await res.text())
       setNewTitle('')
       setNewPrice('')
       fetchProducts()
@@ -62,14 +75,16 @@ export default function AdminPage({ products: initialProducts }: { products: Pro
     }
   }
 
+  // Delete product
   const deleteProduct = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this product?')) return
     try {
       const res = await fetch('/api/products/delete', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id }),
       })
-      if (!res.ok) throw new Error('Failed to delete product')
+      if (!res.ok) throw new Error(await res.text())
       fetchProducts()
     } catch (err) {
       console.error(err)
@@ -77,6 +92,7 @@ export default function AdminPage({ products: initialProducts }: { products: Pro
     }
   }
 
+  // Start editing
   const startEdit = (product: Product) => {
     setEditingId(product._id)
     setEditTitle(product.title)
@@ -84,25 +100,33 @@ export default function AdminPage({ products: initialProducts }: { products: Pro
     setEditImage(null)
   }
 
+  // Save edits
   const submitEdit = async (id: string) => {
-    let defaultImageData: any = undefined
+    let defaultImageData: any
 
-    // Upload image if selected
     if (editImage) {
-      // Create FormData and POST to Sanity asset API
-      const formData = new FormData()
-      formData.append('file', editImage)
-      formData.append('content-type', editImage.type)
+      try {
+        const formData = new FormData()
+        formData.append('file', editImage)
+        formData.append('content-type', editImage.type)
 
-      const res = await fetch(
-        `https://${process.env.NEXT_PUBLIC_SANITY_PROJECT_ID}.api.sanity.io/v2023-07-30/assets/images/${process.env.NEXT_PUBLIC_SANITY_DATASET}`,
-        {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${process.env.SANITY_API_TOKEN}` },
-          body: formData,
-        }
-      )
-      defaultImageData = await res.json()
+        const res = await fetch(
+          `https://${process.env.NEXT_PUBLIC_SANITY_PROJECT_ID}.api.sanity.io/v2023-07-30/assets/images/${process.env.NEXT_PUBLIC_SANITY_DATASET}`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${process.env.SANITY_API_TOKEN}`,
+            },
+            body: formData,
+          }
+        )
+        if (!res.ok) throw new Error(await res.text())
+        defaultImageData = await res.json()
+      } catch (err) {
+        console.error(err)
+        alert('Error uploading image')
+        return
+      }
     }
 
     try {
@@ -111,12 +135,12 @@ export default function AdminPage({ products: initialProducts }: { products: Pro
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id,
-          title: editTitle,
+          title: editTitle.trim(),
           price: Number(editPrice),
           defaultImage: defaultImageData?.document,
         }),
       })
-      if (!res.ok) throw new Error('Failed to update product')
+      if (!res.ok) throw new Error(await res.text())
       setEditingId(null)
       fetchProducts()
     } catch (err) {
@@ -129,7 +153,8 @@ export default function AdminPage({ products: initialProducts }: { products: Pro
     <div className={styles.mainContainer}>
       <h1 className={styles.heading}>Admin Panel</h1>
 
-      <div style={{ marginBottom: '2rem' }}>
+      {/* Add Product */}
+      <section style={{ marginBottom: '2rem' }}>
         <h2>Add New Product</h2>
         <input
           placeholder="Product Title"
@@ -139,12 +164,14 @@ export default function AdminPage({ products: initialProducts }: { products: Pro
         <input
           placeholder="Price"
           type="number"
+          min="0"
           value={newPrice}
           onChange={(e) => setNewPrice(e.target.value)}
         />
         <button onClick={addProduct}>Add Product</button>
-      </div>
+      </section>
 
+      {/* Product List */}
       <h2>All Products</h2>
       <div className={styles.grid}>
         {products.map((product) => (
@@ -160,6 +187,7 @@ export default function AdminPage({ products: initialProducts }: { products: Pro
                 />
               </div>
             )}
+
             <div className={styles.cardContent}>
               {editingId === product._id ? (
                 <>
@@ -169,6 +197,7 @@ export default function AdminPage({ products: initialProducts }: { products: Pro
                   />
                   <input
                     type="number"
+                    min="0"
                     value={editPrice}
                     onChange={(e) => setEditPrice(e.target.value)}
                   />
@@ -188,7 +217,12 @@ export default function AdminPage({ products: initialProducts }: { products: Pro
                     <button onClick={() => startEdit(product)}>Edit</button>
                     <button
                       onClick={() => deleteProduct(product._id)}
-                      style={{ background: 'red', color: 'white', padding: '0.5rem', marginLeft: '0.5rem' }}
+                      style={{
+                        background: 'red',
+                        color: 'white',
+                        padding: '0.5rem',
+                        marginLeft: '0.5rem',
+                      }}
                     >
                       Delete
                     </button>
