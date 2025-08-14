@@ -1,6 +1,16 @@
+import type { NextApiRequest, NextApiResponse } from 'next'
 import { client } from '../../../lib/sanityClient'
 
-export default async function handler(req, res) {
+type Data = {
+  success?: boolean
+  error?: string
+  doc?: any
+}
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<Data>
+) {
   if (req.method !== 'POST') return res.status(405).end()
 
   const { title, price } = req.body
@@ -13,7 +23,7 @@ export default async function handler(req, res) {
       price: Number(price),
       slug: { current: title.toLowerCase().replace(/\s+/g, '-') }
     })
-    res.status(200).json(doc)
+    res.status(200).json({ success: true, doc })
   } catch (err: any) {
     res.status(500).json({ error: err.message })
   }
