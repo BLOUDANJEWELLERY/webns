@@ -1,6 +1,12 @@
+import type { NextApiRequest, NextApiResponse } from 'next'
 import { client } from '../../../lib/sanityClient'
 
-export default async function handler(req, res) {
+type Data = { success?: boolean; error?: string }
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<Data>
+) {
   if (req.method !== 'DELETE') return res.status(405).end()
 
   const { id } = req.body
