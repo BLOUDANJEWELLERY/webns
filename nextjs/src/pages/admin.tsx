@@ -1,9 +1,8 @@
-// src/pages/admin.tsx
 import { useState } from 'react'
 import { createClient } from 'next-sanity'
-import styles from '../styles/HomePage.module.css'
+import styles from '../../styles/HomePage.module.css'
 
-// === Sanity client ===
+// Sanity client for reading only
 const client = createClient({
   projectId: '3jc8hsku',
   dataset: 'production',
@@ -11,38 +10,41 @@ const client = createClient({
   useCdn: false,
 })
 
-// === Types ===
 type Product = {
   _id: string
   title: string
   price: number
-  slug: { current: string }
 }
 
-// === Admin Page Component ===
 export default function AdminPage({ products: initialProducts }: { products: Product[] }) {
   const [products, setProducts] = useState(initialProducts)
   const [newTitle, setNewTitle] = useState('')
   const [newPrice, setNewPrice] = useState('')
 
-  // Create product
-  const addProduct = async () => {
-    if (!newTitle || !newPrice) return
-    const doc = await client.create({
-      _type: 'product',
-      title: newTitle,
-      price: Number(newPrice),
-      slug: { current: newTitle.toLowerCase().replace(/\s+/g, '-') }
-    })
-    setProducts([...products, doc])
-    setNewTitle('')
-    setNewPrice('')
+  const fetchProducts = async () => {
+    const data = await client.fetch(`*[_type == "product"] | order(title asc){_id, title, price}`)
+    setProducts(data)
   }
 
-  // Delete product
+  const addProduct = async () => {
+    if (!newTitle || !newPrice) return
+    await fetch('/api/products/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: newTitle, price: Number(newPrice) }),
+    })
+    setNewTitle('')
+    setNewPrice('')
+    fetchProducts()
+  }
+
   const deleteProduct = async (id: string) => {
-    await client.delete(id)
-    setProducts(products.filter(p => p._id !== id))
+    await fetch('/api/products/delete', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
+    fetchProducts()
   }
 
   return (
@@ -78,14 +80,8 @@ export default function AdminPage({ products: initialProducts }: { products: Pro
   )
 }
 
-// === Server-Side Data Fetching ===
 export async function getServerSideProps() {
-  const productQuery = `*[_type == "product"] | order(title asc){
-    _id,
-    title,
-    price,
-    slug
-  }`
+  const productQuery = `*[_type == "product"] | order(title asc){_id, title, price}`
   const products = await client.fetch(productQuery)
   return { props: { products } }
 }
