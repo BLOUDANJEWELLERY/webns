@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { createClient } from 'next-sanity'
-import styles from '../../styles/HomePage.module.css'
+import styles from '../styles/HomePage.module.css'
 
-// Sanity client for reading only
+// Sanity client for reading only (SSR)
 const client = createClient({
   projectId: '3jc8hsku',
   dataset: 'production',
@@ -17,34 +17,49 @@ type Product = {
 }
 
 export default function AdminPage({ products: initialProducts }: { products: Product[] }) {
-  const [products, setProducts] = useState(initialProducts)
+  const [products, setProducts] = useState<Product[]>(initialProducts)
   const [newTitle, setNewTitle] = useState('')
   const [newPrice, setNewPrice] = useState('')
 
   const fetchProducts = async () => {
-    const data = await client.fetch(`*[_type == "product"] | order(title asc){_id, title, price}`)
+    const data: Product[] = await client.fetch(
+      `*[_type == "product"] | order(title asc){_id, title, price}`
+    )
     setProducts(data)
   }
 
   const addProduct = async () => {
     if (!newTitle || !newPrice) return
-    await fetch('/api/products/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: newTitle, price: Number(newPrice) }),
-    })
-    setNewTitle('')
-    setNewPrice('')
-    fetchProducts()
+
+    try {
+      const res = await fetch('/api/products/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: newTitle, price: Number(newPrice) }),
+      })
+      if (!res.ok) throw new Error('Failed to create product')
+      setNewTitle('')
+      setNewPrice('')
+      fetchProducts()
+    } catch (err) {
+      console.error(err)
+      alert('Error creating product')
+    }
   }
 
   const deleteProduct = async (id: string) => {
-    await fetch('/api/products/delete', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
-    })
-    fetchProducts()
+    try {
+      const res = await fetch('/api/products/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      })
+      if (!res.ok) throw new Error('Failed to delete product')
+      fetchProducts()
+    } catch (err) {
+      console.error(err)
+      alert('Error deleting product')
+    }
   }
 
   return (
@@ -69,7 +84,7 @@ export default function AdminPage({ products: initialProducts }: { products: Pro
 
       <h2>Existing Products</h2>
       <ul>
-        {products.map(p => (
+        {products.map((p) => (
           <li key={p._id} style={{ marginBottom: '1rem' }}>
             {p.title} - KWD {p.price.toFixed(2)}{' '}
             <button onClick={() => deleteProduct(p._id)}>Delete</button>
@@ -80,8 +95,9 @@ export default function AdminPage({ products: initialProducts }: { products: Pro
   )
 }
 
+// Server-side fetch
 export async function getServerSideProps() {
   const productQuery = `*[_type == "product"] | order(title asc){_id, title, price}`
-  const products = await client.fetch(productQuery)
+  const products: Product[] = await client.fetch(productQuery)
   return { props: { products } }
 }
