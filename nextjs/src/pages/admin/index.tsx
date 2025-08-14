@@ -1,11 +1,9 @@
 import { useState } from 'react'
-import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import styles from '../../styles/HomePage.module.css'
 
-// Sanity client for reading only
 const client = createClient({
   projectId: '3jc8hsku',
   dataset: 'production',
@@ -28,6 +26,10 @@ export default function AdminPage({ products: initialProducts }: { products: Pro
   const [products, setProducts] = useState<Product[]>(initialProducts)
   const [newTitle, setNewTitle] = useState('')
   const [newPrice, setNewPrice] = useState('')
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editTitle, setEditTitle] = useState('')
+  const [editPrice, setEditPrice] = useState('')
+  const [editImage, setEditImage] = useState<File | null>(null)
 
   const fetchProducts = async () => {
     const data: Product[] = await client.fetch(
@@ -75,6 +77,54 @@ export default function AdminPage({ products: initialProducts }: { products: Pro
     }
   }
 
+  const startEdit = (product: Product) => {
+    setEditingId(product._id)
+    setEditTitle(product.title)
+    setEditPrice(product.price.toString())
+    setEditImage(null)
+  }
+
+  const submitEdit = async (id: string) => {
+    let defaultImageData: any = undefined
+
+    // Upload image if selected
+    if (editImage) {
+      // Create FormData and POST to Sanity asset API
+      const formData = new FormData()
+      formData.append('file', editImage)
+      formData.append('content-type', editImage.type)
+
+      const res = await fetch(
+        `https://${process.env.NEXT_PUBLIC_SANITY_PROJECT_ID}.api.sanity.io/v2023-07-30/assets/images/${process.env.NEXT_PUBLIC_SANITY_DATASET}`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${process.env.SANITY_API_TOKEN}` },
+          body: formData,
+        }
+      )
+      defaultImageData = await res.json()
+    }
+
+    try {
+      const res = await fetch('/api/products/update', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id,
+          title: editTitle,
+          price: Number(editPrice),
+          defaultImage: defaultImageData?.document,
+        }),
+      })
+      if (!res.ok) throw new Error('Failed to update product')
+      setEditingId(null)
+      fetchProducts()
+    } catch (err) {
+      console.error(err)
+      alert('Error updating product')
+    }
+  }
+
   return (
     <div className={styles.mainContainer}>
       <h1 className={styles.heading}>Admin Panel</h1>
@@ -111,16 +161,40 @@ export default function AdminPage({ products: initialProducts }: { products: Pro
               </div>
             )}
             <div className={styles.cardContent}>
-              <h2 className={styles.title}>{product.title}</h2>
-              <p className={styles.price}>KWD {product.price.toFixed(2)}</p>
-              <div style={{ marginTop: '0.5rem' }}>
-                <button
-                  onClick={() => deleteProduct(product._id)}
-                  style={{ background: 'red', color: 'white', padding: '0.5rem' }}
-                >
-                  Delete
-                </button>
-              </div>
+              {editingId === product._id ? (
+                <>
+                  <input
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                  />
+                  <input
+                    type="number"
+                    value={editPrice}
+                    onChange={(e) => setEditPrice(e.target.value)}
+                  />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setEditImage(e.target.files?.[0] || null)}
+                  />
+                  <button onClick={() => submitEdit(product._id)}>Save</button>
+                  <button onClick={() => setEditingId(null)}>Cancel</button>
+                </>
+              ) : (
+                <>
+                  <h2 className={styles.title}>{product.title}</h2>
+                  <p className={styles.price}>KWD {product.price.toFixed(2)}</p>
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <button onClick={() => startEdit(product)}>Edit</button>
+                    <button
+                      onClick={() => deleteProduct(product._id)}
+                      style={{ background: 'red', color: 'white', padding: '0.5rem', marginLeft: '0.5rem' }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         ))}
