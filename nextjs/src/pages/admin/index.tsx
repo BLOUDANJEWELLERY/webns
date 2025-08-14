@@ -5,7 +5,7 @@ import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import styles from '../../styles/HomePage.module.css'
 
-// Sanity client for reading only (SSR)
+// Sanity client for reading only
 const client = createClient({
   projectId: '3jc8hsku',
   dataset: 'production',
@@ -21,7 +21,7 @@ type Product = {
   title: string
   price: number
   slug: string
-  image?: any
+  defaultImage?: any
 }
 
 export default function AdminPage({ products: initialProducts }: { products: Product[] }) {
@@ -31,7 +31,13 @@ export default function AdminPage({ products: initialProducts }: { products: Pro
 
   const fetchProducts = async () => {
     const data: Product[] = await client.fetch(
-      `*[_type == "product"] | order(title asc){_id, title, price, "slug": slug.current, defaultImage}`
+      `*[_type == "product"] | order(title asc){
+        _id,
+        title,
+        price,
+        "slug": slug.current,
+        defaultImage
+      }`
     )
     setProducts(data)
   }
@@ -93,10 +99,10 @@ export default function AdminPage({ products: initialProducts }: { products: Pro
       <div className={styles.grid}>
         {products.map((product) => (
           <div key={product._id} className={styles.card}>
-            {product.image?.asset && (
+            {product.defaultImage?.asset && (
               <div className={styles.imageWrapper}>
                 <Image
-                  src={urlFor(product.image).width(300).height(300).fit('scale').url()}
+                  src={urlFor(product.defaultImage).width(300).height(300).fit('scale').url()}
                   alt={product.title}
                   width={300}
                   height={300}
@@ -124,7 +130,13 @@ export default function AdminPage({ products: initialProducts }: { products: Pro
 }
 
 export async function getServerSideProps() {
-  const productQuery = `*[_type == "product"] | order(title asc){_id, title, price, "slug": slug.current, defaultImage}`
+  const productQuery = `*[_type == "product"] | order(title asc){
+    _id,
+    title,
+    price,
+    "slug": slug.current,
+    defaultImage
+  }`
   const products: Product[] = await client.fetch(productQuery)
   return { props: { products } }
 }
