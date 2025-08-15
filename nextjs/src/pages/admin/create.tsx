@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import styles from '../../styles/adminCreate.module.css'
+import styles from '../../styles/admincreate.module.css'
 
 export default function CreateProduct() {
   const [title, setTitle] = useState('')
