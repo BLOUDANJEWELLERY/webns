@@ -1,7 +1,7 @@
 // pages/admin/edit/[id].tsx
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import styles from '../../styles/adminCreate.module.css'
+import styles from '../../styles/adminEdit.module.css'
 import { client } from '../../lib/sanityClient'
 import imageUrlBuilder from '@sanity/image-url'
 
