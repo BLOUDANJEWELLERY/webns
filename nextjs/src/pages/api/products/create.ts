@@ -13,7 +13,7 @@ export default async function handler(
 ) {
   if (req.method !== 'POST') return res.status(405).end()
 
-  const { title, price } = req.body
+  const { title, price, defaultImage } = req.body
   if (!title || !price) return res.status(400).json({ error: 'Missing title or price' })
 
   try {
@@ -21,7 +21,8 @@ export default async function handler(
       _type: 'product',
       title,
       price: Number(price),
-      slug: { current: title.toLowerCase().replace(/\s+/g, '-') }
+      slug: { current: title.toLowerCase().replace(/\s+/g, '-') },
+      defaultImage: defaultImage || undefined, // make sure it's optional
     })
     res.status(200).json({ success: true, doc })
   } catch (err: any) {
