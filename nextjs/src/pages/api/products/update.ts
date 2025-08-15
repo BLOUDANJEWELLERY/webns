@@ -5,7 +5,7 @@ import fs from 'fs'
 import { client } from '../../../lib/sanityClient'
 
 export const config = {
-  api: { bodyParser: false }, // Required for formidable
+  api: { bodyParser: false },
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -17,12 +17,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (err) return res.status(500).json({ error: 'Error parsing form data' })
 
     try {
-      const id = fields.id as string
+      // Ensure id is a string
+      const idField = fields.id
+      const id = Array.isArray(idField) ? idField[0] : idField
       if (!id) return res.status(400).json({ error: 'Missing product ID' })
 
       const patchData: Record<string, any> = {
         title: fields.title,
         price: Number(fields.price),
+        slug: { _type: 'slug', current: fields.slug },
       }
 
       // Default image
@@ -50,7 +53,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             })
             colorData.image = { _type: 'image', asset: { _type: 'reference', _ref: imageAsset._id } }
           } else if (parsedColors[i].existingImage) {
-            // Keep existing image if no new file uploaded
             colorData.image = parsedColors[i].existingImage
           }
 
@@ -63,7 +65,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Variants
       if (fields.variants) {
         const variants = JSON.parse(fields.variants as string)
-        // Ensure numeric fields
         patchData.variants = variants.map((v: any) => ({
           color: v.color,
           size: v.size,
