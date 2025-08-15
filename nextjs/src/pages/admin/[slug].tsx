@@ -1,5 +1,5 @@
 // src/pages/admin/[slug].tsx
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
@@ -20,7 +20,19 @@ export default function EditProduct({ product }: any) {
   const [title, setTitle] = useState(product.title)
   const [price, setPrice] = useState(product.price)
   const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  // Generate preview for new image
+  useEffect(() => {
+    if (!imageFile) {
+      setImagePreview(null)
+      return
+    }
+    const previewUrl = URL.createObjectURL(imageFile)
+    setImagePreview(previewUrl)
+    return () => URL.revokeObjectURL(previewUrl)
+  }, [imageFile])
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,13 +40,12 @@ export default function EditProduct({ product }: any) {
 
     try {
       let imageAssetId = null
-
       if (imageFile) {
         const formData = new FormData()
         formData.append('file', imageFile)
         formData.append('type', 'image')
 
-        const uploadRes = await fetch('../api/products/uploadImage', {
+        const uploadRes = await fetch('/api/products/uploadImage', {
           method: 'POST',
           body: formData,
         })
@@ -44,7 +55,7 @@ export default function EditProduct({ product }: any) {
         imageAssetId = uploadData.assetId
       }
 
-      const res = await fetch('../api/products/update', {
+      const res = await fetch('/api/products/update', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -70,7 +81,6 @@ export default function EditProduct({ product }: any) {
 
   const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this product?')) return
-
     setLoading(true)
     try {
       const res = await fetch('/api/products/delete', {
@@ -78,10 +88,8 @@ export default function EditProduct({ product }: any) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: product._id }),
       })
-
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-
       router.push('/admin')
     } catch (err: any) {
       alert(err.message)
@@ -92,43 +100,66 @@ export default function EditProduct({ product }: any) {
 
   return (
     <div className={styles.mainContainer}>
-      <h1>Edit Product</h1>
-      <form onSubmit={handleUpdate} style={{ maxWidth: 400 }}>
-        <label>Title</label>
-        <input value={title} onChange={(e) => setTitle(e.target.value)} required />
+      <h1 className={styles.heading}>Edit Product</h1>
+      <form onSubmit={handleUpdate} className={styles.form}>
+        <label className={styles.label}>Title</label>
+        <input
+          type="text"
+          className={styles.input}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+        />
 
-        <label>Price</label>
+        <label className={styles.label}>Price</label>
         <input
           type="number"
           step="0.01"
+          className={styles.input}
           value={price}
           onChange={(e) => setPrice(Number(e.target.value))}
           required
         />
 
-        {product.defaultImage?.asset && !imageFile && (
-          <img
-            src={urlFor(product.defaultImage).width(200).url()}
-            alt={product.title}
-            style={{ display: 'block', margin: '1rem 0' }}
-          />
+        {/* Current product image if no new image */}
+        {product.defaultImage?.asset && !imagePreview && (
+          <div className={styles.previewWrapper}>
+            <img
+              src={urlFor(product.defaultImage).width(200).url()}
+              alt={product.title}
+              className={styles.previewImage}
+            />
+          </div>
         )}
 
-        <label>New Image (optional)</label>
-        <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
+        {/* New image preview */}
+        {imagePreview && (
+          <div className={styles.previewWrapper}>
+            <img src={imagePreview} alt="Preview" className={styles.previewImage} />
+          </div>
+        )}
 
-        <button type="submit" disabled={loading}>
-          {loading ? 'Updating...' : 'Save Changes'}
-        </button>
+        <label className={styles.label}>New Image (optional)</label>
+        <input
+          type="file"
+          accept="image/*"
+          className={styles.inputFile}
+          onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+        />
 
-        <button
-          type="button"
-          onClick={handleDelete}
-          disabled={loading}
-          style={{ marginLeft: '1rem', background: 'red', color: 'white' }}
-        >
-          Delete
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+          <button type="submit" disabled={loading} className={styles.button}>
+            {loading ? 'Updating...' : 'Save Changes'}
+          </button>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={loading}
+            className={styles.deleteButton}
+          >
+            Delete
+          </button>
+        </div>
       </form>
     </div>
   )
