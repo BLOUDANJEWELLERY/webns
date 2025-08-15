@@ -16,10 +16,11 @@ export default function CreateProduct() {
       setImagePreview(null)
       return
     }
+
     const previewUrl = URL.createObjectURL(imageFile)
     setImagePreview(previewUrl)
 
-    // Cleanup when component unmounts or file changes
+    // Cleanup on unmount or file change
     return () => URL.revokeObjectURL(previewUrl)
   }, [imageFile])
 
@@ -68,6 +69,11 @@ export default function CreateProduct() {
     }
   }
 
+  const handleRemoveImage = () => {
+    setImageFile(null)
+    setImagePreview(null)
+  }
+
   return (
     <div className={styles.mainContainer}>
       <h1 className={styles.heading}>Create Product</h1>
@@ -100,17 +106,19 @@ export default function CreateProduct() {
         />
 
         {imagePreview && (
-          <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
+          <div className={styles.previewWrapper}>
             <img
               src={imagePreview}
               alt="Preview"
-              style={{
-                maxWidth: '100%',
-                maxHeight: '300px',
-                borderRadius: '8px',
-                boxShadow: '0 4px 12px rgba(123, 63, 0, 0.15)',
-              }}
+              className={styles.previewImage}
             />
+            <button
+              type="button"
+              className={styles.removeButton}
+              onClick={handleRemoveImage}
+            >
+              Remove Image
+            </button>
           </div>
         )}
 
