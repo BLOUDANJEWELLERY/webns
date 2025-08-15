@@ -20,14 +20,12 @@ type Product = {
   title: string
   price: number
   slug: string
-  defaultImage?: {
-    asset?: { _ref: string; _type: string }
-  }
+  defaultImage?: any
 }
 
 export default function AdminPage({ products }: { products: Product[] }) {
   return (
-<div className={styles.mainContainer}>
+    <div className={styles.mainContainer}>
       <h1 className={styles.heading}>Admin Panel</h1>
 
       <div className={styles.createWrapper}>
@@ -38,9 +36,7 @@ export default function AdminPage({ products }: { products: Product[] }) {
 
       <h2 className={styles.subHeading}>All Products</h2>
 
-      {loading ? (
-        <p className={styles.message}>Loading products...</p>
-      ) : products.length === 0 ? (
+      {products.length === 0 ? (
         <p className={styles.message}>No products found.</p>
       ) : (
         <div className={styles.grid}>
@@ -50,7 +46,7 @@ export default function AdminPage({ products }: { products: Product[] }) {
               href={`/admin/${product.slug}`}
               className={styles.card}
             >
-              {product.defaultImage?.asset?.url && (
+              {product.defaultImage?.asset && (
                 <div className={styles.imageWrapper}>
                   <Image
                     src={urlFor(product.defaultImage)
