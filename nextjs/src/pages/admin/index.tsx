@@ -30,46 +30,50 @@ export default function AdminPage({ products }: { products: Product[] }) {
 <div className={styles.mainContainer}>
       <h1 className={styles.heading}>Admin Panel</h1>
 
-      <div style={{ marginBottom: '2rem' }}>
+      <div className={styles.createWrapper}>
         <Link href="/admin/create">
-          <button style={{ padding: '0.75rem 1.5rem', fontSize: '1rem' }}>
-            Create Product
-          </button>
+          <button className={styles.actionButton}>Create Product</button>
         </Link>
       </div>
 
-      <h2>All Products</h2>
-      <div className={styles.grid}>
-        {products.map((product) => (
-          <Link
-            key={product._id}
-            href={`/admin/${product.slug}`}
-            className={styles.card}
-          >
-            {product.defaultImage?.asset && (
-              <div className={styles.imageWrapper}>
-                <Image
-                  src={urlFor(product.defaultImage)
-                    .width(300)
-                    .height(300)
-                    .fit('scale')
-                    .url()}
-                  alt={product.title}
-                  width={300}
-                  height={300}
-                  className={styles.image}
-                />
+      <h2 className={styles.subHeading}>All Products</h2>
+
+      {loading ? (
+        <p className={styles.message}>Loading products...</p>
+      ) : products.length === 0 ? (
+        <p className={styles.message}>No products found.</p>
+      ) : (
+        <div className={styles.grid}>
+          {products.map((product) => (
+            <Link
+              key={product._id}
+              href={`/admin/${product.slug}`}
+              className={styles.card}
+            >
+              {product.defaultImage?.asset?.url && (
+                <div className={styles.imageWrapper}>
+                  <Image
+                    src={urlFor(product.defaultImage)
+                      .width(300)
+                      .height(300)
+                      .fit('scale')
+                      .url()}
+                    alt={product.title}
+                    width={300}
+                    height={300}
+                    className={styles.image}
+                  />
+                </div>
+              )}
+
+              <div className={styles.cardContent}>
+                <h2 className={styles.title}>{product.title}</h2>
+                <p className={styles.price}>KWD {product.price.toFixed(2)}</p>
               </div>
-            )}
-            <div className={styles.cardContent}>
-              <h2 className={styles.title}>{product.title}</h2>
-              <p className={styles.price}>
-                KWD {product.price.toFixed(2)}
-              </p>
-            </div>
-          </Link>
-        ))}
-      </div>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
