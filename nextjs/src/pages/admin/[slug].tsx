@@ -73,7 +73,7 @@ export default function EditProduct({ product }: any) {
 
     setLoading(true)
     try {
-      const res = await fetch('/api/sanity/delete', {
+      const res = await fetch('/api/products/delete', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: product._id }),
