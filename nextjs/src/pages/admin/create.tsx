@@ -1,14 +1,27 @@
-// src/pages/admin/create.tsx
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import styles from '../../styles/admincreate.module.css'
+import styles from '../../styles/adminCreate.module.css'
 
 export default function CreateProduct() {
   const [title, setTitle] = useState('')
   const [price, setPrice] = useState('')
   const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+
+  // Generate image preview when a new file is selected
+  useEffect(() => {
+    if (!imageFile) {
+      setImagePreview(null)
+      return
+    }
+    const previewUrl = URL.createObjectURL(imageFile)
+    setImagePreview(previewUrl)
+
+    // Cleanup when component unmounts or file changes
+    return () => URL.revokeObjectURL(previewUrl)
+  }, [imageFile])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -57,39 +70,54 @@ export default function CreateProduct() {
 
   return (
     <div className={styles.mainContainer}>
-  <h1 className={styles.heading}>Create Product</h1>
-  <form onSubmit={handleSubmit} className={styles.form}>
-    <label className={styles.label}>Title</label>
-    <input
-      type="text"
-      className={styles.input}
-      value={title}
-      onChange={(e) => setTitle(e.target.value)}
-      required
-    />
+      <h1 className={styles.heading}>Create Product</h1>
+      <form onSubmit={handleSubmit} className={styles.form}>
+        <label className={styles.label}>Title</label>
+        <input
+          type="text"
+          className={styles.input}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+        />
 
-    <label className={styles.label}>Price</label>
-    <input
-      type="number"
-      step="0.01"
-      className={styles.input}
-      value={price}
-      onChange={(e) => setPrice(e.target.value)}
-      required
-    />
+        <label className={styles.label}>Price</label>
+        <input
+          type="number"
+          step="0.01"
+          className={styles.input}
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          required
+        />
 
-    <label className={styles.label}>Image</label>
-    <input
-      type="file"
-      accept="image/*"
-      className={styles.inputFile}
-      onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-    />
+        <label className={styles.label}>Image</label>
+        <input
+          type="file"
+          accept="image/*"
+          className={styles.inputFile}
+          onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+        />
 
-    <button type="submit" disabled={loading} className={styles.button}>
-      {loading ? 'Saving...' : 'Create'}
-    </button>
-  </form>
-</div>
+        {imagePreview && (
+          <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
+            <img
+              src={imagePreview}
+              alt="Preview"
+              style={{
+                maxWidth: '100%',
+                maxHeight: '300px',
+                borderRadius: '8px',
+                boxShadow: '0 4px 12px rgba(123, 63, 0, 0.15)',
+              }}
+            />
+          </div>
+        )}
+
+        <button type="submit" disabled={loading} className={styles.button}>
+          {loading ? 'Saving...' : 'Create'}
+        </button>
+      </form>
+    </div>
   )
 }
