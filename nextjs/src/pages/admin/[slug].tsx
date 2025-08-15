@@ -1,197 +1,166 @@
-// src/pages/admin/[slug].tsx
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/router'
-import { createClient } from 'next-sanity'
-import imageUrlBuilder from '@sanity/image-url'
-import styles from '../../styles/adminEdit.module.css'
+import styles from '../../../styles/adminEdit.module.css'
 
-const client = createClient({
-  projectId: '3jc8hsku',
-  dataset: 'production',
-  apiVersion: '2023-07-30',
-  useCdn: false,
-})
-
-const builder = imageUrlBuilder(client)
-const urlFor = (source: any) => builder.image(source)
-
-export default function EditProduct({ product }: any) {
+export default function EditProduct({ product }: { product: any }) {
   const router = useRouter()
-  const [title, setTitle] = useState(product.title)
-  const [price, setPrice] = useState(product.price)
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [currentImageRemoved, setCurrentImageRemoved] = useState(false)
-  const [loading, setLoading] = useState(false)
+  
+  // Local state for all product fields
+  const [title, setTitle] = useState(product.title || '')
+  const [description, setDescription] = useState(product.description || '')
+  const [price, setPrice] = useState(product.price || 0)
+  const [slug, setSlug] = useState(product.slug?.current || '')
+  
+  // Default image
+  const [defaultImage, setDefaultImage] = useState<any>(product.defaultImage || null)
+  const [defaultImageFile, setDefaultImageFile] = useState<File | null>(null)
 
-  // Generate preview for new image
-  useEffect(() => {
-    if (!imageFile) {
-      setImagePreview(null)
-      return
-    }
-    const previewUrl = URL.createObjectURL(imageFile)
-    setImagePreview(previewUrl)
-    return () => URL.revokeObjectURL(previewUrl)
-  }, [imageFile])
+  // Color images
+  const [colorImages, setColorImages] = useState<any[]>(product.colorImages || [])
 
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+  // Variants
+  const [variants, setVariants] = useState<any[]>(product.variants || [])
 
-    try {
-      let imageAssetId = null
-      if (imageFile) {
-        const formData = new FormData()
-        formData.append('file', imageFile)
-        formData.append('type', 'image')
-
-        const uploadRes = await fetch('/api/products/uploadImage', {
-          method: 'POST',
-          body: formData,
-        })
-
-        const uploadData = await uploadRes.json()
-        if (!uploadRes.ok) throw new Error(uploadData.error)
-        imageAssetId = uploadData.assetId
-      }
-
-      const res = await fetch('/api/products/update', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: product._id,
-          title,
-          price: Number(price),
-          defaultImage:
-            imageAssetId
-              ? { _type: 'image', asset: { _type: 'reference', _ref: imageAssetId } }
-              : currentImageRemoved
-              ? null
-              : product.defaultImage,
-        }),
-      })
-
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
-
-      router.push('/admin')
-    } catch (err: any) {
-      alert(err.message)
-    } finally {
-      setLoading(false)
+  const handleDefaultImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      setDefaultImageFile(e.target.files[0])
+      setDefaultImage(URL.createObjectURL(e.target.files[0]))
     }
   }
 
-  const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this product?')) return
-    setLoading(true)
-    try {
-      const res = await fetch('/api/products/delete', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: product._id }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
-      router.push('/admin')
-    } catch (err: any) {
-      alert(err.message)
-    } finally {
-      setLoading(false)
-    }
+  const handleColorImageChange = (index: number, file: File) => {
+    const updated = [...colorImages]
+    updated[index].imageFile = file
+    updated[index].image = URL.createObjectURL(file)
+    setColorImages(updated)
   }
 
-  const handleRemoveImage = () => {
-    setImageFile(null)
-    setImagePreview(null)
-    setCurrentImageRemoved(true)
+  const addColorImage = () => {
+    setColorImages([...colorImages, { color: '', image: null, imageFile: null }])
+  }
+
+  const removeColorImage = (index: number) => {
+    setColorImages(colorImages.filter((_, i) => i !== index))
+  }
+
+  const handleVariantChange = (index: number, field: string, value: any) => {
+    const updated = [...variants]
+    updated[index][field] = value
+    setVariants(updated)
+  }
+
+  const addVariant = () => {
+    setVariants([...variants, { color: '', size: '', quantity: 0, priceOverride: null }])
+  }
+
+  const removeVariant = (index: number) => {
+    setVariants(variants.filter((_, i) => i !== index))
+  }
+
+  const handleSave = async () => {
+    const formData = new FormData()
+    formData.append('id', product._id)
+    formData.append('title', title)
+    formData.append('description', description)
+    formData.append('price', price.toString())
+    formData.append('slug', slug)
+
+    if (defaultImageFile) formData.append('defaultImage', defaultImageFile)
+
+    formData.append('colorImages', JSON.stringify(
+      colorImages.map(({ color }) => ({ color }))
+    ))
+
+    colorImages.forEach((ci, idx) => {
+      if (ci.imageFile) formData.append(`colorImageFile_${idx}`, ci.imageFile)
+    })
+
+    formData.append('variants', JSON.stringify(variants))
+
+    const res = await fetch('/api/products/update', {
+      method: 'POST',
+      body: formData
+    })
+
+    if (res.ok) {
+      alert('Product updated successfully!')
+      router.push('/admin/products')
+    } else {
+      alert('Error updating product')
+    }
   }
 
   return (
-    <div className={styles.mainContainer}>
-      <h1 className={styles.heading}>Edit Product</h1>
-      <form onSubmit={handleUpdate} className={styles.form}>
-        <label className={styles.label}>Title</label>
-        <input
-          type="text"
-          className={styles.input}
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
+    <div className={styles.container}>
+      <h1>Edit Product</h1>
 
-        <label className={styles.label}>Price</label>
-        <input
-          type="number"
-          step="0.01"
-          className={styles.input}
-          value={price}
-          onChange={(e) => setPrice(Number(e.target.value))}
-          required
-        />
+      <label>Title</label>
+      <input value={title} onChange={e => setTitle(e.target.value)} />
 
-        {/* Current image */}
-        {product.defaultImage?.asset && !imagePreview && !currentImageRemoved && (
-          <div className={styles.previewWrapper}>
-            <img
-              src={urlFor(product.defaultImage).width(200).url()}
-              alt={product.title}
-              className={styles.previewImage}
-            />
-          </div>
-        )}
+      <label>Description</label>
+      <textarea value={description} onChange={e => setDescription(e.target.value)} />
 
-        {/* New image preview */}
-        {imagePreview && (
-          <div className={styles.previewWrapper}>
-            <img src={imagePreview} alt="Preview" className={styles.previewImage} />
-          </div>
-        )}
+      <label>Base Price</label>
+      <input type="number" value={price} onChange={e => setPrice(Number(e.target.value))} />
 
-        {(imagePreview || (!imagePreview && product.defaultImage && !currentImageRemoved)) && (
-          <button
-            type="button"
-            onClick={handleRemoveImage}
-            className={styles.removeButton}
-          >
-            Remove Image
-          </button>
-        )}
+      <label>Slug</label>
+      <input value={slug} onChange={e => setSlug(e.target.value)} />
 
-        <label className={styles.label}>New Image (optional)</label>
-        <input
-          type="file"
-          accept="image/*"
-          className={styles.inputFile}
-          onChange={(e) => {
-            setImageFile(e.target.files?.[0] || null)
-            setCurrentImageRemoved(false)
-          }}
-        />
+      <label>Default Image</label>
+      {defaultImage && <img src={defaultImage.asset?.url || defaultImage} className={styles.preview} />}
+      <input type="file" accept="image/*" onChange={handleDefaultImageChange} />
 
-        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-          <button type="submit" disabled={loading} className={styles.button}>
-            {loading ? 'Updating...' : 'Save Changes'}
-          </button>
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={loading}
-            className={styles.deleteButton}
-          >
-            Delete
-          </button>
+      <h3>Color Images</h3>
+      {colorImages.map((ci, index) => (
+        <div key={index} className={styles.colorImageRow}>
+          <input
+            placeholder="Color"
+            value={ci.color}
+            onChange={e => {
+              const updated = [...colorImages]
+              updated[index].color = e.target.value
+              setColorImages(updated)
+            }}
+          />
+          {ci.image && <img src={ci.image.asset?.url || ci.image} className={styles.previewSmall} />}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => e.target.files && handleColorImageChange(index, e.target.files[0])}
+          />
+          <button type="button" onClick={() => removeColorImage(index)}>Remove</button>
         </div>
-      </form>
+      ))}
+      <button type="button" onClick={addColorImage}>+ Add Color Image</button>
+
+      <h3>Variants</h3>
+      {variants.map((v, index) => (
+        <div key={index} className={styles.variantRow}>
+          <input placeholder="Color" value={v.color} onChange={e => handleVariantChange(index, 'color', e.target.value)} />
+          <input placeholder="Size" value={v.size} onChange={e => handleVariantChange(index, 'size', e.target.value)} />
+          <input type="number" placeholder="Quantity" value={v.quantity} onChange={e => handleVariantChange(index, 'quantity', Number(e.target.value))} />
+          <input type="number" placeholder="Price Override" value={v.priceOverride || ''} onChange={e => handleVariantChange(index, 'priceOverride', Number(e.target.value) || null)} />
+          <button type="button" onClick={() => removeVariant(index)}>Remove</button>
+        </div>
+      ))}
+      <button type="button" onClick={addVariant}>+ Add Variant</button>
+
+      <br />
+      <button onClick={handleSave} className={styles.saveBtn}>Save Changes</button>
     </div>
   )
 }
 
 export async function getServerSideProps({ params }: any) {
-  const query = `*[_type == "product" && slug.current == $slug][0]`
-  const product = await client.fetch(query, { slug: params.slug })
+  const { id } = params
+  const query = encodeURIComponent(`*[_type == "product" && _id == "${id}"][0]`)
+  const url = `https://${process.env.NEXT_PUBLIC_SANITY_PROJECT_ID}.api.sanity.io/v2023-01-01/data/query/production?query=${query}`
+  const res = await fetch(url)
+  const { result } = await res.json()
 
-  if (!product) return { notFound: true }
-  return { props: { product } }
+  return {
+    props: {
+      product: result || {}
+    }
+  }
 }
