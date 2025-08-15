@@ -1,64 +1,69 @@
-import { useState, useEffect } from 'react'
+// src/pages/admin/create.tsx
+import { useState } from 'react'
 import { useRouter } from 'next/router'
 import styles from '../../styles/admincreate.module.css'
 
-type Variant = {
+type SizeOption = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL'
+
+interface Variant {
   color: string
-  imageFile: File | null
-  imagePreview: string | null
-  sizes: { size: string; quantity: number }[]
+  size: SizeOption
+  quantity: number
+  priceOverride?: number
 }
 
-const availableSizes = ['S', 'M', 'L', 'XL', 'XXL']
+interface ColorImage {
+  color: string
+  file: File | null
+  preview?: string
+}
 
 export default function CreateProduct() {
+  const router = useRouter()
   const [title, setTitle] = useState('')
   const [price, setPrice] = useState('')
-  const [variants, setVariants] = useState<Variant[]>([])
+  const [defaultImage, setDefaultImage] = useState<File | null>(null)
+  const [defaultPreview, setDefaultPreview] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
 
-  const handleAddColor = () => {
-    setVariants([
-      ...variants,
-      { color: '', imageFile: null, imagePreview: null, sizes: [] },
-    ])
+  const [colorImages, setColorImages] = useState<ColorImage[]>([])
+  const [variants, setVariants] = useState<Variant[]>([])
+
+  // Default image preview
+  const handleDefaultImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null
+    setDefaultImage(file)
+    if (file) setDefaultPreview(URL.createObjectURL(file))
+    else setDefaultPreview(null)
   }
 
-  const handleRemoveColor = (index: number) => {
-    const newVariants = [...variants]
-    newVariants.splice(index, 1)
-    setVariants(newVariants)
+  // Add new color
+  const addColor = () => {
+    setColorImages([...colorImages, { color: '', file: null, preview: '' }])
   }
 
-  const handleColorChange = (index: number, value: string) => {
-    const newVariants = [...variants]
-    newVariants[index].color = value
-    setVariants(newVariants)
+  const handleColorChange = (index: number, color: string) => {
+    const newColors = [...colorImages]
+    newColors[index].color = color
+    setColorImages(newColors)
   }
 
-  const handleImageChange = (index: number, file: File | null) => {
-    const newVariants = [...variants]
-    newVariants[index].imageFile = file
-    newVariants[index].imagePreview = file ? URL.createObjectURL(file) : null
-    setVariants(newVariants)
+  const handleColorImageChange = (index: number, file: File | null) => {
+    const newColors = [...colorImages]
+    newColors[index].file = file
+    newColors[index].preview = file ? URL.createObjectURL(file) : ''
+    setColorImages(newColors)
   }
 
-  const handleSizeQuantityChange = (
-    variantIndex: number,
-    size: string,
-    quantity: number
-  ) => {
-    const newVariants = [...variants]
-    const sizeObjIndex = newVariants[variantIndex].sizes.findIndex(
-      (s) => s.size === size
-    )
-    if (sizeObjIndex >= 0) {
-      newVariants[variantIndex].sizes[sizeObjIndex].quantity = quantity
-    } else {
-      newVariants[variantIndex].sizes.push({ size, quantity })
-    }
-    setVariants(newVariants)
+  // Add variant for a color
+  const addVariant = (color: string) => {
+    setVariants([...variants, { color, size: 'M', quantity: 0 }])
+  }
+
+  const handleVariantChange = (i: number, key: keyof Variant, value: any) => {
+    const newVars = [...variants]
+    newVars[i][key] = value
+    setVariants(newVars)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,30 +71,30 @@ export default function CreateProduct() {
     setLoading(true)
 
     try {
-      // Upload images for each color
-      const variantData = []
-      for (const v of variants) {
-        let imageAssetId = null
-        if (v.imageFile) {
-          const formData = new FormData()
-          formData.append('file', v.imageFile)
-          formData.append('type', 'image')
+      // Upload default image
+      let defaultImageAsset: string | null = null
+      if (defaultImage) {
+        const formData = new FormData()
+        formData.append('file', defaultImage)
+        formData.append('type', 'image')
+        const res = await fetch('/api/products/uploadImage', { method: 'POST', body: formData })
+        const data = await res.json()
+        defaultImageAsset = data.assetId
+      }
 
-          const uploadRes = await fetch('/api/products/uploadImage', {
-            method: 'POST',
-            body: formData,
-          })
-          const uploadData = await uploadRes.json()
-          if (!uploadRes.ok) throw new Error(uploadData.error)
-          imageAssetId = uploadData.assetId
+      // Upload color images
+      const colorImageData: any[] = []
+      for (const c of colorImages) {
+        let assetId = null
+        if (c.file) {
+          const formData = new FormData()
+          formData.append('file', c.file)
+          formData.append('type', 'image')
+          const res = await fetch('/api/products/uploadImage', { method: 'POST', body: formData })
+          const data = await res.json()
+          assetId = data.assetId
         }
-        variantData.push({
-          color: v.color,
-          image: imageAssetId
-            ? { _type: 'image', asset: { _type: 'reference', _ref: imageAssetId } }
-            : undefined,
-          sizes: v.sizes,
-        })
+        colorImageData.push({ color: c.color, image: assetId ? { _type: 'image', asset: { _type: 'reference', _ref: assetId } } : undefined })
       }
 
       // Create product
@@ -99,7 +104,9 @@ export default function CreateProduct() {
         body: JSON.stringify({
           title,
           price: Number(price),
-          variants: variantData,
+          defaultImage: defaultImageAsset ? { _type: 'image', asset: { _type: 'reference', _ref: defaultImageAsset } } : undefined,
+          colorImages: colorImageData,
+          variants,
         }),
       })
 
@@ -118,107 +125,51 @@ export default function CreateProduct() {
       <h1 className={styles.heading}>Create Product</h1>
       <form onSubmit={handleSubmit} className={styles.form}>
         <label className={styles.label}>Title</label>
-        <input
-          type="text"
-          className={styles.input}
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
+        <input type="text" className={styles.input} value={title} onChange={(e) => setTitle(e.target.value)} required />
 
-        <label className={styles.label}>Price</label>
-        <input
-          type="number"
-          step="0.01"
-          className={styles.input}
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          required
-        />
+        <label className={styles.label}>Base Price</label>
+        <input type="number" step="0.01" className={styles.input} value={price} onChange={(e) => setPrice(e.target.value)} required />
 
-        <h3>Variants</h3>
-        {variants.map((v, idx) => (
-          <div
-            key={idx}
-            style={{
-              border: '1px solid #D6BCA6',
-              borderRadius: '10px',
-              padding: '1rem',
-              marginBottom: '1.5rem',
-            }}
-          >
-            <label className={styles.label}>Color</label>
+        <label className={styles.label}>Default Image</label>
+        <input type="file" accept="image/*" className={styles.inputFile} onChange={handleDefaultImageChange} />
+        {defaultPreview && <img src={defaultPreview} alt="Default" className={styles.previewImage} />}
+
+        <hr />
+
+        <h3>Colors & Variants</h3>
+        {colorImages.map((c, i) => (
+          <div key={i} className={styles.variantContainer}>
             <input
               type="text"
+              placeholder="Color name"
+              value={c.color}
+              onChange={(e) => handleColorChange(i, e.target.value)}
               className={styles.input}
-              value={v.color}
-              onChange={(e) => handleColorChange(idx, e.target.value)}
-              required
             />
+            <input type="file" accept="image/*" onChange={(e) => handleColorImageChange(i, e.target.files?.[0] || null)} className={styles.inputFile} />
+            {c.preview && <img src={c.preview} alt={c.color} className={styles.previewImage} />}
 
-            <label className={styles.label}>Image</label>
-            <input
-              type="file"
-              accept="image/*"
-              className={styles.inputFile}
-              onChange={(e) =>
-                handleImageChange(idx, e.target.files?.[0] || null)
-              }
-            />
-            {v.imagePreview && (
-              <div className={styles.previewWrapper}>
-                <img
-                  src={v.imagePreview}
-                  alt={`Preview ${v.color}`}
-                  className={styles.previewImage}
-                />
-                <button
-                  type="button"
-                  className={styles.removeButton}
-                  onClick={() => handleImageChange(idx, null)}
-                >
-                  Remove Image
-                </button>
-              </div>
-            )}
-
-            <h4>Sizes & Quantity</h4>
-            {availableSizes.map((size) => (
-              <div key={size} style={{ marginBottom: '0.5rem' }}>
-                <label>{size}</label>
-                <input
-                  type="number"
-                  min={0}
-                  className={styles.input}
-                  value={
-                    v.sizes.find((s) => s.size === size)?.quantity || 0
-                  }
-                  onChange={(e) =>
-                    handleSizeQuantityChange(idx, size, Number(e.target.value))
-                  }
-                />
-              </div>
-            ))}
-
-            <button
-              type="button"
-              className={styles.removeButton}
-              style={{ marginTop: '0.5rem' }}
-              onClick={() => handleRemoveColor(idx)}
-            >
-              Remove Color
+            <button type="button" className={styles.button} onClick={() => addVariant(c.color)}>
+              Add Variant (Size & Quantity)
             </button>
           </div>
         ))}
-
-        <button
-          type="button"
-          className={styles.button}
-          onClick={handleAddColor}
-          style={{ marginBottom: '1rem' }}
-        >
+        <button type="button" className={styles.button} onClick={addColor}>
           Add Color
         </button>
+
+        <hr />
+
+        {variants.map((v, i) => (
+          <div key={i} className={styles.sizeRow}>
+            <span>{v.color}</span>
+            <select value={v.size} onChange={(e) => handleVariantChange(i, 'size', e.target.value)} className={styles.input}>
+              {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <input type="number" value={v.quantity} min={0} onChange={(e) => handleVariantChange(i, 'quantity', Number(e.target.value))} className={styles.input} />
+            <input type="number" placeholder="Price Override" value={v.priceOverride || ''} onChange={(e) => handleVariantChange(i, 'priceOverride', Number(e.target.value))} className={styles.input} />
+          </div>
+        ))}
 
         <button type="submit" disabled={loading} className={styles.button}>
           {loading ? 'Saving...' : 'Create'}
