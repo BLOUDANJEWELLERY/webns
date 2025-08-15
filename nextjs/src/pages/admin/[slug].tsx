@@ -21,6 +21,7 @@ export default function EditProduct({ product }: any) {
   const [price, setPrice] = useState(product.price)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [currentImageRemoved, setCurrentImageRemoved] = useState(false)
   const [loading, setLoading] = useState(false)
 
   // Generate preview for new image
@@ -62,9 +63,12 @@ export default function EditProduct({ product }: any) {
           id: product._id,
           title,
           price: Number(price),
-          defaultImage: imageAssetId
-            ? { _type: 'image', asset: { _type: 'reference', _ref: imageAssetId } }
-            : undefined,
+          defaultImage:
+            imageAssetId
+              ? { _type: 'image', asset: { _type: 'reference', _ref: imageAssetId } }
+              : currentImageRemoved
+              ? null
+              : product.defaultImage,
         }),
       })
 
@@ -98,6 +102,12 @@ export default function EditProduct({ product }: any) {
     }
   }
 
+  const handleRemoveImage = () => {
+    setImageFile(null)
+    setImagePreview(null)
+    setCurrentImageRemoved(true)
+  }
+
   return (
     <div className={styles.mainContainer}>
       <h1 className={styles.heading}>Edit Product</h1>
@@ -121,8 +131,8 @@ export default function EditProduct({ product }: any) {
           required
         />
 
-        {/* Current product image if no new image */}
-        {product.defaultImage?.asset && !imagePreview && (
+        {/* Current image */}
+        {product.defaultImage?.asset && !imagePreview && !currentImageRemoved && (
           <div className={styles.previewWrapper}>
             <img
               src={urlFor(product.defaultImage).width(200).url()}
@@ -139,12 +149,25 @@ export default function EditProduct({ product }: any) {
           </div>
         )}
 
+        {(imagePreview || (!imagePreview && product.defaultImage && !currentImageRemoved)) && (
+          <button
+            type="button"
+            onClick={handleRemoveImage}
+            className={styles.removeButton}
+          >
+            Remove Image
+          </button>
+        )}
+
         <label className={styles.label}>New Image (optional)</label>
         <input
           type="file"
           accept="image/*"
           className={styles.inputFile}
-          onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+          onChange={(e) => {
+            setImageFile(e.target.files?.[0] || null)
+            setCurrentImageRemoved(false)
+          }}
         />
 
         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
