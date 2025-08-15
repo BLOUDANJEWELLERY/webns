@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
-import styles from '../../../styles/adminEdit.module.css'
+import styles from '../../styles/adminEdit.module.css'
 
 export default function EditProduct({ product }: { product: any }) {
   const router = useRouter()
