@@ -57,7 +57,7 @@ export default function CreateProduct() {
 
   return (
     <div className={styles.mainContainer}>
-      <h1>Create Product</h1>
+      <h1 className={styles.heading}>Create Product</h1>
       <form onSubmit={handleSubmit}>
         <label htmlFor="title">Title</label>
         <input
