@@ -1,11 +1,24 @@
 // /pages/api/products/update.ts
 import type { NextApiRequest, NextApiResponse } from 'next'
-import formidable from 'formidable'
+import formidable, { File as FormidableFile } from 'formidable'
 import fs from 'fs'
 import { client } from '../../../lib/sanityClient'
 
 export const config = {
-  api: { bodyParser: false },
+  api: { bodyParser: false }, // Required for formidable
+}
+
+interface Variant {
+  color: string
+  size: string
+  quantity: number
+  priceOverride?: number
+  sku?: string
+}
+
+interface ColorImageField {
+  color: string
+  existingImage?: any
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -14,32 +27,44 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const form = formidable({ multiples: true })
 
   form.parse(req, async (err, fields, files) => {
-    if (err) return res.status(500).json({ error: 'Error parsing form data' })
+    if (err) {
+      console.error(err)
+      return res.status(500).json({ error: 'Error parsing form data' })
+    }
 
     try {
-      // Ensure id is a string
-      const idField = fields.id
-      const id = Array.isArray(idField) ? idField[0] : idField
+      // Normalize id
+      let idField = fields.id
+      if (Array.isArray(idField)) idField = idField[0]
+      const id = idField as string
       if (!id) return res.status(400).json({ error: 'Missing product ID' })
 
+      // Base patch data
       const patchData: Record<string, any> = {
-        title: fields.title,
-        price: Number(fields.price),
-        slug: { _type: 'slug', current: fields.slug },
+        title: (Array.isArray(fields.title) ? fields.title[0] : fields.title) as string,
+        description: (Array.isArray(fields.description) ? fields.description[0] : fields.description) as string,
+        price: Number(Array.isArray(fields.price) ? fields.price[0] : fields.price),
+        slug: { _type: 'slug', current: (Array.isArray(fields.slug) ? fields.slug[0] : fields.slug) as string },
       }
 
-      // Default image
+      // Handle default image
       if (files.defaultImage) {
         const file = Array.isArray(files.defaultImage) ? files.defaultImage[0] : files.defaultImage
         const imageAsset = await client.assets.upload('image', fs.createReadStream(file.filepath), {
           filename: file.originalFilename || 'default.jpg',
         })
-        patchData.defaultImage = { _type: 'image', asset: { _type: 'reference', _ref: imageAsset._id } }
+        patchData.defaultImage = {
+          _type: 'image',
+          asset: { _type: 'reference', _ref: imageAsset._id },
+        }
       }
 
-      // Color images
-      if (fields.colorImages) {
-        const parsedColors = JSON.parse(fields.colorImages as string)
+      // Handle color images
+      let colorImagesField = fields.colorImages
+      if (Array.isArray(colorImagesField)) colorImagesField = colorImagesField[0]
+
+      if (colorImagesField) {
+        const parsedColors: ColorImageField[] = JSON.parse(colorImagesField)
         const finalColors: any[] = []
 
         for (let i = 0; i < parsedColors.length; i++) {
@@ -62,18 +87,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         patchData.colorImages = finalColors
       }
 
-      // Variants
-      if (fields.variants) {
-        const variants = JSON.parse(fields.variants as string)
-        patchData.variants = variants.map((v: any) => ({
-          color: v.color,
-          size: v.size,
+      // Handle variants
+      let variantsField = fields.variants
+      if (Array.isArray(variantsField)) variantsField = variantsField[0]
+
+      if (variantsField) {
+        const parsedVariants: Variant[] = JSON.parse(variantsField)
+        patchData.variants = parsedVariants.map((v) => ({
+          ...v,
           quantity: Number(v.quantity),
           priceOverride: v.priceOverride !== undefined ? Number(v.priceOverride) : undefined,
           sku: v.sku || `${v.color}-${v.size}-${Math.floor(Math.random() * 1000000)}`,
         }))
       }
 
+      // Commit patch
       const doc = await client.patch(id).set(patchData).commit()
       res.status(200).json({ success: true, doc })
     } catch (error: any) {
