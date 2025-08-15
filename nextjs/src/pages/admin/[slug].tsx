@@ -1,166 +1,228 @@
-import { useState } from 'react'
+// pages/admin/edit/[id].tsx
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import styles from '../../styles/adminEdit.module.css'
+import styles from '../../styles/adminCreate.module.css'
+import { client } from '../../lib/sanityClient'
+import imageUrlBuilder from '@sanity/image-url'
 
-export default function EditProduct({ product }: { product: any }) {
+const builder = imageUrlBuilder(client)
+const urlFor = (source: any) => builder.image(source).width(300).url()
+
+interface Variant {
+  size: string
+  quantity: number
+  priceOverride?: number
+  sku?: string
+}
+
+interface ColorOption {
+  color: string
+  imageFile: File | null
+  imagePreview: string | null
+  existingImage?: any
+  variants: Variant[]
+}
+
+const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+
+export default function EditProductPage() {
   const router = useRouter()
-  
-  // Local state for all product fields
-  const [title, setTitle] = useState(product.title || '')
-  const [description, setDescription] = useState(product.description || '')
-  const [price, setPrice] = useState(product.price || 0)
-  const [slug, setSlug] = useState(product.slug?.current || '')
-  
-  // Default image
-  const [defaultImage, setDefaultImage] = useState<any>(product.defaultImage || null)
+  const { id } = router.query
+
+  const [title, setTitle] = useState('')
+  const [price, setPrice] = useState('')
   const [defaultImageFile, setDefaultImageFile] = useState<File | null>(null)
+  const [defaultImagePreview, setDefaultImagePreview] = useState<string | null>(null)
+  const [existingDefaultImage, setExistingDefaultImage] = useState<any>(null)
+  const [colors, setColors] = useState<ColorOption[]>([])
+  const [loading, setLoading] = useState(false)
 
-  // Color images
-  const [colorImages, setColorImages] = useState<any[]>(product.colorImages || [])
+  useEffect(() => {
+    if (!id) return
+    async function fetchProduct() {
+      const data = await client.fetch('*[_type=="product" && _id==$id][0]', { id })
+      if (!data) return router.push('/admin/products')
 
-  // Variants
-  const [variants, setVariants] = useState<any[]>(product.variants || [])
+      setTitle(data.title || '')
+      setPrice(data.price?.toString() || '')
+      if (data.defaultImage) setDefaultImagePreview(urlFor(data.defaultImage))
+      setExistingDefaultImage(data.defaultImage || null)
 
-  const handleDefaultImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setDefaultImageFile(e.target.files[0])
-      setDefaultImage(URL.createObjectURL(e.target.files[0]))
+      // Map variants per color
+      const colorMap: Record<string, ColorOption> = {}
+      data.variants?.forEach((v: Variant & { color: string }) => {
+        if (!colorMap[v.color])
+          colorMap[v.color] = { color: v.color, imageFile: null, imagePreview: null, existingImage: null, variants: [] }
+        colorMap[v.color].variants.push({
+          size: v.size,
+          quantity: v.quantity,
+          priceOverride: v.priceOverride,
+          sku: v.sku,
+        })
+      })
+
+      const colorImages: ColorOption[] = data.colorImages?.map((ci: any) => ({
+        color: ci.color,
+        imageFile: null,
+        imagePreview: ci.image ? urlFor(ci.image) : null,
+        existingImage: ci.image || null,
+        variants: colorMap[ci.color]?.variants || [],
+      })) || Object.values(colorMap)
+
+      setColors(colorImages)
     }
+    fetchProduct()
+  }, [id])
+
+  // Default image preview
+  const handleDefaultImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null
+    setDefaultImageFile(file)
+    setDefaultImagePreview(file ? URL.createObjectURL(file) : existingDefaultImage ? urlFor(existingDefaultImage) : null)
   }
 
-  const handleColorImageChange = (index: number, file: File) => {
-    const updated = [...colorImages]
-    updated[index].imageFile = file
-    updated[index].image = URL.createObjectURL(file)
-    setColorImages(updated)
+  // Color image handlers
+  const addColor = () => setColors([...colors, { color: '', imageFile: null, imagePreview: null, variants: [] }])
+  const removeColor = (index: number) => setColors(colors.filter((_, i) => i !== index))
+  const handleColorImageChange = (colorIndex: number, file: File) => {
+    const updated = [...colors]
+    updated[colorIndex].imageFile = file
+    updated[colorIndex].imagePreview = URL.createObjectURL(file)
+    setColors(updated)
   }
 
-  const addColorImage = () => {
-    setColorImages([...colorImages, { color: '', image: null, imageFile: null }])
+  // Variant handlers
+  const addVariant = (colorIndex: number) => {
+    const updated = [...colors]
+    updated[colorIndex].variants.push({ size: '', quantity: 1 })
+    setColors(updated)
+  }
+  const removeVariant = (colorIndex: number, variantIndex: number) => {
+    const updated = [...colors]
+    updated[colorIndex].variants.splice(variantIndex, 1)
+    setColors(updated)
   }
 
-  const removeColorImage = (index: number) => {
-    setColorImages(colorImages.filter((_, i) => i !== index))
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    try {
+      let defaultImageAsset = existingDefaultImage
+      if (defaultImageFile) {
+        defaultImageAsset = await client.assets.upload('image', defaultImageFile, { filename: defaultImageFile.name })
+      }
 
-  const handleVariantChange = (index: number, field: string, value: any) => {
-    const updated = [...variants]
-    updated[index][field] = value
-    setVariants(updated)
-  }
+      const colorImages: any[] = []
+      for (const color of colors) {
+        let asset = color.existingImage
+        if (color.imageFile) {
+          asset = await client.assets.upload('image', color.imageFile, { filename: `${color.color}.png` })
+        }
+        colorImages.push({
+          color: color.color,
+          image: asset ? { _type: 'image', asset: { _type: 'reference', _ref: asset._id } } : undefined,
+        })
+      }
 
-  const addVariant = () => {
-    setVariants([...variants, { color: '', size: '', quantity: 0, priceOverride: null }])
-  }
+      const variants: any[] = []
+      colors.forEach((color) => {
+        color.variants.forEach((v) => {
+          variants.push({
+            color: color.color,
+            size: v.size,
+            quantity: Number(v.quantity),
+            priceOverride: v.priceOverride ? Number(v.priceOverride) : undefined,
+            sku: v.sku || `${color.color}-${v.size}-${Math.floor(Math.random() * 1000000)}`,
+          })
+        })
+      })
 
-  const removeVariant = (index: number) => {
-    setVariants(variants.filter((_, i) => i !== index))
-  }
+      const res = await fetch('/api/products/update', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id,
+          title,
+          price: Number(price),
+          defaultImage: defaultImageAsset ? { _type: 'image', asset: { _type: 'reference', _ref: defaultImageAsset._id } } : undefined,
+          colorImages,
+          variants,
+        }),
+      })
 
-  const handleSave = async () => {
-    const formData = new FormData()
-    formData.append('id', product._id)
-    formData.append('title', title)
-    formData.append('description', description)
-    formData.append('price', price.toString())
-    formData.append('slug', slug)
-
-    if (defaultImageFile) formData.append('defaultImage', defaultImageFile)
-
-    formData.append('colorImages', JSON.stringify(
-      colorImages.map(({ color }) => ({ color }))
-    ))
-
-    colorImages.forEach((ci, idx) => {
-      if (ci.imageFile) formData.append(`colorImageFile_${idx}`, ci.imageFile)
-    })
-
-    formData.append('variants', JSON.stringify(variants))
-
-    const res = await fetch('/api/products/update', {
-      method: 'POST',
-      body: formData
-    })
-
-    if (res.ok) {
-      alert('Product updated successfully!')
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error || 'Failed to update product')
+      alert('Product updated successfully')
       router.push('/admin/products')
-    } else {
-      alert('Error updating product')
+    } catch (err: any) {
+      alert(err.message)
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
-    <div className={styles.container}>
-      <h1>Edit Product</h1>
+    <div className={styles.mainContainer}>
+      <h1 className={styles.heading}>Edit Product</h1>
+      <form className={styles.form} onSubmit={handleSubmit}>
+        <label className={styles.label}>Title</label>
+        <input className={styles.input} value={title} onChange={(e) => setTitle(e.target.value)} required />
 
-      <label>Title</label>
-      <input value={title} onChange={e => setTitle(e.target.value)} />
+        <label className={styles.label}>Price</label>
+        <input type="number" step="0.01" className={styles.input} value={price} onChange={(e) => setPrice(e.target.value)} required />
 
-      <label>Description</label>
-      <textarea value={description} onChange={e => setDescription(e.target.value)} />
+        <label className={styles.label}>Default Image</label>
+        <input type="file" accept="image/*" className={styles.inputFile} onChange={handleDefaultImageChange} />
+        {defaultImagePreview && <img src={defaultImagePreview} alt="Default" style={{ width: 150, marginTop: 5, borderRadius: 8 }} />}
 
-      <label>Base Price</label>
-      <input type="number" value={price} onChange={e => setPrice(Number(e.target.value))} />
+        <h3>Colors & Variants</h3>
+        {colors.map((color, ci) => (
+          <div key={ci} style={{ border: '1px solid #D6BCA6', padding: 10, marginBottom: 10, borderRadius: 8 }}>
+            <label className={styles.label}>Color Name</label>
+            <input className={styles.input} value={color.color} onChange={(e) => {
+              const updated = [...colors]
+              updated[ci].color = e.target.value
+              setColors(updated)
+            }} required />
 
-      <label>Slug</label>
-      <input value={slug} onChange={e => setSlug(e.target.value)} />
+            <label className={styles.label}>Color Image</label>
+            <input type="file" accept="image/*" onChange={(e) => e.target.files && handleColorImageChange(ci, e.target.files[0])} />
+            {color.imagePreview && <img src={color.imagePreview} alt="Color" style={{ width: 120, marginTop: 5, borderRadius: 8 }} />}
 
-      <label>Default Image</label>
-      {defaultImage && <img src={defaultImage.asset?.url || defaultImage} className={styles.preview} />}
-      <input type="file" accept="image/*" onChange={handleDefaultImageChange} />
+            <h4>Variants</h4>
+            {color.variants.map((v, vi) => (
+              <div key={vi} style={{ display: 'flex', gap: 5, marginBottom: 5 }}>
+                <select value={v.size} onChange={(e) => {
+                  const updated = [...colors]
+                  updated[ci].variants[vi].size = e.target.value
+                  setColors(updated)
+                }} required>
+                  <option value="">Select size</option>
+                  {SIZE_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+                <input type="number" placeholder="Quantity" value={v.quantity} min={1} onChange={(e) => {
+                  const updated = [...colors]
+                  updated[ci].variants[vi].quantity = Number(e.target.value)
+                  setColors(updated)
+                }} required />
+                <input type="number" placeholder="Price Override" value={v.priceOverride || ''} onChange={(e) => {
+                  const updated = [...colors]
+                  updated[ci].variants[vi].priceOverride = Number(e.target.value)
+                  setColors(updated)
+                }} />
+                <button type="button" onClick={() => removeVariant(ci, vi)}>Remove</button>
+              </div>
+            ))}
+            <button type="button" onClick={() => addVariant(ci)}>Add Variant</button>
+            <button type="button" style={{ marginLeft: 10, background: 'red', color: 'white' }} onClick={() => removeColor(ci)}>Remove Color</button>
+          </div>
+        ))}
+        <button type="button" onClick={addColor}>Add Color</button>
 
-      <h3>Color Images</h3>
-      {colorImages.map((ci, index) => (
-        <div key={index} className={styles.colorImageRow}>
-          <input
-            placeholder="Color"
-            value={ci.color}
-            onChange={e => {
-              const updated = [...colorImages]
-              updated[index].color = e.target.value
-              setColorImages(updated)
-            }}
-          />
-          {ci.image && <img src={ci.image.asset?.url || ci.image} className={styles.previewSmall} />}
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => e.target.files && handleColorImageChange(index, e.target.files[0])}
-          />
-          <button type="button" onClick={() => removeColorImage(index)}>Remove</button>
-        </div>
-      ))}
-      <button type="button" onClick={addColorImage}>+ Add Color Image</button>
-
-      <h3>Variants</h3>
-      {variants.map((v, index) => (
-        <div key={index} className={styles.variantRow}>
-          <input placeholder="Color" value={v.color} onChange={e => handleVariantChange(index, 'color', e.target.value)} />
-          <input placeholder="Size" value={v.size} onChange={e => handleVariantChange(index, 'size', e.target.value)} />
-          <input type="number" placeholder="Quantity" value={v.quantity} onChange={e => handleVariantChange(index, 'quantity', Number(e.target.value))} />
-          <input type="number" placeholder="Price Override" value={v.priceOverride || ''} onChange={e => handleVariantChange(index, 'priceOverride', Number(e.target.value) || null)} />
-          <button type="button" onClick={() => removeVariant(index)}>Remove</button>
-        </div>
-      ))}
-      <button type="button" onClick={addVariant}>+ Add Variant</button>
-
-      <br />
-      <button onClick={handleSave} className={styles.saveBtn}>Save Changes</button>
+        <button type="submit" disabled={loading} className={styles.button} style={{ marginTop: 10 }}>
+          {loading ? 'Updating...' : 'Update Product'}
+        </button>
+      </form>
     </div>
   )
-}
-
-export async function getServerSideProps({ params }: any) {
-  const { id } = params
-  const query = encodeURIComponent(`*[_type == "product" && _id == "${id}"][0]`)
-  const url = `https://${process.env.NEXT_PUBLIC_SANITY_PROJECT_ID}.api.sanity.io/v2023-01-01/data/query/production?query=${query}`
-  const res = await fetch(url)
-  const { result } = await res.json()
-
-  return {
-    props: {
-      product: result || {}
-    }
-  }
 }
