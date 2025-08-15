@@ -22,7 +22,7 @@ export default function CreateProduct() {
         formData.append('file', imageFile)
         formData.append('type', 'image')
 
-        const uploadRes = await fetch('/api/sanity/upload', {
+        const uploadRes = await fetch('/api/Products/uploadImage', {
           method: 'POST',
           body: formData,
         })
@@ -32,7 +32,7 @@ export default function CreateProduct() {
         imageAssetId = uploadData.assetId
       }
 
-      const res = await fetch('/api/sanity/create', {
+      const res = await fetch('/api/products/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
