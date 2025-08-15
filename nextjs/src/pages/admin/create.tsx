@@ -1,7 +1,7 @@
 // src/pages/admin/create.tsx
 import { useState } from 'react'
 import { useRouter } from 'next/router'
-import styles from '../../styles/HomePage.module.css'
+import styles from '../../styles/admincreate.module.css'
 
 export default function CreateProduct() {
   const [title, setTitle] = useState('')
