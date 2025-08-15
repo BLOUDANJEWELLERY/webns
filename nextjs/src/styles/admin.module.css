@@ -2,7 +2,7 @@
   padding: 1rem;
   max-width: 1200px;
   margin: 0 auto;
-  background-color: #fffdfb; /* Light warm background */
+  background-color: #fffdfb;
   font-family: 'Segoe UI', sans-serif;
 }
 
@@ -11,12 +11,25 @@
   font-weight: bold;
   text-align: center;
   margin-bottom: 2rem;
-  color: #4E2A0F; /* Deep brown heading */
+  color: #4E2A0F;
+}
+
+.subHeading {
+  color: #4E2A0F;
+  margin-bottom: 1rem;
+  font-size: 20px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.createWrapper {
+  margin-bottom: 2rem;
+  text-align: center;
 }
 
 .actionButton {
   padding: 0.75rem 1.5rem;
-  background-color: #C89B3C; /* Golden button */
+  background-color: #C89B3C;
   color: #fff;
   font-size: 1rem;
   font-weight: 600;
@@ -29,6 +42,13 @@
 .actionButton:hover {
   background-color: #b3842f;
   transform: translateY(-1px);
+}
+
+.message {
+  text-align: center;
+  color: #4E2A0F;
+  font-size: 16px;
+  margin-top: 1rem;
 }
 
 .grid {
@@ -50,7 +70,7 @@
 }
 
 .card {
-  border: 2px solid #D6BCA6; /* Soft brownish-beige border */
+  border: 2px solid #D6BCA6;
   border-radius: 8px;
   background-color: #fff;
   box-shadow: 0 1px 6px rgba(123, 63, 0, 0.1);
@@ -60,7 +80,6 @@
   flex-direction: column;
   text-decoration: none;
   color: inherit;
-  width: 100%;
 }
 
 .card:hover {
