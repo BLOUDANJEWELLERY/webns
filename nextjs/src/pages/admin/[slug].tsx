@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/router'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
-import styles from '../../styles/HomePage.module.css'
+import styles from '../../styles/adminEdit.module.css'
 
 const client = createClient({
   projectId: '3jc8hsku',
