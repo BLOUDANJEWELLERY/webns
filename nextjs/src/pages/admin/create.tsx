@@ -58,12 +58,19 @@ export default function CreateProduct() {
   return (
     <div className={styles.mainContainer}>
       <h1>Create Product</h1>
-      <form onSubmit={handleSubmit} style={{ maxWidth: 400 }}>
-        <label>Title</label>
-        <input value={title} onChange={(e) => setTitle(e.target.value)} required />
-
-        <label>Price</label>
+      <form onSubmit={handleSubmit}>
+        <label htmlFor="title">Title</label>
         <input
+          id="title"
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+        />
+
+        <label htmlFor="price">Price</label>
+        <input
+          id="price"
           type="number"
           step="0.01"
           value={price}
@@ -71,8 +78,13 @@ export default function CreateProduct() {
           required
         />
 
-        <label>Image</label>
-        <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
+        <label htmlFor="image">Image</label>
+        <input
+          id="image"
+          type="file"
+          accept="image/*"
+          onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+        />
 
         <button type="submit" disabled={loading}>
           {loading ? 'Saving...' : 'Create'}
