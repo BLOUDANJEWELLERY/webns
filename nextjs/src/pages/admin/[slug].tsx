@@ -74,6 +74,7 @@ const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
 export default function AdminEditPage({ product }: { product: Product | null }) {
   const router = useRouter()
+  const [loading, setLoading] = useState(false)
 
   const [title, setTitle] = useState(product?.title || '')
   const [price, setPrice] = useState(product?.price.toString() || '')
@@ -98,7 +99,7 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
       colorMap[v.color].variants.push({ 
         ...v, 
         _key: v._key || Math.random().toString(36).substr(2, 9),
-        showPriceOverride: v.priceOverride && v.priceOverride > 0 ? true : false, // show by default if priceOverride exists
+        showPriceOverride: v.priceOverride && v.priceOverride > 0 ? true : false
       })
     })
 
@@ -114,9 +115,6 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
     return colorImages
   })
 
-  const [loading, setLoading] = useState(false)
-
-  // Default image preview
   useEffect(() => {
     if (!defaultImageFile) return
     const url = URL.createObjectURL(defaultImageFile)
@@ -152,7 +150,7 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
       quantity: 1,
       color: colors[colorIndex].color,
       _key: Math.random().toString(36).substr(2, 9),
-      showPriceOverride: false,
+      showPriceOverride: false
     })
     setColors(updated)
   }
@@ -197,7 +195,7 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
         colorImages.push({
           _key: color._key,
           color: color.color,
-          image: assetId ? { _type: 'image', asset: { _type: 'reference', _ref: assetId } } : undefined,
+          image: assetId ? { _type: 'image', asset: { _type: 'reference', _ref: assetId } } : undefined
         })
       }
 
@@ -211,7 +209,7 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
             quantity: Number(v.quantity),
             color: c.color,
             priceOverride: v.priceOverride ? Number(v.priceOverride) : undefined,
-            sku: v.sku || `${c.color}-${v.size}-${Math.floor(Math.random() * 1000000)}`,
+            sku: v.sku || `${c.color}-${v.size}-${Math.floor(Math.random() * 1000000)}`
           })
         )
       )
@@ -224,12 +222,10 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
           id: product._id,
           title,
           price: Number(price),
-          defaultImage: defaultAssetId
-            ? { _type: 'image', asset: { _type: 'reference', _ref: defaultAssetId } }
-            : undefined,
+          defaultImage: defaultAssetId ? { _type: 'image', asset: { _type: 'reference', _ref: defaultAssetId } } : undefined,
           colorImages,
-          variants,
-        }),
+          variants
+        })
       })
       const result = await res.json()
       if (!res.ok) throw new Error(result.error || 'Failed to update product')
@@ -252,7 +248,7 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
       const res = await fetch('/api/products/delete', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: product._id }),
+        body: JSON.stringify({ id: product._id })
       })
       const result = await res.json()
       if (!res.ok) throw new Error(result.error || 'Failed to delete product')
@@ -283,7 +279,7 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
 
         <h3>Colors & Variants</h3>
         {colors.map((color, ci) => (
-          <div key={color._key} style={{ border: '1px solid #D6BCA6', padding: 10, marginBottom: 10, borderRadius: 8 }}>
+          <div key={color._key} style={{ border: '1px solid #D6BCA6', padding: 12, marginBottom: 12, borderRadius: 10 }}>
             <label className={styles.label}>Color Name</label>
             <input className={styles.input} value={color.color} onChange={e => { const updated = [...colors]; updated[ci].color = e.target.value; setColors(updated) }} required />
 
@@ -295,41 +291,44 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
 
             <h4>Variants</h4>
             {color.variants.map((v, vi) => (
-              <div key={v._key} style={{ display: 'flex', gap: 5, marginBottom: 5 }}>
+              <div key={v._key} className={styles.variantCard}>
                 <select value={v.size} onChange={e => { const updated = [...colors]; updated[ci].variants[vi].size = e.target.value; setColors(updated) }} required>
-                  <option value="">Select size</option>
+                  <option value="">Size</option>
                   {SIZE_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
 
-                <input type="number" placeholder="Quantity" value={v.quantity} min={1} onChange={e => { const updated = [...colors]; updated[ci].variants[vi].quantity = Number(e.target.value); setColors(updated) }} required />
+                <input type="number" placeholder="Qty" min={1} value={v.quantity} onChange={e => { const updated = [...colors]; updated[ci].variants[vi].quantity = Number(e.target.value); setColors(updated) }} required />
 
-                {/* Price Override toggle */}
-                {v.showPriceOverride ? (
-                  <>
-                    <input type="number" placeholder="Price Override" value={v.priceOverride || ''} onChange={e => { const updated = [...colors]; updated[ci].variants[vi].priceOverride = Number(e.target.value); setColors(updated) }} />
-                    <button type="button" onClick={() => { const updated = [...colors]; updated[ci].variants[vi].showPriceOverride = false; setColors(updated) }}>Hide Price Override</button>
-                  </>
-                ) : (
-                  <button type="button" onClick={() => { const updated = [...colors]; updated[ci].variants[vi].showPriceOverride = true; setColors(updated) }}>Set Price Override</button>
-                )}
+                <div className={styles.priceOverrideWrapper}>
+                  {v.showPriceOverride && (
+                    <input type="number" placeholder="Price Override" className={styles.priceOverrideInput} value={v.priceOverride || ''} 
+                      onChange={e => { const updated = [...colors]; updated[ci].variants[vi].priceOverride = Number(e.target.value); setColors(updated) }} />
+                  )}
+                  <button type="button" className={styles.priceToggleButton} onClick={() => {
+                    const updated = [...colors]; 
+                    updated[ci].variants[vi].showPriceOverride = !v.showPriceOverride; 
+                    setColors(updated)
+                  }}>
+                    {v.showPriceOverride ? 'Hide' : 'Price'}
+                  </button>
+                </div>
 
-                <button type="button" onClick={() => removeVariant(ci, vi)}>Remove</button>
+                <button type="button" className={styles.removeButton} onClick={() => removeVariant(ci, vi)}>Remove</button>
               </div>
             ))}
 
-            <button type="button" onClick={() => addVariant(ci)}>Add Variant</button>
-            <button type="button" style={{ marginLeft: 10, background: 'red', color: 'white' }} onClick={() => removeColor(ci)}>Remove Color</button>
+            <button type="button" className={styles.button} onClick={() => addVariant(ci)}>Add Variant</button>
+            <button type="button" className={styles.deleteButton} style={{ marginLeft: 10 }} onClick={() => removeColor(ci)}>Remove Color</button>
           </div>
         ))}
 
-        <button type="button" onClick={addColor}>Add Color</button>
+        <button type="button" className={styles.button} onClick={addColor}>Add Color</button>
 
-        {/* Update & Delete */}
-        <div style={{ marginTop: 10, display: 'flex', gap: 10 }}>
+        <div style={{ marginTop: 15, display: 'flex', gap: 12 }}>
           <button type="submit" disabled={loading} className={styles.button}>
             {loading ? 'Updating...' : 'Update Product'}
           </button>
-          <button type="button" disabled={loading} onClick={handleDelete} style={{ background: 'red', color: 'white' }}>
+          <button type="button" disabled={loading} onClick={handleDelete} className={styles.deleteButton}>
             {loading ? 'Processing...' : 'Delete Product'}
           </button>
         </div>
