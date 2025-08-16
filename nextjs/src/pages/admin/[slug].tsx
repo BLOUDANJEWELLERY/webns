@@ -5,7 +5,6 @@ import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import Image from 'next/image'
 import styles from '../../styles/adminEdit.module.css'
-import { v4 as uuidv4 } from 'uuid'
 
 const client = createClient({
   projectId: '3jc8hsku',
@@ -74,43 +73,44 @@ const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
 export default function AdminEditPage({ product }: { product: Product | null }) {
   const router = useRouter()
+
+  // === Hooks MUST run before any early return ===
   const [title, setTitle] = useState(product?.title || '')
   const [price, setPrice] = useState(product?.price.toString() || '')
   const [defaultImageFile, setDefaultImageFile] = useState<File | null>(null)
   const [defaultImagePreview, setDefaultImagePreview] = useState(
     product?.defaultImage ? urlFor(product.defaultImage) : null
   )
-  const [defaultImageId, setDefaultImageId] = useState(product?.defaultImage?.asset?._ref)
+  const [defaultImageId] = useState(product?.defaultImage?.asset?._ref) // removed setter
   const [colors, setColors] = useState<ColorOption[]>(() => {
-    const map: Record<string, ColorOption> = {}
+    const colorMap: Record<string, ColorOption> = {}
     product?.variants?.forEach(v => {
-      if (!map[v.color])
-        map[v.color] = {
+      if (!colorMap[v.color])
+        colorMap[v.color] = {
           color: v.color,
           imageFile: null,
           imagePreview: null,
           existingImageId: undefined,
           variants: [],
-          _key: v._key || uuidv4(),
+          _key: v._key || Math.random().toString(36).substr(2, 9),
         }
-      map[v.color].variants.push({ ...v, _key: v._key || uuidv4() })
+      colorMap[v.color].variants.push({ ...v, _key: v._key || Math.random().toString(36).substr(2, 9) })
     })
+
     const colorImages: ColorOption[] = product?.colorImages?.map(ci => ({
       color: ci.color,
       imageFile: null,
       imagePreview: ci.image ? urlFor(ci.image) : null,
       existingImageId: ci.image?.asset?._ref,
-      variants: map[ci.color]?.variants || [],
-      _key: ci._key || uuidv4(),
-    })) || Object.values(map)
+      variants: colorMap[ci.color]?.variants || [],
+      _key: ci._key || Math.random().toString(36).substr(2, 9),
+    })) || Object.values(colorMap)
+
     return colorImages
   })
   const [loading, setLoading] = useState(false)
 
-  if (router.isFallback) return <p>Loading product...</p>
-  if (!product) return <p>Product not found</p>
-
-  // Default image preview
+  // === Default image preview effect ===
   useEffect(() => {
     if (!defaultImageFile) return
     const url = URL.createObjectURL(defaultImageFile)
@@ -118,16 +118,21 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
     return () => URL.revokeObjectURL(url)
   }, [defaultImageFile])
 
+  // === Early return AFTER hooks ===
+  if (router.isFallback) return <p>Loading product...</p>
+  if (!product) return <p>Product not found</p>
+
+  // === Handlers ===
   const handleDefaultImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null
     setDefaultImageFile(file)
   }
 
   const addColor = () => {
-    setColors([...colors, { color: '', imageFile: null, imagePreview: null, variants: [], _key: uuidv4() }])
+    setColors([...colors, { color: '', imageFile: null, imagePreview: null, variants: [], _key: Math.random().toString(36).substr(2, 9) }])
   }
 
-  const removeColor = (index: number) => setColors(colors.filter((_, i) => i !== index))
+  const removeColor = (i: number) => setColors(colors.filter((_, idx) => idx !== i))
 
   const handleColorImageChange = (index: number, file: File) => {
     const updated = [...colors]
@@ -142,7 +147,7 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
       size: '',
       quantity: 1,
       color: colors[colorIndex].color,
-      _key: uuidv4(),
+      _key: Math.random().toString(36).substr(2, 9),
     })
     setColors(updated)
   }
@@ -157,6 +162,7 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
     e.preventDefault()
     if (!product._id) return alert('Missing product ID')
     setLoading(true)
+
     try {
       // Upload default image
       let defaultAssetId = defaultImageId
@@ -245,11 +251,9 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
         {/* Default Image */}
         <label className={styles.label}>Default Image</label>
         <input type="file" accept="image/*" onChange={handleDefaultImageChange} />
-        {defaultImagePreview && (
-          <div style={{ width: 150, height: 150, position: 'relative', marginTop: 5 }}>
-            <Image src={defaultImagePreview} alt="Default" fill style={{ objectFit: 'cover', borderRadius: 8 }} />
-          </div>
-        )}
+        {defaultImagePreview && <div style={{ width: 150, height: 150, position: 'relative', marginTop: 5 }}>
+          <Image src={defaultImagePreview} alt="Default" fill style={{ objectFit: 'cover', borderRadius: 8 }} />
+        </div>}
 
         {/* Colors & Variants */}
         <h3>Colors & Variants</h3>
@@ -260,13 +264,10 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
 
             <label className={styles.label}>Color Image</label>
             <input type="file" accept="image/*" onChange={e => e.target.files && handleColorImageChange(ci, e.target.files[0])} />
-            {color.imagePreview && (
-              <div style={{ width: 120, height: 120, position: 'relative', marginTop: 5 }}>
-                <Image src={color.imagePreview} alt="Color" fill style={{ objectFit: 'cover', borderRadius: 8 }} />
-              </div>
-            )}
+            {color.imagePreview && <div style={{ width: 120, height: 120, position: 'relative', marginTop: 5 }}>
+              <Image src={color.imagePreview} alt="Color" fill style={{ objectFit: 'cover', borderRadius: 8 }} />
+            </div>}
 
-            {/* Variants */}
             <h4>Variants</h4>
             {color.variants.map((v, vi) => (
               <div key={v._key} style={{ display: 'flex', gap: 5, marginBottom: 5 }}>
