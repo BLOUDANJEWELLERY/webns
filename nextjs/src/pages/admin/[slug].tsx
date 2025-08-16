@@ -4,6 +4,7 @@ import { useRouter } from 'next/router'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import Image from 'next/image'
+import { v4 as uuidv4 } from 'uuid'
 import styles from '../../styles/adminEdit.module.css'
 
 const client = createClient({
@@ -17,6 +18,7 @@ const builder = imageUrlBuilder(client)
 const urlFor = (source: any) => builder.image(source).width(300).url()
 
 interface Variant {
+  _key?: string
   size: string
   quantity: number
   priceOverride?: number
@@ -25,6 +27,7 @@ interface Variant {
 }
 
 interface ColorOption {
+  _key?: string
   color: string
   imageFile: File | null
   imagePreview: string | null
@@ -41,6 +44,8 @@ interface Product {
   colorImages?: any[]
   slug: string
 }
+
+const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
 export async function getStaticPaths() {
   const slugs: string[] = await client.fetch(`*[_type=="product" && defined(slug.current)].slug.current`)
@@ -65,26 +70,23 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
   return { props: { product }, revalidate: 60 }
 }
 
-const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
-
 export default function AdminEditPage({ product }: { product: Product | null }) {
   const router = useRouter()
   const [title, setTitle] = useState(product?.title || '')
   const [price, setPrice] = useState(product?.price.toString() || '')
   const [defaultImageFile, setDefaultImageFile] = useState<File | null>(null)
-  const [defaultImagePreview, setDefaultImagePreview] = useState(
-    product?.defaultImage ? urlFor(product.defaultImage) : null
-  )
+  const [defaultImagePreview, setDefaultImagePreview] = useState(product?.defaultImage ? urlFor(product.defaultImage) : null)
   const [defaultImageId, setDefaultImageId] = useState(product?.defaultImage?.asset?._ref)
+
   const [colors, setColors] = useState<ColorOption[]>(() => {
     const colorMap: Record<string, ColorOption> = {}
     product?.variants?.forEach(v => {
-      if (!colorMap[v.color])
-        colorMap[v.color] = { color: v.color, imageFile: null, imagePreview: null, existingImageId: undefined, variants: [] }
-      colorMap[v.color].variants.push({ ...v })
+      if (!colorMap[v.color]) colorMap[v.color] = { _key: uuidv4(), color: v.color, imageFile: null, imagePreview: null, existingImageId: undefined, variants: [] }
+      colorMap[v.color].variants.push({ _key: v._key || uuidv4(), ...v })
     })
 
     const colorImages: ColorOption[] = product?.colorImages?.map(ci => ({
+      _key: ci._key || uuidv4(),
       color: ci.color,
       imageFile: null,
       imagePreview: ci.image ? urlFor(ci.image) : null,
@@ -94,6 +96,7 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
 
     return colorImages
   })
+
   const [loading, setLoading] = useState(false)
 
   if (router.isFallback) return <p>Loading product...</p>
@@ -105,7 +108,7 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
     setDefaultImagePreview(file ? URL.createObjectURL(file) : defaultImagePreview)
   }
 
-  const addColor = () => setColors([...colors, { color: '', imageFile: null, imagePreview: null, variants: [] }])
+  const addColor = () => setColors([...colors, { _key: uuidv4(), color: '', imageFile: null, imagePreview: null, variants: [] }])
   const removeColor = (i: number) => setColors(colors.filter((_, idx) => idx !== i))
   const handleColorImageChange = (index: number, file: File) => {
     const updated = [...colors]
@@ -113,11 +116,14 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
     updated[index].imagePreview = URL.createObjectURL(file)
     setColors(updated)
   }
+
   const addVariant = (colorIndex: number) => {
     const updated = [...colors]
-    updated[colorIndex].variants.push({ size: '', quantity: 1, color: colors[colorIndex].color })
+    const color = updated[colorIndex]
+    color.variants.push({ _key: uuidv4(), size: '', quantity: 1, color: color.color })
     setColors(updated)
   }
+
   const removeVariant = (colorIndex: number, variantIndex: number) => {
     const updated = [...colors]
     updated[colorIndex].variants.splice(variantIndex, 1)
@@ -137,19 +143,34 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
       }
 
       // Upload color images
-      const colorImages: any[] = []
+      const colorImagesPayload = []
       for (const color of colors) {
         let assetId = color.existingImageId
         if (color.imageFile) {
           const upload = await client.assets.upload('image', color.imageFile, { filename: `${color.color}.png` })
           assetId = upload._id
         }
-        colorImages.push({ color: color.color, image: assetId ? { _type: 'image', asset: { _type: 'reference', _ref: assetId } } : undefined })
+        colorImagesPayload.push({
+          _key: color._key || uuidv4(),
+          color: color.color,
+          image: assetId ? { _type: 'image', asset: { _type: 'reference', _ref: assetId } } : undefined,
+        })
       }
 
       // Flatten variants
-      const variants: any[] = []
-      colors.forEach(c => c.variants.forEach(v => variants.push({ ...v, sku: v.sku || `${c.color}-${v.size}-${Math.floor(Math.random() * 1000000)}` })))
+      const variantsPayload: any[] = []
+      colors.forEach(color =>
+        color.variants.forEach(v =>
+          variantsPayload.push({
+            _key: v._key || uuidv4(),
+            size: v.size,
+            color: color.color,
+            quantity: Number(v.quantity),
+            priceOverride: v.priceOverride ? Number(v.priceOverride) : undefined,
+            sku: v.sku || `${color.color}-${v.size}-${Math.floor(Math.random() * 1000000)}`,
+          })
+        )
+      )
 
       const res = await fetch('/api/products/update', {
         method: 'PUT',
@@ -159,8 +180,8 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
           title,
           price: Number(price),
           defaultImage: defaultAssetId ? { _type: 'image', asset: { _type: 'reference', _ref: defaultAssetId } } : undefined,
-          colorImages,
-          variants,
+          colorImages: colorImagesPayload,
+          variants: variantsPayload,
         }),
       })
 
@@ -195,7 +216,7 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
 
         <h3>Colors & Variants</h3>
         {colors.map((color, ci) => (
-          <div key={ci} style={{ border: '1px solid #D6BCA6', padding: 10, marginBottom: 10, borderRadius: 8 }}>
+          <div key={color._key} style={{ border: '1px solid #D6BCA6', padding: 10, marginBottom: 10, borderRadius: 8 }}>
             <label className={styles.label}>Color Name</label>
             <input className={styles.input} value={color.color} onChange={e => {
               const updated = [...colors]
@@ -213,7 +234,7 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
 
             <h4>Variants</h4>
             {color.variants.map((v, vi) => (
-              <div key={vi} style={{ display: 'flex', gap: 5, marginBottom: 5 }}>
+              <div key={v._key} style={{ display: 'flex', gap: 5, marginBottom: 5 }}>
                 <select value={v.size} onChange={e => {
                   const updated = [...colors]
                   updated[ci].variants[vi].size = e.target.value
