@@ -23,6 +23,7 @@ interface Variant {
   sku?: string
   color: string
   _key?: string
+  showPriceOverride?: boolean
 }
 
 interface ColorOption {
@@ -74,7 +75,6 @@ const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 export default function AdminEditPage({ product }: { product: Product | null }) {
   const router = useRouter()
 
-  // === Hooks MUST run before any early return ===
   const [title, setTitle] = useState(product?.title || '')
   const [price, setPrice] = useState(product?.price.toString() || '')
   const [defaultImageFile, setDefaultImageFile] = useState<File | null>(null)
@@ -82,6 +82,7 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
     product?.defaultImage ? urlFor(product.defaultImage) : null
   )
   const [defaultImageId] = useState(product?.defaultImage?.asset?._ref)
+
   const [colors, setColors] = useState<ColorOption[]>(() => {
     const colorMap: Record<string, ColorOption> = {}
     product?.variants?.forEach(v => {
@@ -94,7 +95,11 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
           variants: [],
           _key: v._key || Math.random().toString(36).substr(2, 9),
         }
-      colorMap[v.color].variants.push({ ...v, _key: v._key || Math.random().toString(36).substr(2, 9) })
+      colorMap[v.color].variants.push({ 
+        ...v, 
+        _key: v._key || Math.random().toString(36).substr(2, 9),
+        showPriceOverride: v.priceOverride && v.priceOverride > 0 ? true : false, // show by default if priceOverride exists
+      })
     })
 
     const colorImages: ColorOption[] = product?.colorImages?.map(ci => ({
@@ -108,9 +113,10 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
 
     return colorImages
   })
+
   const [loading, setLoading] = useState(false)
 
-  // === Default image preview effect ===
+  // Default image preview
   useEffect(() => {
     if (!defaultImageFile) return
     const url = URL.createObjectURL(defaultImageFile)
@@ -118,11 +124,9 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
     return () => URL.revokeObjectURL(url)
   }, [defaultImageFile])
 
-  // === Early return AFTER hooks ===
   if (router.isFallback) return <p>Loading product...</p>
   if (!product) return <p>Product not found</p>
 
-  // === Handlers ===
   const handleDefaultImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null
     setDefaultImageFile(file)
@@ -148,6 +152,7 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
       quantity: 1,
       color: colors[colorIndex].color,
       _key: Math.random().toString(36).substr(2, 9),
+      showPriceOverride: false,
     })
     setColors(updated)
   }
@@ -264,21 +269,18 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
     <div className={styles.mainContainer}>
       <h1 className={styles.heading}>Edit Product</h1>
       <form className={styles.form} onSubmit={handleSubmit}>
-        {/* Title & Price */}
         <label className={styles.label}>Title</label>
         <input className={styles.input} value={title} onChange={e => setTitle(e.target.value)} required />
 
         <label className={styles.label}>Price</label>
         <input type="number" step="0.01" className={styles.input} value={price} onChange={e => setPrice(e.target.value)} required />
 
-        {/* Default Image */}
         <label className={styles.label}>Default Image</label>
         <input type="file" accept="image/*" onChange={handleDefaultImageChange} />
         {defaultImagePreview && <div style={{ width: 150, height: 150, position: 'relative', marginTop: 5 }}>
           <Image src={defaultImagePreview} alt="Default" fill style={{ objectFit: 'cover', borderRadius: 8 }} />
         </div>}
 
-        {/* Colors & Variants */}
         <h3>Colors & Variants</h3>
         {colors.map((color, ci) => (
           <div key={color._key} style={{ border: '1px solid #D6BCA6', padding: 10, marginBottom: 10, borderRadius: 8 }}>
@@ -298,15 +300,28 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
                   <option value="">Select size</option>
                   {SIZE_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
+
                 <input type="number" placeholder="Quantity" value={v.quantity} min={1} onChange={e => { const updated = [...colors]; updated[ci].variants[vi].quantity = Number(e.target.value); setColors(updated) }} required />
-                <input type="number" placeholder="Price Override" value={v.priceOverride || ''} onChange={e => { const updated = [...colors]; updated[ci].variants[vi].priceOverride = Number(e.target.value); setColors(updated) }} />
+
+                {/* Price Override toggle */}
+                {v.showPriceOverride ? (
+                  <>
+                    <input type="number" placeholder="Price Override" value={v.priceOverride || ''} onChange={e => { const updated = [...colors]; updated[ci].variants[vi].priceOverride = Number(e.target.value); setColors(updated) }} />
+                    <button type="button" onClick={() => { const updated = [...colors]; updated[ci].variants[vi].showPriceOverride = false; setColors(updated) }}>Hide Price Override</button>
+                  </>
+                ) : (
+                  <button type="button" onClick={() => { const updated = [...colors]; updated[ci].variants[vi].showPriceOverride = true; setColors(updated) }}>Set Price Override</button>
+                )}
+
                 <button type="button" onClick={() => removeVariant(ci, vi)}>Remove</button>
               </div>
             ))}
+
             <button type="button" onClick={() => addVariant(ci)}>Add Variant</button>
             <button type="button" style={{ marginLeft: 10, background: 'red', color: 'white' }} onClick={() => removeColor(ci)}>Remove Color</button>
           </div>
         ))}
+
         <button type="button" onClick={addColor}>Add Color</button>
 
         {/* Update & Delete */}
