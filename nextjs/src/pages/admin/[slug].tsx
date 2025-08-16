@@ -259,80 +259,208 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
 
   return (
     <div className={styles.mainContainer}>
-      <h1 className={styles.heading}>Edit Product</h1>
-      <form className={styles.form} onSubmit={handleSubmit}>
-        <label className={styles.label}>Title</label>
-        <input className={styles.input} value={title} onChange={e => setTitle(e.target.value)} required />
+  <h1 className={styles.heading}>Edit Product</h1>
 
-        <label className={styles.label}>Price</label>
-        <input type="number" step="0.01" className={styles.input} value={price} onChange={e => setPrice(e.target.value)} required />
+  <form className={styles.form} onSubmit={handleSubmit}>
+    {/* Title */}
+    <div className={styles.formGroup}>
+      <label className={styles.label}>Title</label>
+      <input
+        className={styles.input}
+        value={title}
+        onChange={e => setTitle(e.target.value)}
+        required
+      />
+    </div>
 
-        <label className={styles.label}>Default Image</label>
-        <input type="file" accept="image/*" onChange={handleDefaultImageChange} className={styles.inputFile} />
-        {defaultImagePreview && (
+    {/* Price */}
+    <div className={styles.formGroup}>
+      <label className={styles.label}>Price</label>
+      <input
+        type="number"
+        step="0.01"
+        className={styles.input}
+        value={price}
+        onChange={e => setPrice(e.target.value)}
+        required
+      />
+    </div>
+
+    {/* Default Image */}
+    <div className={styles.formGroup}>
+      <label className={styles.label}>Default Image</label>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleDefaultImageChange}
+        className={styles.inputFile}
+      />
+      {defaultImagePreview && (
+        <div className={styles.previewWrapper}>
+          <Image
+            src={defaultImagePreview}
+            alt="Default"
+            width={150}
+            height={150}
+            className={styles.previewImage}
+          />
+        </div>
+      )}
+    </div>
+
+    {/* Colors & Variants */}
+    <h3 className={styles.subHeading}>Colors & Variants</h3>
+    {colors.map((color, ci) => (
+      <div key={color._key} className={styles.colorBlock}>
+        {/* Color Name */}
+        <label className={styles.label}>Color Name</label>
+        <input
+          className={styles.input}
+          value={color.color}
+          onChange={e => {
+            const updated = [...colors]
+            updated[ci].color = e.target.value
+            setColors(updated)
+          }}
+          required
+        />
+
+        {/* Color Image */}
+        <label className={styles.label}>Color Image</label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={e => e.target.files && handleColorImageChange(ci, e.target.files[0])}
+          className={styles.inputFile}
+        />
+        {color.imagePreview && (
           <div className={styles.previewWrapper}>
-            <Image src={defaultImagePreview} alt="Default" width={150} height={150} className={styles.previewImage} />
+            <Image
+              src={color.imagePreview}
+              alt="Color"
+              width={120}
+              height={120}
+              className={styles.previewImage}
+            />
           </div>
         )}
 
-        <h3>Colors & Variants</h3>
-        {colors.map((color, ci) => (
-          <div key={color._key} className={styles.colorBlock}>
-            <label className={styles.label}>Color Name</label>
-            <input className={styles.input} value={color.color} onChange={e => { const updated = [...colors]; updated[ci].color = e.target.value; setColors(updated) }} required />
+        {/* Variants */}
+        <h4 className={styles.variantHeading}>Variants</h4>
+        {color.variants.map((v, vi) => (
+          <div key={v._key} className={styles.variantCard}>
+            {/* Size Selector */}
+            <select
+              value={v.size}
+              onChange={e => {
+                const updated = [...colors]
+                updated[ci].variants[vi].size = e.target.value
+                setColors(updated)
+              }}
+              required
+              className={styles.select}
+            >
+              <option value="">Size</option>
+              {SIZE_OPTIONS.map(s => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
 
-            <label className={styles.label}>Color Image</label>
-            <input type="file" accept="image/*" onChange={e => e.target.files && handleColorImageChange(ci, e.target.files[0])} className={styles.inputFile} />
-            {color.imagePreview && (
-              <div className={styles.previewWrapper}>
-                <Image src={color.imagePreview} alt="Color" width={120} height={120} className={styles.previewImage} />
-              </div>
-            )}
+            {/* Quantity */}
+            <input
+              type="number"
+              placeholder="Qty"
+              min={1}
+              value={v.quantity}
+              onChange={e => {
+                const updated = [...colors]
+                updated[ci].variants[vi].quantity = Number(e.target.value)
+                setColors(updated)
+              }}
+              className={styles.inputSmall}
+              required
+            />
 
-            <h4>Variants</h4>
-            {color.variants.map((v, vi) => (
-              <div key={v._key} className={styles.variantCard}>
-                <select value={v.size} onChange={e => { const updated = [...colors]; updated[ci].variants[vi].size = e.target.value; setColors(updated) }} required>
-                  <option value="">Size</option>
-                  {SIZE_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-
-                <input type="number" placeholder="Qty" min={1} value={v.quantity} onChange={e => { const updated = [...colors]; updated[ci].variants[vi].quantity = Number(e.target.value); setColors(updated) }} required />
-
-                <div className={styles.priceOverrideWrapper}>
-                  {v.showPriceOverride && (
-                    <input type="number" placeholder="Price Override" className={styles.priceOverrideInput} value={v.priceOverride || ''} 
-                      onChange={e => { const updated = [...colors]; updated[ci].variants[vi].priceOverride = Number(e.target.value); setColors(updated) }} />
-                  )}
-                  <button type="button" className={styles.priceToggleButton} onClick={() => {
-                    const updated = [...colors]; 
-                    updated[ci].variants[vi].showPriceOverride = !v.showPriceOverride; 
+            {/* Price Override */}
+            <div className={styles.priceOverrideWrapper}>
+              {v.showPriceOverride && (
+                <input
+                  type="number"
+                  placeholder="Price Override"
+                  className={styles.priceOverrideInput}
+                  value={v.priceOverride || ''}
+                  onChange={e => {
+                    const updated = [...colors]
+                    updated[ci].variants[vi].priceOverride = Number(e.target.value)
                     setColors(updated)
-                  }}>
-                    {v.showPriceOverride ? 'Hide' : 'Price'}
-                  </button>
-                </div>
+                  }}
+                />
+              )}
+              <button
+                type="button"
+                className={styles.priceToggleButton}
+                onClick={() => {
+                  const updated = [...colors]
+                  updated[ci].variants[vi].showPriceOverride = !v.showPriceOverride
+                  setColors(updated)
+                }}
+              >
+                {v.showPriceOverride ? 'Hide' : 'Price'}
+              </button>
+            </div>
 
-                <button type="button" className={styles.removeButton} onClick={() => removeVariant(ci, vi)}>Remove</button>
-              </div>
-            ))}
-
-            <button type="button" className={styles.button} onClick={() => addVariant(ci)}>Add Variant</button>
-            <button type="button" className={styles.deleteButton} style={{ marginTop: 8 }} onClick={() => removeColor(ci)}>Remove Color</button>
+            {/* Remove Variant */}
+            <button
+              type="button"
+              className={styles.removeButton}
+              onClick={() => removeVariant(ci, vi)}
+            >
+              Remove
+            </button>
           </div>
         ))}
 
-        <button type="button" className={styles.button} onClick={addColor}>Add Color</button>
+        {/* Add Variant / Remove Color */}
+        <button
+          type="button"
+          className={styles.button}
+          onClick={() => addVariant(ci)}
+        >
+          Add Variant
+        </button>
+        <button
+          type="button"
+          className={styles.deleteButton}
+          style={{ marginTop: 8 }}
+          onClick={() => removeColor(ci)}
+        >
+          Remove Color
+        </button>
+      </div>
+    ))}
 
-        <div style={{ marginTop: 15, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <button type="submit" disabled={loading} className={styles.button}>
-            {loading ? 'Updating...' : 'Update Product'}
-          </button>
-          <button type="button" disabled={loading} onClick={handleDelete} className={styles.deleteButton}>
-            {loading ? 'Processing...' : 'Delete Product'}
-          </button>
-        </div>
-      </form>
+    {/* Add Color */}
+    <button type="button" className={styles.button} onClick={addColor}>
+      Add Color
+    </button>
+
+    {/* Actions */}
+    <div className={styles.actionWrapper}>
+      <button type="submit" disabled={loading} className={styles.button}>
+        {loading ? 'Updating...' : 'Update Product'}
+      </button>
+      <button
+        type="button"
+        disabled={loading}
+        onClick={handleDelete}
+        className={styles.deleteButton}
+      >
+        {loading ? 'Processing...' : 'Delete Product'}
+      </button>
     </div>
+  </form>
+</div>
   )
 }
