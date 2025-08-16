@@ -81,7 +81,7 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
   const [defaultImagePreview, setDefaultImagePreview] = useState(
     product?.defaultImage ? urlFor(product.defaultImage) : null
   )
-  const [defaultImageId] = useState(product?.defaultImage?.asset?._ref) // removed setter
+  const [defaultImageId] = useState(product?.defaultImage?.asset?._ref)
   const [colors, setColors] = useState<ColorOption[]>(() => {
     const colorMap: Record<string, ColorOption> = {}
     product?.variants?.forEach(v => {
@@ -237,6 +237,29 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
     }
   }
 
+  const handleDelete = async () => {
+    if (!product._id) return alert('Missing product ID')
+    const confirmDelete = confirm('Are you sure you want to delete this product? This action cannot be undone.')
+    if (!confirmDelete) return
+
+    setLoading(true)
+    try {
+      const res = await fetch('/api/products/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: product._id }),
+      })
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error || 'Failed to delete product')
+      alert('Product deleted successfully')
+      router.push('/admin')
+    } catch (err: any) {
+      alert(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className={styles.mainContainer}>
       <h1 className={styles.heading}>Edit Product</h1>
@@ -286,9 +309,15 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
         ))}
         <button type="button" onClick={addColor}>Add Color</button>
 
-        <button type="submit" disabled={loading} className={styles.button} style={{ marginTop: 10 }}>
-          {loading ? 'Updating...' : 'Update Product'}
-        </button>
+        {/* Update & Delete */}
+        <div style={{ marginTop: 10, display: 'flex', gap: 10 }}>
+          <button type="submit" disabled={loading} className={styles.button}>
+            {loading ? 'Updating...' : 'Update Product'}
+          </button>
+          <button type="button" disabled={loading} onClick={handleDelete} style={{ background: 'red', color: 'white' }}>
+            {loading ? 'Processing...' : 'Delete Product'}
+          </button>
+        </div>
       </form>
     </div>
   )
