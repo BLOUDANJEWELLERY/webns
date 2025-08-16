@@ -167,7 +167,6 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
     setLoading(true)
 
     try {
-      // Upload default image
       let defaultAssetId = defaultImageId
       if (defaultImageFile) {
         const formData = new FormData()
@@ -179,7 +178,6 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
         defaultAssetId = data.assetId
       }
 
-      // Upload color images
       const colorImages: any[] = []
       for (const color of colors) {
         let assetId = color.existingImageId
@@ -199,7 +197,6 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
         })
       }
 
-      // Flatten variants
       const variants: any[] = []
       colors.forEach(c =>
         c.variants.forEach(v =>
@@ -214,7 +211,6 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
         )
       )
 
-      // Send update
       const res = await fetch('/api/products/update', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -272,22 +268,26 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
         <input type="number" step="0.01" className={styles.input} value={price} onChange={e => setPrice(e.target.value)} required />
 
         <label className={styles.label}>Default Image</label>
-        <input type="file" accept="image/*" onChange={handleDefaultImageChange} />
-        {defaultImagePreview && <div style={{ width: 150, height: 150, position: 'relative', marginTop: 5 }}>
-          <Image src={defaultImagePreview} alt="Default" fill style={{ objectFit: 'cover', borderRadius: 8 }} />
-        </div>}
+        <input type="file" accept="image/*" onChange={handleDefaultImageChange} className={styles.inputFile} />
+        {defaultImagePreview && (
+          <div className={styles.previewWrapper}>
+            <Image src={defaultImagePreview} alt="Default" width={150} height={150} className={styles.previewImage} />
+          </div>
+        )}
 
         <h3>Colors & Variants</h3>
         {colors.map((color, ci) => (
-          <div key={color._key} style={{ border: '1px solid #D6BCA6', padding: 12, marginBottom: 12, borderRadius: 10 }}>
+          <div key={color._key} className={styles.colorBlock}>
             <label className={styles.label}>Color Name</label>
             <input className={styles.input} value={color.color} onChange={e => { const updated = [...colors]; updated[ci].color = e.target.value; setColors(updated) }} required />
 
             <label className={styles.label}>Color Image</label>
-            <input type="file" accept="image/*" onChange={e => e.target.files && handleColorImageChange(ci, e.target.files[0])} />
-            {color.imagePreview && <div style={{ width: 120, height: 120, position: 'relative', marginTop: 5 }}>
-              <Image src={color.imagePreview} alt="Color" fill style={{ objectFit: 'cover', borderRadius: 8 }} />
-            </div>}
+            <input type="file" accept="image/*" onChange={e => e.target.files && handleColorImageChange(ci, e.target.files[0])} className={styles.inputFile} />
+            {color.imagePreview && (
+              <div className={styles.previewWrapper}>
+                <Image src={color.imagePreview} alt="Color" width={120} height={120} className={styles.previewImage} />
+              </div>
+            )}
 
             <h4>Variants</h4>
             {color.variants.map((v, vi) => (
@@ -318,13 +318,13 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
             ))}
 
             <button type="button" className={styles.button} onClick={() => addVariant(ci)}>Add Variant</button>
-            <button type="button" className={styles.deleteButton} style={{ marginLeft: 10 }} onClick={() => removeColor(ci)}>Remove Color</button>
+            <button type="button" className={styles.deleteButton} style={{ marginTop: 8 }} onClick={() => removeColor(ci)}>Remove Color</button>
           </div>
         ))}
 
         <button type="button" className={styles.button} onClick={addColor}>Add Color</button>
 
-        <div style={{ marginTop: 15, display: 'flex', gap: 12 }}>
+        <div style={{ marginTop: 15, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <button type="submit" disabled={loading} className={styles.button}>
             {loading ? 'Updating...' : 'Update Product'}
           </button>
