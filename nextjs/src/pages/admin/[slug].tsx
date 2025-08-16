@@ -19,7 +19,7 @@ interface ColorOption {
   color: string
   imageFile: File | null
   imagePreview: string | null
-  existingImage?: any
+  existingImageId?: string
   variants: Variant[]
 }
 
@@ -33,10 +33,11 @@ export default function EditProductPage() {
   const [price, setPrice] = useState('')
   const [defaultImageFile, setDefaultImageFile] = useState<File | null>(null)
   const [defaultImagePreview, setDefaultImagePreview] = useState<string | null>(null)
-  const [existingDefaultImage, setExistingDefaultImage] = useState<any>(null)
+  const [existingDefaultImageId, setExistingDefaultImageId] = useState<string | null>(null)
   const [colors, setColors] = useState<ColorOption[]>([])
   const [loading, setLoading] = useState(false)
 
+  // Fetch product data
   useEffect(() => {
     if (!id) return
     async function fetchProduct() {
@@ -45,14 +46,17 @@ export default function EditProductPage() {
 
       setTitle(data.title || '')
       setPrice(data.price?.toString() || '')
-      if (data.defaultImage) setDefaultImagePreview(urlFor(data.defaultImage))
-      setExistingDefaultImage(data.defaultImage || null)
+
+      if (data.defaultImage) {
+        setDefaultImagePreview(urlFor(data.defaultImage))
+        setExistingDefaultImageId(data.defaultImage._id)
+      }
 
       // Map variants per color
       const colorMap: Record<string, ColorOption> = {}
       data.variants?.forEach((v: Variant & { color: string }) => {
         if (!colorMap[v.color])
-          colorMap[v.color] = { color: v.color, imageFile: null, imagePreview: null, existingImage: null, variants: [] }
+          colorMap[v.color] = { color: v.color, imageFile: null, imagePreview: null, existingImageId: null, variants: [] }
         colorMap[v.color].variants.push({
           size: v.size,
           quantity: v.quantity,
@@ -65,20 +69,20 @@ export default function EditProductPage() {
         color: ci.color,
         imageFile: null,
         imagePreview: ci.image ? urlFor(ci.image) : null,
-        existingImage: ci.image || null,
+        existingImageId: ci.image?._id || null,
         variants: colorMap[ci.color]?.variants || [],
       })) || Object.values(colorMap)
 
       setColors(colorImages)
     }
     fetchProduct()
-  }, [id])
+  }, [id, router])
 
-  // Default image preview
+  // Default image change
   const handleDefaultImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null
     setDefaultImageFile(file)
-    setDefaultImagePreview(file ? URL.createObjectURL(file) : existingDefaultImage ? urlFor(existingDefaultImage) : null)
+    setDefaultImagePreview(file ? URL.createObjectURL(file) : existingDefaultImageId ? urlFor({ _id: existingDefaultImageId }) : null)
   }
 
   // Color image handlers
@@ -107,27 +111,29 @@ export default function EditProductPage() {
     e.preventDefault()
     setLoading(true)
     try {
-      let defaultImageAsset = existingDefaultImage
+      // Upload default image if changed
+      let defaultImageId = existingDefaultImageId
       if (defaultImageFile) {
-        defaultImageAsset = await client.assets.upload('image', defaultImageFile, { filename: defaultImageFile.name })
+        const asset = await client.assets.upload('image', defaultImageFile, { filename: defaultImageFile.name })
+        defaultImageId = asset._id
       }
 
-      const colorImages: any[] = []
+      // Upload color images
+      const colorImagesPayload: any[] = []
       for (const color of colors) {
-        let asset = color.existingImage
+        let imageId = color.existingImageId || null
         if (color.imageFile) {
-          asset = await client.assets.upload('image', color.imageFile, { filename: `${color.color}.png` })
+          const asset = await client.assets.upload('image', color.imageFile, { filename: `${color.color}.png` })
+          imageId = asset._id
         }
-        colorImages.push({
-          color: color.color,
-          image: asset ? { _type: 'image', asset: { _type: 'reference', _ref: asset._id } } : undefined,
-        })
+        colorImagesPayload.push({ color: color.color, image: imageId })
       }
 
-      const variants: any[] = []
+      // Prepare variants
+      const variantsPayload: any[] = []
       colors.forEach((color) => {
         color.variants.forEach((v) => {
-          variants.push({
+          variantsPayload.push({
             color: color.color,
             size: v.size,
             quantity: Number(v.quantity),
@@ -137,6 +143,7 @@ export default function EditProductPage() {
         })
       })
 
+      // Send update request
       const res = await fetch('/api/products/update', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -144,9 +151,9 @@ export default function EditProductPage() {
           id,
           title,
           price: Number(price),
-          defaultImage: defaultImageAsset ? { _type: 'image', asset: { _type: 'reference', _ref: defaultImageAsset._id } } : undefined,
-          colorImages,
-          variants,
+          defaultImage: defaultImageId,
+          colorImages: colorImagesPayload,
+          variants: variantsPayload,
         }),
       })
 
