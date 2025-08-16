@@ -5,6 +5,7 @@ import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import Image from 'next/image'
 import styles from '../../styles/adminEdit.module.css'
+import { v4 as uuidv4 } from 'uuid'
 
 const client = createClient({
   projectId: '3jc8hsku',
@@ -81,29 +82,27 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
   )
   const [defaultImageId, setDefaultImageId] = useState(product?.defaultImage?.asset?._ref)
   const [colors, setColors] = useState<ColorOption[]>(() => {
-    const colorMap: Record<string, ColorOption> = {}
+    const map: Record<string, ColorOption> = {}
     product?.variants?.forEach(v => {
-      if (!colorMap[v.color])
-        colorMap[v.color] = {
+      if (!map[v.color])
+        map[v.color] = {
           color: v.color,
           imageFile: null,
           imagePreview: null,
           existingImageId: undefined,
           variants: [],
-          _key: v._key || Math.random().toString(36).substr(2, 9),
+          _key: v._key || uuidv4(),
         }
-      colorMap[v.color].variants.push({ ...v, _key: v._key || Math.random().toString(36).substr(2, 9) })
+      map[v.color].variants.push({ ...v, _key: v._key || uuidv4() })
     })
-
     const colorImages: ColorOption[] = product?.colorImages?.map(ci => ({
       color: ci.color,
       imageFile: null,
       imagePreview: ci.image ? urlFor(ci.image) : null,
       existingImageId: ci.image?.asset?._ref,
-      variants: colorMap[ci.color]?.variants || [],
-      _key: ci._key || Math.random().toString(36).substr(2, 9),
-    })) || Object.values(colorMap)
-
+      variants: map[ci.color]?.variants || [],
+      _key: ci._key || uuidv4(),
+    })) || Object.values(map)
     return colorImages
   })
   const [loading, setLoading] = useState(false)
@@ -125,28 +124,29 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
   }
 
   const addColor = () => {
-    setColors([
-      ...colors,
-      { color: '', imageFile: null, imagePreview: null, variants: [], _key: Math.random().toString(36).substr(2, 9) },
-    ])
+    setColors([...colors, { color: '', imageFile: null, imagePreview: null, variants: [], _key: uuidv4() }])
   }
-  const removeColor = (i: number) => setColors(colors.filter((_, idx) => idx !== i))
+
+  const removeColor = (index: number) => setColors(colors.filter((_, i) => i !== index))
+
   const handleColorImageChange = (index: number, file: File) => {
     const updated = [...colors]
     updated[index].imageFile = file
     updated[index].imagePreview = URL.createObjectURL(file)
     setColors(updated)
   }
+
   const addVariant = (colorIndex: number) => {
     const updated = [...colors]
     updated[colorIndex].variants.push({
       size: '',
       quantity: 1,
       color: colors[colorIndex].color,
-      _key: Math.random().toString(36).substr(2, 9),
+      _key: uuidv4(),
     })
     setColors(updated)
   }
+
   const removeVariant = (colorIndex: number, variantIndex: number) => {
     const updated = [...colors]
     updated[colorIndex].variants.splice(variantIndex, 1)
@@ -157,7 +157,6 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
     e.preventDefault()
     if (!product._id) return alert('Missing product ID')
     setLoading(true)
-
     try {
       // Upload default image
       let defaultAssetId = defaultImageId
@@ -246,24 +245,26 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
         {/* Default Image */}
         <label className={styles.label}>Default Image</label>
         <input type="file" accept="image/*" onChange={handleDefaultImageChange} />
-        {defaultImagePreview && <div style={{ width: 150, height: 150, position: 'relative', marginTop: 5 }}>
-          <Image src={defaultImagePreview} alt="Default" fill style={{ objectFit: 'cover', borderRadius: 8 }} />
-        </div>}
+        {defaultImagePreview && (
+          <div style={{ width: 150, height: 150, position: 'relative', marginTop: 5 }}>
+            <Image src={defaultImagePreview} alt="Default" fill style={{ objectFit: 'cover', borderRadius: 8 }} />
+          </div>
+        )}
 
         {/* Colors & Variants */}
         <h3>Colors & Variants</h3>
         {colors.map((color, ci) => (
           <div key={color._key} style={{ border: '1px solid #D6BCA6', padding: 10, marginBottom: 10, borderRadius: 8 }}>
             <label className={styles.label}>Color Name</label>
-            <input className={styles.input} value={color.color} onChange={e => {
-              const updated = [...colors]; updated[ci].color = e.target.value; setColors(updated)
-            }} required />
+            <input className={styles.input} value={color.color} onChange={e => { const updated = [...colors]; updated[ci].color = e.target.value; setColors(updated) }} required />
 
             <label className={styles.label}>Color Image</label>
             <input type="file" accept="image/*" onChange={e => e.target.files && handleColorImageChange(ci, e.target.files[0])} />
-            {color.imagePreview && <div style={{ width: 120, height: 120, position: 'relative', marginTop: 5 }}>
-              <Image src={color.imagePreview} alt="Color" fill style={{ objectFit: 'cover', borderRadius: 8 }} />
-            </div>}
+            {color.imagePreview && (
+              <div style={{ width: 120, height: 120, position: 'relative', marginTop: 5 }}>
+                <Image src={color.imagePreview} alt="Color" fill style={{ objectFit: 'cover', borderRadius: 8 }} />
+              </div>
+            )}
 
             {/* Variants */}
             <h4>Variants</h4>
