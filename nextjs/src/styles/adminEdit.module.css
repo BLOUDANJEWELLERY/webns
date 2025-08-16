@@ -1,65 +1,70 @@
 /* src/styles/adminEdit.module.css */
 
-/* === Base / Mobile-First === */
+/* === Base / Mobile-First Layout === */
 .mainContainer {
   margin: 1rem;
-  padding: 2rem;
-  background: #fff8e1;
-  border-radius: 14px;
-  box-shadow: 0 4px 12px rgba(123, 63, 0, 0.15);
+  padding: 1.5rem;
+  background: #fffdfb;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(80, 40, 20, 0.1);
   font-family: 'Segoe UI', sans-serif;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .mainContainer:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(123, 63, 0, 0.2);
+  box-shadow: 0 6px 16px rgba(80, 40, 20, 0.15);
 }
 
+/* === Heading === */
 .heading {
-  font-size: 26px;
+  font-size: 1.6rem;
   font-weight: 700;
-  color: #4E2A0F;
+  color: #4e2a0f;
   text-align: center;
-  margin-bottom: 2rem;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.75rem;
+  line-height: 1.3;
 }
 
+/* === Form === */
 .form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .label {
-  font-size: 14px;
+  font-size: 0.95rem;
   font-weight: 600;
-  color: #4E2A0F;
-  margin-bottom: 0.3rem;
+  color: #4e2a0f;
+  margin-bottom: 0.4rem;
 }
 
 .input,
 .inputFile {
-  padding: 0.6rem 0.9rem;
-  border: 2px solid #D6BCA6;
+  padding: 0.7rem 1rem;
+  border: 1px solid #d6bca6;
   border-radius: 10px;
-  font-size: 14px;
-  color: #4E2A0F;
+  font-size: 0.95rem;
+  color: #4e2a0f;
   background-color: #fffaf5;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+  box-sizing: border-box;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-.input:focus {
-  border-color: #C89B3C;
-  box-shadow: 0 0 10px rgba(200, 155, 60, 0.25);
+.input:focus,
+.inputFile:focus {
+  border-color: #c89b3c;
+  box-shadow: 0 0 0 3px rgba(200, 155, 60, 0.25);
   outline: none;
-  transform: scale(1.02);
 }
 
 .inputFile {
   cursor: pointer;
+  border: 1px dashed #bfb1a3;
 }
 
+/* === Image Preview === */
 .previewWrapper {
   margin-bottom: 1rem;
   text-align: center;
@@ -67,12 +72,13 @@
 
 .previewImage {
   max-width: 100%;
-  max-height: 200px;
-  border-radius: 10px;
-  box-shadow: 0 3px 10px rgba(123, 63, 0, 0.15);
+  max-height: 220px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(100, 50, 30, 0.15);
+  object-fit: contain;
 }
 
-/* Buttons */
+/* === Buttons === */
 .button,
 .priceToggleButton,
 .removeButton,
@@ -80,167 +86,155 @@
   font-weight: 600;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 0.9rem;
-  padding: 0.6rem 1.2rem;
+  transition: all 0.25s ease;
+  font-size: 0.95rem;
+  padding: 0.7rem 1.25rem;
+  border: none;
 }
 
 /* Primary Action */
 .button {
   color: #fff;
-  background: linear-gradient(135deg, #C89B3C, #b3842f);
-  border: none;
+  background: linear-gradient(to right, #8d6e63, #6d4c41);
+  box-shadow: 0 3px 10px rgba(100, 50, 30, 0.15);
 }
 
 .button:hover {
-  background: linear-gradient(135deg, #b3842f, #a07225);
-  transform: translateY(-1px) scale(1.02);
-  box-shadow: 0 6px 14px rgba(123, 63, 0, 0.2);
+  background: linear-gradient(to right, #6d4c41, #4e342e);
+  transform: translateY(-1px);
 }
 
 /* Delete */
 .deleteButton {
-  color: #fff;
   background: #d32f2f;
-  border: none;
+  color: #fff;
 }
 
 .deleteButton:hover {
   background: #b71c1c;
-  transform: translateY(-1px) scale(1.02);
-  box-shadow: 0 6px 14px rgba(123, 63, 0, 0.2);
+  transform: translateY(-1px);
 }
 
-/* Remove */
+/* Remove Variant */
 .removeButton {
   background: #9e5a1c;
   color: #fff;
-  border: none;
 }
 
 .removeButton:hover {
   background: #7b4514;
-  transform: translateY(-1px) scale(1.02);
-  box-shadow: 0 4px 12px rgba(123, 63, 0, 0.2);
+  transform: translateY(-1px);
 }
 
-/* Price Toggle */
+/* Toggle Price Override */
 .priceToggleButton {
-  background: #b3842f;
+  background: #c89b3c;
   color: #fff;
-  border: none;
 }
 
 .priceToggleButton:hover {
   background: #a07225;
-  transform: translateY(-1px) scale(1.02);
-  box-shadow: 0 4px 10px rgba(123, 63, 0, 0.2);
+  transform: translateY(-1px);
 }
 
-/* Variant Cards */
+/* === Variant Cards === */
 .variantCard {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin: 2px;
-  padding: 6px 8px;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 1rem;
   background: #fffaf5;
-  border-radius: 10px;
-  border: 1px solid #D6BCA6;
-  box-shadow: 0 2px 8px rgba(123, 63, 0, 0.1);
+  border-radius: 12px;
+  border: 1px solid #e0d5c7;
+  box-shadow: 0 3px 8px rgba(80, 40, 20, 0.08);
+  box-sizing: border-box;
 }
 
 .variantCard select,
 .variantCard input {
-  padding: 0.45rem 0.8rem;
-  font-size: 0.85rem;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.9rem;
   border-radius: 8px;
-  border: 1px solid #D6BCA6;
+  border: 1px solid #d6bca6;
   background: #fffdfb;
-  color: #4E2A0F;
-  transition: all 0.2s ease;
+  color: #4e2a0f;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
 }
 
 .variantCard select:focus,
 .variantCard input:focus {
-  border-color: #C89B3C;
-  box-shadow: 0 0 4px rgba(200, 155, 60, 0.2);
+  border-color: #c89b3c;
+  box-shadow: 0 0 0 2px rgba(200, 155, 60, 0.2);
   outline: none;
 }
 
+/* Price Override Inline */
 .priceOverrideWrapper {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 0.5rem;
 }
 
 .priceOverrideInput {
-  width: 70px;
+  width: 80px;
 }
 
-/* Color Block */
+/* === Color Blocks === */
 .colorBlock {
-  border: 1px solid #D6BCA6;
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 12px;
-  background: #fffaf5;
-  box-shadow: 0 2px 8px rgba(123, 63, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid #d6bca6;
+  border-radius: 14px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: #fffdfb;
+  box-shadow: 0 2px 8px rgba(100, 50, 30, 0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .colorBlock:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(123, 63, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(100, 50, 30, 0.12);
 }
 
-/* === Tablet / Laptop Screens === */
+/* === Responsive === */
 @media (min-width: 600px) {
   .mainContainer {
-    max-width: 700px;
-    padding: 2.5rem;
+    max-width: 720px;
+    padding: 2rem;
   }
 
   .heading {
-    font-size: 30px;
+    font-size: 1.9rem;
     margin-bottom: 2.5rem;
-  }
-
-  .button,
-  .deleteButton,
-  .removeButton,
-  .priceToggleButton {
-    font-size: 1rem;
-    padding: 0.75rem 1.5rem;
   }
 
   .variantCard {
     flex-direction: row;
     flex-wrap: wrap;
-    gap: 10px;
     align-items: center;
+    gap: 1rem;
   }
 
   .previewImage {
-    max-height: 250px;
+    max-height: 260px;
   }
 }
 
 @media (min-width: 992px) {
   .mainContainer {
-    padding: 3rem;
-    border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(123, 63, 0, 0.2);
+    padding: 2.5rem 3rem;
+    border-radius: 18px;
+    box-shadow: 0 8px 20px rgba(80, 40, 20, 0.15);
   }
 
   .heading {
-    font-size: 32px;
+    font-size: 2.1rem;
     margin-bottom: 3rem;
   }
 
   .previewImage {
-    max-height: 300px;
-    border-radius: 12px;
-    box-shadow: 0 5px 14px rgba(123, 63, 0, 0.15);
+    max-height: 320px;
+    border-radius: 14px;
   }
 }
