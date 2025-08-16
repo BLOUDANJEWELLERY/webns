@@ -153,56 +153,6 @@
 .variantCard {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 10px;
-  align-items: center;
-}
-
-/* Color Block */
-.colorBlock {
-  border: 1px solid #D6BCA6;
-  border-radius: 12px;
-  padding: 15px;
-  margin-bottom: 15px;
-  background: #fffaf5;
-  box-shadow: 0 3px 10px rgba(123, 63, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.colorBlock:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(123, 63, 0, 0.15);
-}
-
-/* === Responsive === */
-@media (max-width: 768px) {
-  .mainContainer {
-    margin: 1rem;
-    padding: 2rem;
-  }
-
-  .heading {
-    font-size: 28px;
-    margin-bottom: 2rem;
-  }
-
-  .button,
-  .deleteButton,
-  .removeButton,
-  .priceToggleButton {
-    font-size: 0.9rem;
-    padding: 0.65rem 1.25rem;
-  }
-
-  .variantCard {
-    flex-direction: column;
-    gap: 8px;
-  }
-}
-/* === Variant Mini-Toolbar === */
-.variantCard {
-  display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
   margin-bottom: 10px;
@@ -247,36 +197,44 @@
   width: 80px;
 }
 
-.priceToggleButton {
-  font-size: 0.85rem;
-  padding: 0.45rem 0.8rem;
-  border-radius: 8px;
-  background: #b3842f;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
+/* === Color Block === */
+.colorBlock {
+  border: 1px solid #D6BCA6;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 15px;
+  background: #fffaf5;
+  box-shadow: 0 3px 10px rgba(123, 63, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.priceToggleButton:hover {
-  background: #a07225;
-  transform: translateY(-1px) scale(1.02);
-  box-shadow: 0 4px 10px rgba(123, 63, 0, 0.2);
+.colorBlock:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(123, 63, 0, 0.15);
 }
 
-.removeButton {
-  background: #9e5a1c;
-  color: #fff;
-  padding: 0.55rem 1rem;
-  border-radius: 8px;
-  border: none;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
+/* === Responsive === */
+@media (max-width: 768px) {
+  .mainContainer {
+    margin: 1rem;
+    padding: 2rem;
+  }
 
-.removeButton:hover {
-  background: #7b4514;
-  transform: translateY(-1px) scale(1.02);
-  box-shadow: 0 4px 12px rgba(123, 63, 0, 0.25);
+  .heading {
+    font-size: 28px;
+    margin-bottom: 2rem;
+  }
+
+  .button,
+  .deleteButton,
+  .removeButton,
+  .priceToggleButton {
+    font-size: 0.9rem;
+    padding: 0.65rem 1.25rem;
+  }
+
+  .variantCard {
+    flex-direction: column;
+    gap: 8px;
+  }
 }
