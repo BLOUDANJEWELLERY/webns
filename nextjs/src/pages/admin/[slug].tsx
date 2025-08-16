@@ -1,6 +1,7 @@
 // pages/admin/[slug].tsx
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import Image from 'next/image'
 import styles from '../../styles/adminEdit.module.css'
 import { client } from '../../lib/sanityClient'
 import imageUrlBuilder from '@sanity/image-url'
@@ -183,7 +184,11 @@ export default function EditProductPage() {
 
         <label className={styles.label}>Default Image</label>
         <input type="file" accept="image/*" className={styles.inputFile} onChange={handleDefaultImageChange} />
-        {defaultImagePreview && <img src={defaultImagePreview} alt="Default" style={{ width: 150, marginTop: 5, borderRadius: 8 }} />}
+        {defaultImagePreview && (
+          <div style={{ width: 150, height: 150, marginTop: 5, position: 'relative' }}>
+            <Image src={defaultImagePreview} alt="Default" fill style={{ objectFit: 'cover', borderRadius: 8 }} />
+          </div>
+        )}
 
         <h3>Colors & Variants</h3>
         {colors.map((color, ci) => (
@@ -197,7 +202,11 @@ export default function EditProductPage() {
 
             <label className={styles.label}>Color Image</label>
             <input type="file" accept="image/*" onChange={(e) => e.target.files && handleColorImageChange(ci, e.target.files[0])} />
-            {color.imagePreview && <img src={color.imagePreview} alt="Color" style={{ width: 120, marginTop: 5, borderRadius: 8 }} />}
+            {color.imagePreview && (
+              <div style={{ width: 120, height: 120, marginTop: 5, position: 'relative' }}>
+                <Image src={color.imagePreview} alt="Color" fill style={{ objectFit: 'cover', borderRadius: 8 }} />
+              </div>
+            )}
 
             <h4>Variants</h4>
             {color.variants.map((v, vi) => (
