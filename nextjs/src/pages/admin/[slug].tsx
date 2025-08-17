@@ -75,9 +75,6 @@ const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 export default function AdminEditPage({ product }: { product: Product | null }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-// At the top of your component
-const [openColors, setOpenColors] = useState<boolean[]>(colors.map(() => true));
-
 
   const [title, setTitle] = useState(product?.title || '')
   const [price, setPrice] = useState(product?.price.toString() || '')
@@ -259,6 +256,8 @@ const [openColors, setOpenColors] = useState<boolean[]>(colors.map(() => true));
       setLoading(false)
     }
   }
+// At the top of your component
+const [openColors, setOpenColors] = useState<boolean[]>(colors.map(() => true));
 
   return (
     <div className={styles.mainContainer}>
