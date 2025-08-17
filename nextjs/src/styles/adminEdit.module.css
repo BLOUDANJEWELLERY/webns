@@ -219,20 +219,52 @@
   width: 80px;
 }
 
-/* === Color Blocks === */
+/* Color Block Wrapper */
 .colorBlock {
   border: 1px solid #d6bca6;
-  border-radius: 14px;
+  border-radius: 10px;
   padding: 1rem;
   margin-bottom: 1rem;
-  background: #fffdfb;
-  box-shadow: 0 2px 8px rgba(100, 50, 30, 0.08);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  background-color: #fffaf5;
+  transition: box-shadow 0.25s ease;
 }
 
 .colorBlock:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(100, 50, 30, 0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Collapsible Header */
+.colorHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: #f6e7d6;
+  border-radius: 8px;
+  user-select: none;
+  transition: background-color 0.2s ease;
+}
+
+.colorHeader:hover {
+  background-color: #f0dcbf;
+}
+
+.colorHeader span:first-child {
+  color: #4e2a0f; /* main text color */
+}
+
+.colorHeader span:last-child {
+  font-size: 0.85rem;
+  color: #a07a55; /* arrow color */
+}
+
+/* Optional: smooth collapse animation */
+.colorBlock > div:not(.colorHeader) {
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  overflow: hidden;
 }
 
 /* === Responsive === */
