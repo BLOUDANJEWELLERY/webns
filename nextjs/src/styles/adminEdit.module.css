@@ -243,6 +243,7 @@
   cursor: pointer;
   font-weight: 600;
   font-size: 1rem;
+  margin-bottom: 0.5rem;
   padding: 0.5rem 1rem;
   background-color: #f6e7d6;
   border-radius: 8px;
