@@ -118,6 +118,50 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
 // At the top of your component
 const [openColors, setOpenColors] = useState<boolean[]>(colors.map(() => true));
 
+
+const isProductChanged = useMemo(() => {
+  if (!product) return false;
+
+  // Title & price
+  if (title !== product.title) return true;
+  if (Number(price) !== product.price) return true;
+
+  // Default image changed
+  if (defaultImageFile) return true;
+
+  // Colors count changed
+  if (colors.length !== (product.colorImages?.length || 0)) return true;
+
+  // Compare each color
+  for (let i = 0; i < colors.length; i++) {
+    const color = colors[i];
+    const origColor = product.colorImages?.[i];
+
+    // Color name
+    if (color.color !== origColor?.color) return true;
+
+    // New color image
+    if (color.imageFile) return true;
+
+    // Variants
+    const origVariants = product.variants?.filter(v => v.color === color.color) || [];
+    if (color.variants.length !== origVariants.length) return true;
+
+    for (let j = 0; j < color.variants.length; j++) {
+      const v = color.variants[j];
+      const ov = origVariants[j];
+      if (!ov) return true;
+      if (v.size !== ov.size) return true;
+      if (v.quantity !== ov.quantity) return true;
+      if ((v.priceOverride || 0) !== (ov.priceOverride || 0)) return true;
+    }
+  }
+
+  return false; // Nothing changed
+}, [title, price, defaultImageFile, colors, product]);
+
+
+
   useEffect(() => {
     if (!defaultImageFile) return
     const url = URL.createObjectURL(defaultImageFile)
@@ -486,18 +530,22 @@ const [openColors, setOpenColors] = useState<boolean[]>(colors.map(() => true));
 
     {/* Actions */}
     <div className={styles.actionWrapper}>
-      <button type="submit" disabled={loading} className={styles.button}>
-        {loading ? 'Updating...' : 'Update Product'}
-      </button>
-      <button
-        type="button"
-        disabled={loading}
-        onClick={handleDelete}
-        className={styles.deleteButton}
-      >
-        {loading ? 'Processing...' : 'Delete Product'}
-      </button>
-    </div>
+  <button
+    type="submit"
+    disabled={loading || !isProductChanged}
+    className={`${styles.button} ${isProductChanged ? styles.activeButton : ''}`}
+  >
+    {loading ? 'Updating...' : 'Update Product'}
+  </button>
+  <button
+    type="button"
+    disabled={loading}
+    onClick={handleDelete}
+    className={styles.deleteButton}
+  >
+    {loading ? 'Processing...' : 'Delete Product'}
+  </button>
+</div>
   </form>
 </div>
   )
