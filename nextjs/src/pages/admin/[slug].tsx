@@ -298,32 +298,33 @@ const handleSubmit = async () => {
   }
 }
 
-  const handleDelete = async () => {
-    if (!product._id) {
-      setModalMessage('Missing product ID')
-      setShowDeleteModal(true)
-      return
-    }
-
-    setLoading(true)
-    try {
-      const res = await fetch('/api/products/delete', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: product._id }),
-      })
-      const result = await res.json()
-      if (!res.ok) throw new Error(result.error || 'Failed to delete product')
-
-      setModalMessage('Product deleted successfully.')
-      setShowDeleteModal(true)
-    } catch (err: any) {
-      setModalMessage(err.message)
-      setShowDeleteModal(true)
-    } finally {
-      setLoading(false)
-    }
+const handleDelete = async () => {
+  if (!product._id) {
+    setModalMessage('Missing product ID')
+    setShowDeleteModal(true)
+    return
   }
+
+  setLoading(true)
+  try {
+    const res = await fetch('/api/products/delete', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: product._id }),
+    })
+    const result = await res.json()
+    if (!res.ok) throw new Error(result.error || 'Failed to delete product')
+
+    // Successfully deleted, go back to admin
+    router.push('/admin')
+  } catch (err: any) {
+    // Show modal only on error
+    setModalMessage(err.message)
+    setShowDeleteModal(true)
+  } finally {
+    setLoading(false)
+  }
+}
 
   return (
 <>
