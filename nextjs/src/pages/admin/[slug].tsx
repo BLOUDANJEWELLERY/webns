@@ -568,7 +568,7 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
     {loading ? "Processing..." : "Delete Product"}
   </button>
 </div>
-
+  </form>
 {/* Update Confirmation Modal */}
 {showUpdateModal && (
   <div className={styles.modalOverlay} role="dialog" aria-modal="true" aria-labelledby="updateModalTitle">
@@ -622,8 +622,6 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
     </div>
   </div>
 )}
-
-  </form>
 </div>
   )
 }
