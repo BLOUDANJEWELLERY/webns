@@ -574,7 +574,12 @@ const handleSubmit = async () => {
 </div>
 {/* Update Confirmation Modal */}
 {showUpdateModal && (
-  <div className={styles.modalOverlay} role="dialog" aria-modal="true" aria-labelledby="updateModalTitle">
+  <div
+    className={styles.modalOverlay}
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="updateModalTitle"
+  >
     <div className={styles.modal}>
       <h2 id="updateModalTitle">Confirm Update</h2>
       <p>Are you sure you want to update this product?</p>
@@ -601,7 +606,12 @@ const handleSubmit = async () => {
 
 {/* Delete Confirmation Modal */}
 {showDeleteModal && (
-  <div className={styles.modalOverlay} role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+  <div
+    className={styles.modalOverlay}
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="deleteModalTitle"
+  >
     <div className={styles.modal}>
       <h2 id="deleteModalTitle">Confirm Deletion</h2>
       <p>This action cannot be undone. Are you sure you want to delete this product?</p>
