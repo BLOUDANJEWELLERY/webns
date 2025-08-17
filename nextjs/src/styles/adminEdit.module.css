@@ -1,14 +1,19 @@
 /* src/styles/adminEdit.module.css */
 
 .modalOverlay {
-  position: fixed;           /* fixed to viewport */
-  inset: 0;                  /* top:0; right:0; bottom:0; left:0; ensures full coverage */
-  background: rgba(0, 0, 0, 0.6);
+  position: fixed;          /* fix to viewport */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;              /* cover full width */
+  height: 100%;             /* cover full height */
+  background: rgba(0,0,0,0.6);
   display: flex;
-  align-items: center;       /* vertical center */
-  justify-content: center;   /* horizontal center */
-  z-index: 1000;
-  overflow-y: auto;          /* scroll if modal taller than viewport */
+  justify-content: center;  /* horizontal center */
+  align-items: center;      /* vertical center */
+  z-index: 10000;
+  overflow: hidden;         /* prevent page scroll */
 }
 
 .modal {
@@ -17,10 +22,15 @@
   border-radius: 8px;
   width: 380px;
   max-width: 90%;
+  max-height: 90%;          /* prevent modal from exceeding screen height */
   text-align: center;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-  max-height: 90vh;          /* prevents modal from exceeding viewport height */
-  overflow-y: auto;          /* scroll inside modal if content too tall */
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  overflow-y: auto;         /* scroll modal content if needed */
+}
+
+/* Optional: prevent the page behind from scrolling when modal is open */
+body.modal-open {
+  overflow: hidden;
 }
 
 .modalButtons {
@@ -63,8 +73,8 @@
 }
 /* === Base / Mobile-First Layout === */
 .mainContainer {
-  margin: 1rem;
-  padding: 1.5rem;
+  /*margin: 1rem;
+  padding: 1.5rem;*/
   background: #fffdfb;
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(80, 40, 20, 0.1);
