@@ -64,6 +64,31 @@
   border: 1px dashed #bfb1a3;
 }
 
+
+/* Hide the real file input */
+.hiddenFileInput {
+  display: none;
+}
+
+/* Custom file upload button */
+.fileLabel {
+  display: inline-block;
+  padding: 0.7rem 1rem;
+  border: 1px dashed #bfb1a3;
+  border-radius: 10px;
+  background-color: #fffaf5;
+  color: #4e2a0f;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: 0.25s ease;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.fileLabel:hover {
+  border-color: #c89b3c;
+  background: #fff3e5;
+}
 /* === Image Preview === */
 .previewWrapper {
   margin-bottom: 1rem;
