@@ -590,7 +590,7 @@ const handleDelete = async () => {
     <div className={styles.modal}>
       {isProcessing ? (
         <>
-          <p>Processing...</p>
+          <p>Updating...</p>
           <div className={styles.spinner}></div>
         </>
       ) : (
@@ -612,7 +612,7 @@ const handleDelete = async () => {
     <div className={styles.modal}>
       {isProcessing ? (
         <>
-          <p>Processing...</p>
+          <p>Deleting...</p>
           <div className={styles.spinner}></div>
         </>
       ) : (
