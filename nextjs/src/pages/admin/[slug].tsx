@@ -115,6 +115,9 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
     return colorImages
   })
 
+// At the top of your component
+const [openColors, setOpenColors] = useState<boolean[]>(colors.map(() => true));
+
   useEffect(() => {
     if (!defaultImageFile) return
     const url = URL.createObjectURL(defaultImageFile)
@@ -256,8 +259,6 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
       setLoading(false)
     }
   }
-// At the top of your component
-const [openColors, setOpenColors] = useState<boolean[]>(colors.map(() => true));
 
   return (
     <div className={styles.mainContainer}>
