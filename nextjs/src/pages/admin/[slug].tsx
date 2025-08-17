@@ -333,24 +333,33 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
         />
 
         {/* Color Image */}
-        <label className={styles.label}>Color Image</label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={e => e.target.files && handleColorImageChange(ci, e.target.files[0])}
-          className={styles.inputFile}
-        />
-        {color.imagePreview && (
-          <div className={styles.previewWrapper}>
-            <Image
-              src={color.imagePreview}
-              alt="Color"
-              width={120}
-              height={120}
-              className={styles.previewImage}
-            />
-          </div>
-        )}
+     <label className={styles.label}>Color Image</label>
+
+{/* Custom File Upload Button */}
+<label className={styles.fileLabel}>
+  Upload Color Image
+  <input
+    type="file"
+    accept="image/*"
+    onChange={e =>
+      e.target.files && handleColorImageChange(ci, e.target.files[0])
+    }
+    className={styles.hiddenFileInput}
+  />
+</label>
+
+{/* Preview */}
+{color.imagePreview && (
+  <div className={styles.previewWrapper}>
+    <Image
+      src={color.imagePreview}
+      alt="Color"
+      width={120}
+      height={120}
+      className={styles.previewImage}
+    />
+  </div>
+)}
 
         {/* Variants */}
         <h4 className={styles.variantHeading}>Variants</h4>
