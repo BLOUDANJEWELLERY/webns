@@ -1,12 +1,9 @@
 /* src/styles/adminEdit.module.css */
 
 .modalOverlay {
-  position: fixed;           /* stay fixed to viewport */
-  top: 0;
-  left: 0;
-  width: 100vw;              /* full screen width */
-  height: 100vh;             /* full screen height */
-  background: rgba(0, 0, 0, 0.6); /* semi-transparent overlay */
+  position: fixed;           /* fixed to viewport */
+  inset: 0;                  /* top:0; right:0; bottom:0; left:0; ensures full coverage */
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;       /* vertical center */
   justify-content: center;   /* horizontal center */
@@ -22,7 +19,8 @@
   max-width: 90%;
   text-align: center;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-  position: relative;        /* ensures any child positioning works */
+  max-height: 90vh;          /* prevents modal from exceeding viewport height */
+  overflow-y: auto;          /* scroll inside modal if content too tall */
 }
 
 .modalButtons {
