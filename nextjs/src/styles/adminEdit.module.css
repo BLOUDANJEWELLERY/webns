@@ -1,19 +1,17 @@
 /* src/styles/adminEdit.module.css */
 
 .modalOverlay {
-  position: fixed;          /* fix to viewport */
+  position: fixed;       /* viewport-based */
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  width: 100%;              /* cover full width */
-  height: 100%;             /* cover full height */
   background: rgba(0,0,0,0.6);
   display: flex;
-  justify-content: center;  /* horizontal center */
-  align-items: center;      /* vertical center */
+  justify-content: center;
+  align-items: center;
   z-index: 10000;
-  overflow: hidden;         /* prevent page scroll */
+  overflow: auto;        /* scroll if modal taller than viewport */
 }
 
 .modal {
@@ -22,10 +20,10 @@
   border-radius: 8px;
   width: 380px;
   max-width: 90%;
-  max-height: 90%;          /* prevent modal from exceeding screen height */
+  max-height: 90%;       /* prevents modal from exceeding viewport */
+  overflow-y: auto;      /* scroll inside modal if needed */
   text-align: center;
   box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-  overflow-y: auto;         /* scroll modal content if needed */
 }
 
 /* Optional: prevent the page behind from scrolling when modal is open */
