@@ -121,6 +121,7 @@
 
 /* Primary Action */
 .button {
+  margin-top: 1rem;
   color: #fff;
   background: linear-gradient(to right, #8d6e63, #6d4c41);
   box-shadow: 0 3px 10px rgba(100, 50, 30, 0.15);
