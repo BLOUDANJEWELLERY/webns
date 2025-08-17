@@ -282,7 +282,7 @@
 .colorContent.open {
   max-height: 3000px; /* large enough to fit all content */
   opacity: 1;
-  padding: 1rem;
+  padding: 0.5rem;
 }
 /* === Responsive === */
 @media (min-width: 600px) {
