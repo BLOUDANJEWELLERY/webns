@@ -50,6 +50,7 @@
   font-size: 0.95rem;
   color: #4e2a0f;
   margin-bottom:0.5rem;
+  margin-top:0.3rem;
   background-color: #fffaf5;
   box-sizing: border-box;
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
@@ -94,7 +95,7 @@
   cursor: pointer;
   transition: 0.25s ease;
   text-align: center;
-  margin-top: 0rem;
+  margin-top: 0.3rem;
 }
 
 .fileLabel:hover {
