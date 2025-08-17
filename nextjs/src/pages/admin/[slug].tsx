@@ -125,6 +125,7 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
   const [showUpdateModal, setShowUpdateModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [modalMessage, setModalMessage] = useState('')
+  const [isProcessing, setIsProcessing] = useState(false)
 
   // Detect changes
   const isProductChanged = useMemo(() => {
@@ -219,10 +220,12 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
 
 const handleSubmit = async () => {
   if (!product?._id) {
-    alert('Missing product ID') // simple alert for missing ID
+    setModalMessage('Missing product ID')
+    setShowUpdateModal(true)
     return
   }
 
+  setIsProcessing(true)   // start processing
   setLoading(true)
 
   try {
@@ -288,24 +291,31 @@ const handleSubmit = async () => {
     const result = await res.json()
     if (!res.ok) throw new Error(result.error || 'Failed to update product')
 
-    setShowUpdateModal(false) // close modal after update
-    alert('Product updated successfully.') // notify user
-    router.push('/admin')       // navigate back to admin page
+    setModalMessage('Product updated successfully.')
+    // Keep modal open, hide buttons, show processing
+    setTimeout(() => {
+      router.push('/admin') // redirect after short delay
+    }, 500)
+
   } catch (err: any) {
-    alert(err.message) // show error
+    setModalMessage(err.message)
   } finally {
+    setIsProcessing(false)
     setLoading(false)
   }
 }
 
+// --- Delete Handler ---
 const handleDelete = async () => {
-  if (!product._id) {
+  if (!product?._id) {
     setModalMessage('Missing product ID')
     setShowDeleteModal(true)
     return
   }
 
+  setIsProcessing(true)
   setLoading(true)
+
   try {
     const res = await fetch('/api/products/delete', {
       method: 'DELETE',
@@ -315,13 +325,15 @@ const handleDelete = async () => {
     const result = await res.json()
     if (!res.ok) throw new Error(result.error || 'Failed to delete product')
 
-    // Successfully deleted, go back to admin
-    router.push('/admin')
+    setModalMessage('Product deleted successfully.')
+    setTimeout(() => {
+      router.push('/admin')
+    }, 500)
+
   } catch (err: any) {
-    // Show modal only on error
     setModalMessage(err.message)
-    setShowDeleteModal(true)
   } finally {
+    setIsProcessing(false)
     setLoading(false)
   }
 }
@@ -573,66 +585,46 @@ const handleDelete = async () => {
 </div>
   </form>
 </div>
-{/* Update Confirmation Modal */}
 {showUpdateModal && (
-  <div
-    className={styles.modalOverlay}
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="updateModalTitle"
-  >
+  <div className={styles.modalOverlay}>
     <div className={styles.modal}>
-      <h2 id="updateModalTitle">Confirm Update</h2>
-      <p>Are you sure you want to update this product?</p>
-      <div className={styles.modalButtons}>
-        <button
-          className={styles.cancelBtn}
-          onClick={() => setShowUpdateModal(false)}
-        >
-          Cancel
-        </button>
-        <button
-          className={styles.confirmBtn}
-          onClick={() => {
-            setShowUpdateModal(false);
-            handleSubmit(); // run update logic
-          }}
-        >
-          Update
-        </button>
-      </div>
+      {isProcessing ? (
+        <>
+          <p>Processing...</p>
+          <div className={styles.spinner}></div>
+        </>
+      ) : (
+        <>
+          <h2>Confirm Update</h2>
+          <p>Are you sure you want to update this product?</p>
+          <div className={styles.modalButtons}>
+            <button className={styles.cancelBtn} onClick={() => setShowUpdateModal(false)}>Cancel</button>
+            <button className={styles.confirmBtn} onClick={() => handleSubmit()}>Update</button>
+          </div>
+        </>
+      )}
     </div>
   </div>
 )}
 
-{/* Delete Confirmation Modal */}
 {showDeleteModal && (
-  <div
-    className={styles.modalOverlay}
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="deleteModalTitle"
-  >
+  <div className={styles.modalOverlay}>
     <div className={styles.modal}>
-      <h2 id="deleteModalTitle">Confirm Deletion</h2>
-      <p>This action cannot be undone. Are you sure you want to delete this product?</p>
-      <div className={styles.modalButtons}>
-        <button
-          className={styles.cancelBtn}
-          onClick={() => setShowDeleteModal(false)}
-        >
-          Cancel
-        </button>
-        <button
-          className={styles.dangerBtn}
-          onClick={() => {
-            setShowDeleteModal(false);
-            handleDelete(); // run delete logic
-          }}
-        >
-          Delete
-        </button>
-      </div>
+      {isProcessing ? (
+        <>
+          <p>Processing...</p>
+          <div className={styles.spinner}></div>
+        </>
+      ) : (
+        <>
+          <h2>Confirm Deletion</h2>
+          <p>This action cannot be undone. Are you sure you want to delete this product?</p>
+          <div className={styles.modalButtons}>
+            <button className={styles.cancelBtn} onClick={() => setShowDeleteModal(false)}>Cancel</button>
+            <button className={styles.dangerBtn} onClick={() => handleDelete()}>Delete</button>
+          </div>
+        </>
+      )}
     </div>
   </div>
 )}
