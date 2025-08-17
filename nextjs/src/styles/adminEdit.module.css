@@ -146,6 +146,11 @@
   transform: translateY(-1px);
 }
 
+/* Only for this button when disabled */
+.disabledButton {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
 /* Delete */
 .deleteButton {
   background: #d32f2f;
