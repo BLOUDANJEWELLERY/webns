@@ -439,23 +439,22 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
         ))}
 
         {/* Add Variant / Remove Color */}
-        <button
-          type="button"
-          className={styles.button}
-          onClick={() => addVariant(ci)}
-        >
-          Add Variant
-        </button>
-        <button
-          type="button"
-          className={styles.deleteButton}
-          style={{ marginTop: 8 }}
-          onClick={() => removeColor(ci)}
-        >
-          Remove Color
-        </button>
-      </div>
-    ))}
+        <div className={styles.variantActions}>
+  <button
+    type="button"
+    className={styles.button}
+    onClick={() => addVariant(ci)}
+  >
+    Add Variant
+  </button>
+  <button
+    type="button"
+    className={styles.deleteButton}
+    onClick={() => removeColor(ci)}
+  >
+    Remove Color
+  </button>
+</div>
 
     {/* Add Color */}
     <button type="button" className={styles.button} onClick={addColor}>
