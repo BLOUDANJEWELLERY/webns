@@ -295,7 +295,7 @@ const [openColors, setOpenColors] = useState<boolean[]>(colors.map(() => true));
 
   {/* Custom File Upload Button */}
   <label className={styles.fileLabel}>
-    Upload Default Image
+    Change Default Image
     <input
       type="file"
       accept="image/*"
@@ -354,7 +354,7 @@ const [openColors, setOpenColors] = useState<boolean[]>(colors.map(() => true));
         {/* Color Image */}
         <label className={styles.label}>Color Image</label>
         <label className={styles.fileLabel}>
-          Upload Color Image
+          Change Color Image
           <input
             type="file"
             accept="image/*"
