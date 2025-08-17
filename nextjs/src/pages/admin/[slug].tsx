@@ -119,6 +119,9 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
 const [openColors, setOpenColors] = useState<boolean[]>(colors.map(() => true));
 
 
+const [showUpdateModal, setShowUpdateModal] = useState(false);
+const [showDeleteModal, setShowDeleteModal] = useState(false);
+
 const isProductChanged = useMemo(() => {
   if (!product) return false;
 
@@ -529,23 +532,80 @@ const isProductChanged = useMemo(() => {
     </button>
 
     {/* Actions */}
- <div className={styles.actionWrapper}>
+<div className={styles.actionWrapper}>
   <button
-    type="submit"
-    disabled={loading || !isProductChanged} // disable if loading OR nothing changed
+    type="button"
+    disabled={loading || !isProductChanged}
     className={`${styles.button} ${!isProductChanged ? styles.disabledButton : ''}`}
+    onClick={() => setShowUpdateModal(true)}
   >
-    {loading ? 'Updating...' : 'Update Product'}
+    {loading ? "Updating..." : "Update Product"}
   </button>
+
   <button
     type="button"
     disabled={loading}
-    onClick={handleDelete}
+    onClick={() => setShowDeleteModal(true)}
     className={styles.deleteButton}
   >
-    {loading ? 'Processing...' : 'Delete Product'}
+    {loading ? "Processing..." : "Delete Product"}
   </button>
 </div>
+
+{/* Update Confirmation Modal */}
+{showUpdateModal && (
+  <div className={styles.modalOverlay} role="dialog" aria-modal="true" aria-labelledby="updateModalTitle">
+    <div className={styles.modal}>
+      <h2 id="updateModalTitle">Confirm Update</h2>
+      <p>Are you sure you want to update this product?</p>
+      <div className={styles.modalButtons}>
+        <button
+          className={styles.cancelBtn}
+          onClick={() => setShowUpdateModal(false)}
+        >
+          Cancel
+        </button>
+        <button
+          className={styles.confirmBtn}
+          onClick={() => {
+            setShowUpdateModal(false);
+            handleSubmit(); // run update logic
+          }}
+        >
+          Update
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* Delete Confirmation Modal */}
+{showDeleteModal && (
+  <div className={styles.modalOverlay} role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+    <div className={styles.modal}>
+      <h2 id="deleteModalTitle">Confirm Deletion</h2>
+      <p>This action cannot be undone. Are you sure you want to delete this product?</p>
+      <div className={styles.modalButtons}>
+        <button
+          className={styles.cancelBtn}
+          onClick={() => setShowDeleteModal(false)}
+        >
+          Cancel
+        </button>
+        <button
+          className={styles.dangerBtn}
+          onClick={() => {
+            setShowDeleteModal(false);
+            handleDelete(); // run delete logic
+          }}
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
   </form>
 </div>
   )
