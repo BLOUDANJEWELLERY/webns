@@ -281,7 +281,7 @@
   display: flex;
   justify-content: center;   /* center horizontally */
   gap: 1rem;                 /* space between buttons */
-  margin-top: 2rem;          /* add breathing room above */
+  margin-top: 0.5rem;          /* add breathing room above */
 }
 .variantActions {
   display: flex;
