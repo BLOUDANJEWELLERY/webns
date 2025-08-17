@@ -288,25 +288,32 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
 
     {/* Default Image */}
     <div className={styles.formGroup}>
-      <label className={styles.label}>Default Image</label>
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleDefaultImageChange}
-        className={styles.inputFile}
+  <label className={styles.label}>Default Image</label>
+
+  {/* Custom File Upload Button */}
+  <label className={styles.fileLabel}>
+    Upload Default Image
+    <input
+      type="file"
+      accept="image/*"
+      onChange={handleDefaultImageChange}
+      className={styles.hiddenFileInput}
+    />
+  </label>
+
+  {/* Preview */}
+  {defaultImagePreview && (
+    <div className={styles.previewWrapper}>
+      <Image
+        src={defaultImagePreview}
+        alt="Default"
+        width={150}
+        height={150}
+        className={styles.previewImage}
       />
-      {defaultImagePreview && (
-        <div className={styles.previewWrapper}>
-          <Image
-            src={defaultImagePreview}
-            alt="Default"
-            width={150}
-            height={150}
-            className={styles.previewImage}
-          />
-        </div>
-      )}
     </div>
+  )}
+</div>
 
     {/* Colors & Variants */}
     <h3 className={styles.subHeading}>Colors & Variants</h3>
