@@ -41,9 +41,9 @@
   margin-bottom: 0.4rem;
   box-sizing: border-box;
 }
-
-.input,
-.inputFile {
+.input {
+  width: 100%;              /* stretch to fill parent */
+  max-width: 400px;         /* prevent going too wide */
   padding: 0.7rem 1rem;
   border: 1px solid #d6bca6;
   border-radius: 10px;
@@ -52,6 +52,15 @@
   background-color: #fffaf5;
   box-sizing: border-box;
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.colorBlock {
+  border: 1px solid #e2d4c4;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  background: #fffdf9;
+  max-width: 500px;       /* keeps block neat */
 }
 
 .input:focus,
