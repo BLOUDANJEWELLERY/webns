@@ -276,3 +276,10 @@
     border-radius: 14px;
   }
 }
+
+.actionWrapper {
+  display: flex;
+  justify-content: center;   /* center horizontally */
+  gap: 1rem;                 /* space between buttons */
+  margin-top: 2rem;          /* add breathing room above */
+}
