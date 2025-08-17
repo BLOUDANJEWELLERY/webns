@@ -276,7 +276,7 @@
   opacity: 0;
   overflow: hidden;
   transition: max-height 0.4s ease, opacity 0.4s ease, padding 0.4s ease;
-  padding: 0 1rem;
+  padding: 0 0.5rem;
 }
 
 .colorContent.open {
