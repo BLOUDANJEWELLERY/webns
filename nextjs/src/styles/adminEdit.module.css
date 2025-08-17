@@ -1,74 +1,149 @@
 /* src/styles/adminEdit.module.css */
 
+/* === Overlay === */
 .modalOverlay {
-  position: fixed;       /* viewport-based */
+  position: fixed;           /* stay fixed to viewport */
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.6);
+  width: 100vw;
+  height: 100vh;
+  background: rgba(78, 42, 15, 0.75); /* old overlay color */
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: center;    /* horizontal center */
+  align-items: center;        /* vertical center */
   z-index: 10000;
-  overflow: auto;        /* scroll if modal taller than viewport */
+  padding: 1rem;              /* ensures space even on tiny screens */
+  box-sizing: border-box;
+  overflow: auto;             /* scroll if modal taller than viewport */
 }
 
+/* === Modal Container === */
 .modal {
-  background: #fff;
-  padding: 10px 12px;
-  margin: 30px;
-  border-radius: 8px;
-  width: 380px;
-  max-width: 90%;
-  max-height: 90%;       /* prevents modal from exceeding viewport */
-  overflow-y: auto;      /* scroll inside modal if needed */
+  background-color: #fffdfb;  /* old modal bg */
+  padding: 1.5rem;            /* old spacing */
+  border-radius: 16px;        /* old rounded corners */
+  box-shadow: 0 12px 36px rgba(80, 40, 20, 0.15); /* old shadow */
+  width: 100%;
+  max-width: 420px;           /* old max width */
+  max-height: 90vh;           /* prevent exceeding screen height */
+  overflow-y: auto;           /* scroll if modal content too tall */
+  font-family: 'Segoe UI', sans-serif;
+  color: #4e2a0f;
   text-align: center;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  box-sizing: border-box;
 }
 
-/* Optional: prevent the page behind from scrolling when modal is open */
-body.modal-open {
-  overflow: hidden;
+/* === Title === */
+.modal h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+  text-shadow: 0.3px 0.3px #e6dcd2;
 }
 
+/* === Message === */
+.modal p {
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  color: #5d4037;
+  font-weight: 600;
+}
+
+/* === Buttons Container === */
 .modalButtons {
-  margin-top: 20px;
   display: flex;
-  justify-content: space-between;
-  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.8rem;
 }
 
+/* === Cancel Button === */
 .cancelBtn {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  background: #e0e0e0;
+  background-color: #f5eee5;
+  border: 2px solid #c89b3c;
+  color: #4e2a0f;
+  font-weight: 700;
+  font-size: 1rem;
+  border-radius: 10px;
+  padding: 0.5rem 1.4rem;
   cursor: pointer;
-  border-radius: 6px;
-  font-weight: 500;
+  min-width: 100px;
+  transition: background-color 0.3s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  user-select: none;
 }
 
+.cancelBtn:hover {
+  background-color: #fff6e4;
+  box-shadow: 0 2px 8px rgba(200, 155, 60, 0.3);
+  transform: scale(1.05);
+}
+
+/* === Confirm Button === */
 .confirmBtn {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  background: #4caf50; /* green for update */
-  color: white;
+  background-color: #c89b3c;
+  border: 2px solid #c89b3c;
+  color: #fffdfb;
+  font-weight: 700;
+  font-size: 1rem;
+  border-radius: 10px;
+  padding: 0.5rem 1.4rem;
   cursor: pointer;
-  border-radius: 6px;
-  font-weight: 500;
+  min-width: 100px;
+  transition: background-color 0.3s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  user-select: none;
 }
 
+.confirmBtn:hover {
+  background-color: #b5872f;
+  border-color: #b5872f;
+  box-shadow: 0 3px 12px rgba(180, 130, 45, 0.6);
+  transform: translateY(-1px);
+}
+
+/* === Delete/Danger Button === */
 .dangerBtn {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  background: #d32f2f; /* red for delete */
-  color: white;
+  background-color: #d32f2f;
+  border: 2px solid #d32f2f;
+  color: #fffdfb;
+  font-weight: 700;
+  font-size: 1rem;
+  border-radius: 10px;
+  padding: 0.5rem 1.4rem;
   cursor: pointer;
-  border-radius: 6px;
-  font-weight: 500;
+  min-width: 100px;
+  transition: background-color 0.3s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  user-select: none;
+}
+
+.dangerBtn:hover {
+  background-color: #b71c1c;
+  border-color: #b71c1c;
+  box-shadow: 0 3px 12px rgba(180, 50, 50, 0.6);
+  transform: translateY(-1px);
+}
+
+/* === Small screens adjustments === */
+@media (max-width: 480px) {
+  .modal {
+    padding: 1.2rem;
+    border-radius: 12px;
+  }
+
+  .modal h2 {
+    font-size: 1.4rem;
+  }
+
+  .modal p {
+    font-size: 0.95rem;
+  }
+
+  .cancelBtn,
+  .confirmBtn,
+  .dangerBtn {
+    flex: 1;
+    min-width: auto;
+    font-size: 0.95rem;
+  }
 }
 /* === Base / Mobile-First Layout === */
 .mainContainer {
