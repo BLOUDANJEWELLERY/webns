@@ -569,7 +569,6 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
   </button>
 </div>
   </form>
-</div>
 {/* Update Confirmation Modal */}
 {showUpdateModal && (
   <div className={styles.modalOverlay} role="dialog" aria-modal="true" aria-labelledby="updateModalTitle">
@@ -623,5 +622,6 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
     </div>
   </div>
 )}
+</div>
   )
 }
