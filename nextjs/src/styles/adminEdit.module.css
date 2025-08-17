@@ -131,7 +131,7 @@
 
 /* Primary Action */
 .button {
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   color: #fff;
   background: linear-gradient(to right, #8d6e63, #6d4c41);
   box-shadow: 0 3px 10px rgba(100, 50, 30, 0.15);
@@ -146,7 +146,7 @@
 .deleteButton {
   background: #d32f2f;
   color: #fff;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
 }
 
 .deleteButton:hover {
@@ -321,5 +321,5 @@
   flex-direction: column;   /* stack vertically */
   align-items: center;      /* center horizontally */
   gap: 0.5rem;              /* space between buttons */
-  margin-top: 1rem;
+  margin-top: 0.5rem;
 }
