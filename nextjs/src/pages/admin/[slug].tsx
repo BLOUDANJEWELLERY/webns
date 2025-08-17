@@ -217,85 +217,86 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
     setColors(updated)
   }
 
-  const handleSubmit = async () => {
-    if (!product._id) {
-      setModalMessage('Missing product ID')
-      setShowUpdateModal(true)
-      return
-    }
-    setLoading(true)
+const handleSubmit = async () => {
+  if (!product?._id) {
+    alert('Missing product ID') // simple alert for missing ID
+    return
+  }
 
-    try {
-      let defaultAssetId = defaultImageId
-      if (defaultImageFile) {
+  setLoading(true)
+
+  try {
+    let defaultAssetId = defaultImageId
+    if (defaultImageFile) {
+      const formData = new FormData()
+      formData.append('file', defaultImageFile)
+      formData.append('type', 'image')
+      const res = await fetch('/api/products/uploadImage', { method: 'POST', body: formData })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      defaultAssetId = data.assetId
+    }
+
+    const colorImages: any[] = []
+    for (const color of colors) {
+      let assetId = color.existingImageId
+      if (color.imageFile) {
         const formData = new FormData()
-        formData.append('file', defaultImageFile)
+        formData.append('file', color.imageFile)
         formData.append('type', 'image')
         const res = await fetch('/api/products/uploadImage', { method: 'POST', body: formData })
         const data = await res.json()
         if (!res.ok) throw new Error(data.error)
-        defaultAssetId = data.assetId
+        assetId = data.assetId
       }
-
-      const colorImages: any[] = []
-      for (const color of colors) {
-        let assetId = color.existingImageId
-        if (color.imageFile) {
-          const formData = new FormData()
-          formData.append('file', color.imageFile)
-          formData.append('type', 'image')
-          const res = await fetch('/api/products/uploadImage', { method: 'POST', body: formData })
-          const data = await res.json()
-          if (!res.ok) throw new Error(data.error)
-          assetId = data.assetId
-        }
-        colorImages.push({
-          _key: color._key,
-          color: color.color,
-          image: assetId ? { _type: 'image', asset: { _type: 'reference', _ref: assetId } } : undefined,
-        })
-      }
-
-      const variants: any[] = []
-      colors.forEach(c =>
-        c.variants.forEach(v =>
-          variants.push({
-            _key: v._key,
-            size: v.size,
-            quantity: Number(v.quantity),
-            color: c.color,
-            priceOverride: v.priceOverride ? Number(v.priceOverride) : undefined,
-            sku: v.sku || `${c.color}-${v.size}-${Math.floor(Math.random() * 1000000)}`,
-          })
-        )
-      )
-
-      const res = await fetch('/api/products/update', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: product._id,
-          title,
-          price: Number(price),
-          defaultImage: defaultAssetId
-            ? { _type: 'image', asset: { _type: 'reference', _ref: defaultAssetId } }
-            : undefined,
-          colorImages,
-          variants,
-        }),
+      colorImages.push({
+        _key: color._key,
+        color: color.color,
+        image: assetId ? { _type: 'image', asset: { _type: 'reference', _ref: assetId } } : undefined,
       })
-      const result = await res.json()
-      if (!res.ok) throw new Error(result.error || 'Failed to update product')
-
-      setModalMessage('Product updated successfully.')
-      setShowUpdateModal(true)
-    } catch (err: any) {
-      setModalMessage(err.message)
-      setShowUpdateModal(true)
-    } finally {
-      setLoading(false)
     }
+
+    const variants: any[] = []
+    colors.forEach(c =>
+      c.variants.forEach(v =>
+        variants.push({
+          _key: v._key,
+          size: v.size,
+          quantity: Number(v.quantity),
+          color: c.color,
+          priceOverride: v.priceOverride ? Number(v.priceOverride) : undefined,
+          sku: v.sku || `${c.color}-${v.size}-${Math.floor(Math.random() * 1000000)}`,
+        })
+      )
+    )
+
+    const res = await fetch('/api/products/update', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: product._id,
+        title,
+        price: Number(price),
+        defaultImage: defaultAssetId
+          ? { _type: 'image', asset: { _type: 'reference', _ref: defaultAssetId } }
+          : undefined,
+        colorImages,
+        variants,
+      }),
+    })
+
+    const result = await res.json()
+    if (!res.ok) throw new Error(result.error || 'Failed to update product')
+
+    setShowUpdateModal(false) // close modal after update
+    alert('Product updated successfully.') // notify user
+    router.push('/admin')       // navigate back to admin page
+  } catch (err: any) {
+    alert(err.message) // show error
+  } finally {
+    setLoading(false)
   }
+}
 
   const handleDelete = async () => {
     if (!product._id) {
