@@ -258,7 +258,7 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
   }
 
   return (
-    <div className={styles.mainContainer}>
+ <div className={styles.mainContainer}>
   <h1 className={styles.heading}>Edit Product</h1>
 
   <form className={styles.form} onSubmit={handleSubmit}>
@@ -288,32 +288,30 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
 
     {/* Default Image */}
     <div className={styles.formGroup}>
-  <label className={styles.label}>Default Image</label>
+      <label className={styles.label}>Default Image</label>
 
-  {/* Custom File Upload Button */}
-  <label className={styles.fileLabel}>
-    Upload Default Image
-    <input
-      type="file"
-      accept="image/*"
-      onChange={handleDefaultImageChange}
-      className={styles.hiddenFileInput}
-    />
-  </label>
+      <label className={styles.fileLabel}>
+        Upload Default Image
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleDefaultImageChange}
+          className={styles.hiddenFileInput}
+        />
+      </label>
 
-  {/* Preview */}
-  {defaultImagePreview && (
-    <div className={styles.previewWrapper}>
-      <Image
-        src={defaultImagePreview}
-        alt="Default"
-        width={150}
-        height={150}
-        className={styles.previewImage}
-      />
+      {defaultImagePreview && (
+        <div className={styles.previewWrapper}>
+          <Image
+            src={defaultImagePreview}
+            alt="Default"
+            width={150}
+            height={150}
+            className={styles.previewImage}
+          />
+        </div>
+      )}
     </div>
-  )}
-</div>
 
     {/* Colors & Variants */}
     <h3 className={styles.subHeading}>Colors & Variants</h3>
@@ -333,33 +331,30 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
         />
 
         {/* Color Image */}
-     <label className={styles.label}>Color Image</label>
+        <label className={styles.label}>Color Image</label>
+        <label className={styles.fileLabel}>
+          Upload Color Image
+          <input
+            type="file"
+            accept="image/*"
+            onChange={e =>
+              e.target.files && handleColorImageChange(ci, e.target.files[0])
+            }
+            className={styles.hiddenFileInput}
+          />
+        </label>
 
-{/* Custom File Upload Button */}
-<label className={styles.fileLabel}>
-  Upload Color Image
-  <input
-    type="file"
-    accept="image/*"
-    onChange={e =>
-      e.target.files && handleColorImageChange(ci, e.target.files[0])
-    }
-    className={styles.hiddenFileInput}
-  />
-</label>
-
-{/* Preview */}
-{color.imagePreview && (
-  <div className={styles.previewWrapper}>
-    <Image
-      src={color.imagePreview}
-      alt="Color"
-      width={120}
-      height={120}
-      className={styles.previewImage}
-    />
-  </div>
-)}
+        {color.imagePreview && (
+          <div className={styles.previewWrapper}>
+            <Image
+              src={color.imagePreview}
+              alt="Color"
+              width={120}
+              height={120}
+              className={styles.previewImage}
+            />
+          </div>
+        )}
 
         {/* Variants */}
         <h4 className={styles.variantHeading}>Variants</h4>
@@ -440,22 +435,24 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
 
         {/* Add Variant / Remove Color */}
         <div className={styles.variantActions}>
-  <button
-    type="button"
-    className={styles.button}
-    onClick={() => addVariant(ci)}
-  >
-    Add Variant
-  </button>
-  <button
-    type="button"
-    className={styles.deleteButton}
-    onClick={() => removeColor(ci)}
-  >
-    Remove Color
-  </button>
-</div>
-))}
+          <button
+            type="button"
+            className={styles.button}
+            onClick={() => addVariant(ci)}
+          >
+            Add Variant
+          </button>
+          <button
+            type="button"
+            className={styles.deleteButton}
+            onClick={() => removeColor(ci)}
+          >
+            Remove Color
+          </button>
+        </div>
+      </div> {/* closes colorBlock */}
+    ))} {/* closes colors.map */}
+
     {/* Add Color */}
     <button type="button" className={styles.button} onClick={addColor}>
       Add Color
