@@ -73,8 +73,8 @@ body.modal-open {
 }
 /* === Base / Mobile-First Layout === */
 .mainContainer {
-  /*margin: 1rem;
-  padding: 1.5rem;*/
+  margin: 1rem;
+  padding: 1.5rem;
   background: #fffdfb;
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(80, 40, 20, 0.1);
