@@ -1,5 +1,19 @@
 /* src/styles/adminEdit.module.css */
+/* Spinner animation */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #c89b3c;       /* outer color */
+  border-top: 4px solid #fffdfb;    /* top color */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 20px auto; /* center horizontally with spacing */
+}
 
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 /* === Overlay === */
 .modalOverlay {
   position: fixed;           /* stay fixed to viewport */
