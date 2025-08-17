@@ -75,6 +75,9 @@ const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 export default function AdminEditPage({ product }: { product: Product | null }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+// At the top of your component
+const [openColors, setOpenColors] = useState<boolean[]>(colors.map(() => true));
+
 
   const [title, setTitle] = useState(product?.title || '')
   const [price, setPrice] = useState(product?.price.toString() || '')
@@ -317,162 +320,162 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
 
 {/* Colors & Variants */}
 <h3 className={styles.subHeading}>Colors & Variants</h3>
-{colors.map((color, ci) => {
-  const [isOpen, setIsOpen] = useState(true); // controls collapse per color
+{colors.map((color, ci) => (
+  <div key={color._key} className={styles.colorBlock}>
+    {/* Collapsible Header */}
+    <div
+      className={styles.colorHeader}
+      onClick={() => {
+        const updated = [...openColors];
+        updated[ci] = !updated[ci];
+        setOpenColors(updated);
+      }}
+    >
+      <span>{color.color || 'Unnamed Color'}</span>
+      <span>{openColors[ci] ? '▲' : '▼'}</span>
+    </div>
 
-  return (
-    <div key={color._key} className={styles.colorBlock}>
-      {/* Collapsible Header */}
-      <div
-        className={styles.colorHeader}
-        onClick={() => setIsOpen(prev => !prev)}
-      >
-        <span>{color.color || 'Unnamed Color'}</span>
-        <span>{isOpen ? '▲' : '▼'}</span>
-      </div>
+    {/* Render color inputs only if open */}
+    {openColors[ci] && (
+      <>
+        {/* Color Name */}
+        <label className={styles.label}>Color Name</label>
+        <input
+          className={styles.input}
+          value={color.color}
+          onChange={e => {
+            const updated = [...colors];
+            updated[ci].color = e.target.value;
+            setColors(updated);
+          }}
+          required
+        />
 
-      {/* Only render inputs when open */}
-      {isOpen && (
-        <>
-          {/* Color Name */}
-          <label className={styles.label}>Color Name</label>
+        {/* Color Image */}
+        <label className={styles.label}>Color Image</label>
+        <label className={styles.fileLabel}>
+          Upload Color Image
           <input
-            className={styles.input}
-            value={color.color}
-            onChange={e => {
-              const updated = [...colors];
-              updated[ci].color = e.target.value;
-              setColors(updated);
-            }}
-            required
+            type="file"
+            accept="image/*"
+            onChange={e =>
+              e.target.files && handleColorImageChange(ci, e.target.files[0])
+            }
+            className={styles.hiddenFileInput}
           />
+        </label>
 
-          {/* Color Image */}
-          <label className={styles.label}>Color Image</label>
-          <label className={styles.fileLabel}>
-            Upload Color Image
-            <input
-              type="file"
-              accept="image/*"
-              onChange={e =>
-                e.target.files && handleColorImageChange(ci, e.target.files[0])
-              }
-              className={styles.hiddenFileInput}
+        {/* Preview */}
+        {color.imagePreview && (
+          <div className={styles.previewWrapper}>
+            <Image
+              src={color.imagePreview}
+              alt="Color"
+              width={120}
+              height={120}
+              className={styles.previewImage}
             />
-          </label>
+          </div>
+        )}
 
-          {/* Preview */}
-          {color.imagePreview && (
-            <div className={styles.previewWrapper}>
-              <Image
-                src={color.imagePreview}
-                alt="Color"
-                width={120}
-                height={120}
-                className={styles.previewImage}
-              />
-            </div>
-          )}
+        {/* Variants */}
+        <h4 className={styles.variantHeading}>Variants</h4>
+        {color.variants.map((v, vi) => (
+          <div key={v._key} className={styles.variantCard}>
+            {/* Size Selector */}
+            <select
+              value={v.size}
+              onChange={e => {
+                const updated = [...colors];
+                updated[ci].variants[vi].size = e.target.value;
+                setColors(updated);
+              }}
+              required
+              className={styles.select}
+            >
+              <option value="">Size</option>
+              {SIZE_OPTIONS.map(s => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
 
-          {/* Variants */}
-          <h4 className={styles.variantHeading}>Variants</h4>
-          {color.variants.map((v, vi) => (
-            <div key={v._key} className={styles.variantCard}>
-              {/* Size Selector */}
-              <select
-                value={v.size}
-                onChange={e => {
-                  const updated = [...colors];
-                  updated[ci].variants[vi].size = e.target.value;
-                  setColors(updated);
-                }}
-                required
-                className={styles.select}
-              >
-                <option value="">Size</option>
-                {SIZE_OPTIONS.map(s => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
+            {/* Quantity */}
+            <input
+              type="number"
+              placeholder="Qty"
+              min={1}
+              value={v.quantity}
+              onChange={e => {
+                const updated = [...colors];
+                updated[ci].variants[vi].quantity = Number(e.target.value);
+                setColors(updated);
+              }}
+              className={styles.inputSmall}
+              required
+            />
 
-              {/* Quantity */}
-              <input
-                type="number"
-                placeholder="Qty"
-                min={1}
-                value={v.quantity}
-                onChange={e => {
-                  const updated = [...colors];
-                  updated[ci].variants[vi].quantity = Number(e.target.value);
-                  setColors(updated);
-                }}
-                className={styles.inputSmall}
-                required
-              />
-
-              {/* Price Override */}
-              <div className={styles.priceOverrideWrapper}>
-                {v.showPriceOverride && (
-                  <input
-                    type="number"
-                    placeholder="Price Override"
-                    className={styles.priceOverrideInput}
-                    value={v.priceOverride || ''}
-                    onChange={e => {
-                      const updated = [...colors];
-                      updated[ci].variants[vi].priceOverride = Number(e.target.value);
-                      setColors(updated);
-                    }}
-                  />
-                )}
-                <button
-                  type="button"
-                  className={styles.priceToggleButton}
-                  onClick={() => {
+            {/* Price Override */}
+            <div className={styles.priceOverrideWrapper}>
+              {v.showPriceOverride && (
+                <input
+                  type="number"
+                  placeholder="Price Override"
+                  className={styles.priceOverrideInput}
+                  value={v.priceOverride || ''}
+                  onChange={e => {
                     const updated = [...colors];
-                    updated[ci].variants[vi].showPriceOverride = !v.showPriceOverride;
+                    updated[ci].variants[vi].priceOverride = Number(e.target.value);
                     setColors(updated);
                   }}
-                >
-                  {v.showPriceOverride ? 'Hide' : 'Price'}
-                </button>
-              </div>
-
-              {/* Remove Variant */}
+                />
+              )}
               <button
                 type="button"
-                className={styles.removeButton}
-                onClick={() => removeVariant(ci, vi)}
+                className={styles.priceToggleButton}
+                onClick={() => {
+                  const updated = [...colors];
+                  updated[ci].variants[vi].showPriceOverride = !v.showPriceOverride;
+                  setColors(updated);
+                }}
               >
-                Remove
+                {v.showPriceOverride ? 'Hide' : 'Price'}
               </button>
             </div>
-          ))}
 
-          {/* Add Variant / Remove Color */}
-          <div className={styles.variantActions}>
+            {/* Remove Variant */}
             <button
               type="button"
-              className={styles.button}
-              onClick={() => addVariant(ci)}
+              className={styles.removeButton}
+              onClick={() => removeVariant(ci, vi)}
             >
-              Add Variant
-            </button>
-            <button
-              type="button"
-              className={styles.deleteButton}
-              onClick={() => removeColor(ci)}
-            >
-              Remove Color
+              Remove
             </button>
           </div>
-        </>
-      )}
-    </div>
-  );
-})}
+        ))}
+
+        {/* Add Variant / Remove Color */}
+        <div className={styles.variantActions}>
+          <button
+            type="button"
+            className={styles.button}
+            onClick={() => addVariant(ci)}
+          >
+            Add Variant
+          </button>
+          <button
+            type="button"
+            className={styles.deleteButton}
+            onClick={() => removeColor(ci)}
+          >
+            Remove Color
+          </button>
+        </div>
+      </>
+    )}
+  </div>
+))}
 
     {/* Add Color */}
     <button type="button" className={styles.button} onClick={addColor}>
