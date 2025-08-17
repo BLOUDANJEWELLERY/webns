@@ -94,7 +94,7 @@
   cursor: pointer;
   transition: 0.25s ease;
   text-align: center;
-  margin-top: 0.5rem;
+  margin-top: 0rem;
 }
 
 .fileLabel:hover {
