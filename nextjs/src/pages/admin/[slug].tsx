@@ -529,11 +529,11 @@ const isProductChanged = useMemo(() => {
     </button>
 
     {/* Actions */}
-    <div className={styles.actionWrapper}>
+ <div className={styles.actionWrapper}>
   <button
     type="submit"
-    disabled={loading || !isProductChanged}
-    className={`${styles.button} ${isProductChanged ? styles.activeButton : ''}`}
+    disabled={loading || !isProductChanged} // disable if loading OR nothing changed
+    className={`${styles.button} ${!isProductChanged ? styles.disabledButton : ''}`}
   >
     {loading ? 'Updating...' : 'Update Product'}
   </button>
