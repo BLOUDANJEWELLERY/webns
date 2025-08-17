@@ -291,11 +291,16 @@
   transform: translateY(-1px);
 }
 
-/* Only for this button when disabled */
+/* Disabled state */
+.button:disabled,
 .disabledButton {
-  background-color: #ccc;
+  background: #bdbdbd; /* dulled grey */
+  color: #fff;
   cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
+
 /* Delete */
 .deleteButton {
   background: #d32f2f;
