@@ -336,8 +336,9 @@ const [openColors, setOpenColors] = useState<boolean[]>(colors.map(() => true));
     </div>
 
     {/* Render color inputs only if open */}
-    {openColors[ci] && (
-      <>
+   <div className={`${styles.colorContent} ${openColors[ci] ? styles.open : ''}`}>
+  {/* All inputs, variants, buttons… keep exactly as they are */}
+
         {/* Color Name */}
         <label className={styles.label}>Color Name</label>
         <input
@@ -472,8 +473,7 @@ const [openColors, setOpenColors] = useState<boolean[]>(colors.map(() => true));
             Remove Color
           </button>
         </div>
-      </>
-    )}
+      </div>
   </div>
 ))}
 
