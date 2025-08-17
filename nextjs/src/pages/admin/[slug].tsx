@@ -1,5 +1,5 @@
 // src/pages/admin/[slug].tsx
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo} from 'react'
 import { useRouter } from 'next/router'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
