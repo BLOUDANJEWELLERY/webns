@@ -218,48 +218,53 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
     setColors(updated)
   }
 
+// --- Update Handler ---
 const handleSubmit = async () => {
   if (!product?._id) {
-    setModalMessage('Missing product ID')
-    setShowUpdateModal(true)
-    return
+    setModalMessage('Missing product ID');
+    setShowUpdateModal(true);
+    return;
   }
 
-  setIsProcessing(true)   // start processing
-  setLoading(true)
+  setIsProcessing(true);   // show processing in modal
+  setLoading(true);
 
   try {
-    let defaultAssetId = defaultImageId
+    let defaultAssetId = defaultImageId;
+
+    // Upload default image if changed
     if (defaultImageFile) {
-      const formData = new FormData()
-      formData.append('file', defaultImageFile)
-      formData.append('type', 'image')
-      const res = await fetch('/api/products/uploadImage', { method: 'POST', body: formData })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
-      defaultAssetId = data.assetId
+      const formData = new FormData();
+      formData.append('file', defaultImageFile);
+      formData.append('type', 'image');
+      const res = await fetch('/api/products/uploadImage', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      defaultAssetId = data.assetId;
     }
 
-    const colorImages: any[] = []
+    // Upload color images
+    const colorImages: any[] = [];
     for (const color of colors) {
-      let assetId = color.existingImageId
+      let assetId = color.existingImageId;
       if (color.imageFile) {
-        const formData = new FormData()
-        formData.append('file', color.imageFile)
-        formData.append('type', 'image')
-        const res = await fetch('/api/products/uploadImage', { method: 'POST', body: formData })
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error)
-        assetId = data.assetId
+        const formData = new FormData();
+        formData.append('file', color.imageFile);
+        formData.append('type', 'image');
+        const res = await fetch('/api/products/uploadImage', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        assetId = data.assetId;
       }
       colorImages.push({
         _key: color._key,
         color: color.color,
         image: assetId ? { _type: 'image', asset: { _type: 'reference', _ref: assetId } } : undefined,
-      })
+      });
     }
 
-    const variants: any[] = []
+    // Build variants array
+    const variants: any[] = [];
     colors.forEach(c =>
       c.variants.forEach(v =>
         variants.push({
@@ -271,8 +276,9 @@ const handleSubmit = async () => {
           sku: v.sku || `${c.color}-${v.size}-${Math.floor(Math.random() * 1000000)}`,
         })
       )
-    )
+    );
 
+    // Update product API call
     const res = await fetch('/api/products/update', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -286,57 +292,50 @@ const handleSubmit = async () => {
         colorImages,
         variants,
       }),
-    })
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'Failed to update product');
 
-    const result = await res.json()
-    if (!res.ok) throw new Error(result.error || 'Failed to update product')
-
-    setModalMessage('Product updated successfully.')
-    // Keep modal open, hide buttons, show processing
-    setTimeout(() => {
-      router.push('/admin') // redirect after short delay
-    }, 500)
-
+    setModalMessage('Product updated successfully.');
+    // Keep modal open showing processing
+    setTimeout(() => router.push('/admin'), 500); // slight delay before redirect
   } catch (err: any) {
-    setModalMessage(err.message)
+    setModalMessage(err.message);
+    setIsProcessing(false); // show modal with buttons again
   } finally {
-    setIsProcessing(false)
-    setLoading(false)
+    setLoading(false);
   }
-}
+};
 
 // --- Delete Handler ---
 const handleDelete = async () => {
   if (!product?._id) {
-    setModalMessage('Missing product ID')
-    setShowDeleteModal(true)
-    return
+    setModalMessage('Missing product ID');
+    setShowDeleteModal(true);
+    return;
   }
 
-  setIsProcessing(true)
-  setLoading(true)
+  setIsProcessing(true); // show processing in modal
+  setLoading(true);
 
   try {
     const res = await fetch('/api/products/delete', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: product._id }),
-    })
-    const result = await res.json()
-    if (!res.ok) throw new Error(result.error || 'Failed to delete product')
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'Failed to delete product');
 
-    setModalMessage('Product deleted successfully.')
-    setTimeout(() => {
-      router.push('/admin')
-    }, 500)
-
+    setModalMessage('Product deleted successfully.');
+    setTimeout(() => router.push('/admin'), 500); // redirect after brief delay
   } catch (err: any) {
-    setModalMessage(err.message)
+    setModalMessage(err.message);
+    setIsProcessing(false); // show modal with buttons again
   } finally {
-    setIsProcessing(false)
-    setLoading(false)
+    setLoading(false);
   }
-}
+};
 
   return (
 <>
@@ -585,12 +584,13 @@ const handleDelete = async () => {
 </div>
   </form>
 </div>
+{/* Update Confirmation Modal */}
 {showUpdateModal && (
   <div className={styles.modalOverlay}>
     <div className={styles.modal}>
       {isProcessing ? (
         <>
-          <p>Updating...</p>
+          <h2>Updating...</h2>
           <div className={styles.spinner}></div>
         </>
       ) : (
@@ -607,12 +607,13 @@ const handleDelete = async () => {
   </div>
 )}
 
+{/* Delete Confirmation Modal */}
 {showDeleteModal && (
   <div className={styles.modalOverlay}>
     <div className={styles.modal}>
       {isProcessing ? (
         <>
-          <p>Deleting...</p>
+          <h2>Deleting...</h2>
           <div className={styles.spinner}></div>
         </>
       ) : (
