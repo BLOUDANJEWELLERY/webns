@@ -455,7 +455,7 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
     Remove Color
   </button>
 </div>
-
+))}
     {/* Add Color */}
     <button type="button" className={styles.button} onClick={addColor}>
       Add Color
