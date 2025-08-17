@@ -76,6 +76,7 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
+  // Core product states
   const [title, setTitle] = useState(product?.title || '')
   const [price, setPrice] = useState(product?.price.toString() || '')
   const [defaultImageFile, setDefaultImageFile] = useState<File | null>(null)
@@ -84,10 +85,11 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
   )
   const [defaultImageId] = useState(product?.defaultImage?.asset?._ref)
 
+  // Colors & Variants
   const [colors, setColors] = useState<ColorOption[]>(() => {
     const colorMap: Record<string, ColorOption> = {}
     product?.variants?.forEach(v => {
-      if (!colorMap[v.color])
+      if (!colorMap[v.color]) {
         colorMap[v.color] = {
           color: v.color,
           imageFile: null,
@@ -96,75 +98,65 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
           variants: [],
           _key: v._key || Math.random().toString(36).substr(2, 9),
         }
-      colorMap[v.color].variants.push({ 
-        ...v, 
+      }
+      colorMap[v.color].variants.push({
+        ...v,
         _key: v._key || Math.random().toString(36).substr(2, 9),
-        showPriceOverride: v.priceOverride && v.priceOverride > 0 ? true : false
+        showPriceOverride: !!(v.priceOverride && v.priceOverride > 0),
       })
     })
 
-    const colorImages: ColorOption[] = product?.colorImages?.map(ci => ({
-      color: ci.color,
-      imageFile: null,
-      imagePreview: ci.image ? urlFor(ci.image) : null,
-      existingImageId: ci.image?.asset?._ref,
-      variants: colorMap[ci.color]?.variants || [],
-      _key: ci._key || Math.random().toString(36).substr(2, 9),
-    })) || Object.values(colorMap)
+    const colorImages: ColorOption[] =
+      product?.colorImages?.map(ci => ({
+        color: ci.color,
+        imageFile: null,
+        imagePreview: ci.image ? urlFor(ci.image) : null,
+        existingImageId: ci.image?.asset?._ref,
+        variants: colorMap[ci.color]?.variants || [],
+        _key: ci._key || Math.random().toString(36).substr(2, 9),
+      })) || Object.values(colorMap)
 
     return colorImages
   })
 
-// At the top of your component
-const [openColors, setOpenColors] = useState<boolean[]>(colors.map(() => true));
+  const [openColors, setOpenColors] = useState<boolean[]>(colors.map(() => true))
 
+  // Modal controls
+  const [showUpdateModal, setShowUpdateModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [modalMessage, setModalMessage] = useState('')
 
-const [showUpdateModal, setShowUpdateModal] = useState(false);
-const [showDeleteModal, setShowDeleteModal] = useState(false);
+  // Detect changes
+  const isProductChanged = useMemo(() => {
+    if (!product) return false
+    if (title !== product.title) return true
+    if (Number(price) !== product.price) return true
+    if (defaultImageFile) return true
+    if (colors.length !== (product.colorImages?.length || 0)) return true
 
-const isProductChanged = useMemo(() => {
-  if (!product) return false;
+    for (let i = 0; i < colors.length; i++) {
+      const color = colors[i]
+      const origColor = product.colorImages?.[i]
 
-  // Title & price
-  if (title !== product.title) return true;
-  if (Number(price) !== product.price) return true;
+      if (color.color !== origColor?.color) return true
+      if (color.imageFile) return true
 
-  // Default image changed
-  if (defaultImageFile) return true;
+      const origVariants = product.variants?.filter(v => v.color === color.color) || []
+      if (color.variants.length !== origVariants.length) return true
 
-  // Colors count changed
-  if (colors.length !== (product.colorImages?.length || 0)) return true;
-
-  // Compare each color
-  for (let i = 0; i < colors.length; i++) {
-    const color = colors[i];
-    const origColor = product.colorImages?.[i];
-
-    // Color name
-    if (color.color !== origColor?.color) return true;
-
-    // New color image
-    if (color.imageFile) return true;
-
-    // Variants
-    const origVariants = product.variants?.filter(v => v.color === color.color) || [];
-    if (color.variants.length !== origVariants.length) return true;
-
-    for (let j = 0; j < color.variants.length; j++) {
-      const v = color.variants[j];
-      const ov = origVariants[j];
-      if (!ov) return true;
-      if (v.size !== ov.size) return true;
-      if (v.quantity !== ov.quantity) return true;
-      if ((v.priceOverride || 0) !== (ov.priceOverride || 0)) return true;
+      for (let j = 0; j < color.variants.length; j++) {
+        const v = color.variants[j]
+        const ov = origVariants[j]
+        if (!ov) return true
+        if (v.size !== ov.size) return true
+        if (v.quantity !== ov.quantity) return true
+        if ((v.priceOverride || 0) !== (ov.priceOverride || 0)) return true
+      }
     }
-  }
+    return false
+  }, [title, price, defaultImageFile, colors, product])
 
-  return false; // Nothing changed
-}, [title, price, defaultImageFile, colors, product]);
-
-
-
+  // Default image preview
   useEffect(() => {
     if (!defaultImageFile) return
     const url = URL.createObjectURL(defaultImageFile)
@@ -175,16 +167,30 @@ const isProductChanged = useMemo(() => {
   if (router.isFallback) return <p>Loading product...</p>
   if (!product) return <p>Product not found</p>
 
+  // Handlers
   const handleDefaultImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null
     setDefaultImageFile(file)
   }
 
   const addColor = () => {
-    setColors([...colors, { color: '', imageFile: null, imagePreview: null, variants: [], _key: Math.random().toString(36).substr(2, 9) }])
+    setColors([
+      ...colors,
+      {
+        color: '',
+        imageFile: null,
+        imagePreview: null,
+        variants: [],
+        _key: Math.random().toString(36).substr(2, 9),
+      },
+    ])
+    setOpenColors([...openColors, true])
   }
 
-  const removeColor = (i: number) => setColors(colors.filter((_, idx) => idx !== i))
+  const removeColor = (i: number) => {
+    setColors(colors.filter((_, idx) => idx !== i))
+    setOpenColors(openColors.filter((_, idx) => idx !== i))
+  }
 
   const handleColorImageChange = (index: number, file: File) => {
     const updated = [...colors]
@@ -200,7 +206,7 @@ const isProductChanged = useMemo(() => {
       quantity: 1,
       color: colors[colorIndex].color,
       _key: Math.random().toString(36).substr(2, 9),
-      showPriceOverride: false
+      showPriceOverride: false,
     })
     setColors(updated)
   }
@@ -211,9 +217,12 @@ const isProductChanged = useMemo(() => {
     setColors(updated)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!product._id) return alert('Missing product ID')
+  const handleSubmit = async () => {
+    if (!product._id) {
+      setModalMessage('Missing product ID')
+      setShowUpdateModal(true)
+      return
+    }
     setLoading(true)
 
     try {
@@ -243,7 +252,7 @@ const isProductChanged = useMemo(() => {
         colorImages.push({
           _key: color._key,
           color: color.color,
-          image: assetId ? { _type: 'image', asset: { _type: 'reference', _ref: assetId } } : undefined
+          image: assetId ? { _type: 'image', asset: { _type: 'reference', _ref: assetId } } : undefined,
         })
       }
 
@@ -256,7 +265,7 @@ const isProductChanged = useMemo(() => {
             quantity: Number(v.quantity),
             color: c.color,
             priceOverride: v.priceOverride ? Number(v.priceOverride) : undefined,
-            sku: v.sku || `${c.color}-${v.size}-${Math.floor(Math.random() * 1000000)}`
+            sku: v.sku || `${c.color}-${v.size}-${Math.floor(Math.random() * 1000000)}`,
           })
         )
       )
@@ -268,40 +277,48 @@ const isProductChanged = useMemo(() => {
           id: product._id,
           title,
           price: Number(price),
-          defaultImage: defaultAssetId ? { _type: 'image', asset: { _type: 'reference', _ref: defaultAssetId } } : undefined,
+          defaultImage: defaultAssetId
+            ? { _type: 'image', asset: { _type: 'reference', _ref: defaultAssetId } }
+            : undefined,
           colorImages,
-          variants
-        })
+          variants,
+        }),
       })
       const result = await res.json()
       if (!res.ok) throw new Error(result.error || 'Failed to update product')
-      alert('Product updated successfully')
-      router.push('/admin')
+
+      setModalMessage('Product updated successfully.')
+      setShowUpdateModal(true)
     } catch (err: any) {
-      alert(err.message)
+      setModalMessage(err.message)
+      setShowUpdateModal(true)
     } finally {
       setLoading(false)
     }
   }
 
   const handleDelete = async () => {
-    if (!product._id) return alert('Missing product ID')
-    const confirmDelete = confirm('Are you sure you want to delete this product? This action cannot be undone.')
-    if (!confirmDelete) return
+    if (!product._id) {
+      setModalMessage('Missing product ID')
+      setShowDeleteModal(true)
+      return
+    }
 
     setLoading(true)
     try {
       const res = await fetch('/api/products/delete', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: product._id })
+        body: JSON.stringify({ id: product._id }),
       })
       const result = await res.json()
       if (!res.ok) throw new Error(result.error || 'Failed to delete product')
-      alert('Product deleted successfully')
-      router.push('/admin')
+
+      setModalMessage('Product deleted successfully.')
+      setShowDeleteModal(true)
     } catch (err: any) {
-      alert(err.message)
+      setModalMessage(err.message)
+      setShowDeleteModal(true)
     } finally {
       setLoading(false)
     }
