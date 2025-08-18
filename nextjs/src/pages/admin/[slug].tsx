@@ -5,6 +5,8 @@ import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import Image from 'next/image'
 import styles from '../../styles/adminEdit.module.css'
+import Select from 'react-select'
+
 
 const client = createClient({
   projectId: '3jc8hsku',
@@ -347,6 +349,19 @@ const handleDelete = async () => {
   }
 };
 
+
+// Example list of all possible colors
+const allColors = [
+  { value: 'Red', label: 'Red' },
+  { value: 'Blue', label: 'Blue' },
+  { value: 'Green', label: 'Green' },
+  { value: 'Yellow', label: 'Yellow' },
+  { value: 'Black', label: 'Black' },
+  { value: 'White', label: 'White' },
+  // ... add all your colors here
+]
+
+
   return (
 <>
     <div className={styles.mainContainer}>
@@ -442,16 +457,43 @@ const handleDelete = async () => {
   
         {/* Color Name */}
         <label className={styles.label}>Color Name</label>
-        <input
-          className={styles.input}
-          value={color.color}
-          onChange={e => {
-            const updated = [...colors];
-            updated[ci].color = e.target.value;
-            setColors(updated);
-          }}
-          required
-        />
+<Select
+  value={allColors.find(c => c.value === color.color) || null}
+  onChange={selected => {
+    const updated = [...colors]
+    updated[ci].color = selected?.value || ''
+    setColors(updated)
+  }}
+  options={allColors}
+  isSearchable={true}
+  placeholder="Select or search a color"
+  styles={{
+    control: (provided) => ({
+      ...provided,
+      borderRadius: '10px',
+      borderColor: '#d6bca6',
+      minHeight: '40px',
+      boxShadow: 'none',
+      backgroundColor: '#fffaf5',
+    }),
+    menu: (provided) => ({
+      ...provided,
+      borderRadius: '10px',
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: '#4e2a0f',
+      fontWeight: 500,
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isFocused ? '#fff3e5' : '#fffaf5',
+      color: '#4e2a0f',
+    }),
+  }}
+/>
+
+
 
         {/* Color Image */}
         <label className={styles.label}>Color Image</label>
