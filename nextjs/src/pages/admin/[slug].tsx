@@ -458,7 +458,7 @@ const allColors = [
         {/* Color Name */}
         <label className={styles.label}>Color Name</label>
 <Select
-  value={allColors.find(c => c.value === color.color) || null}
+  value={allColors.find(c => c.value === color.color) || null} // must fallback to null
   onChange={selected => {
     const updated = [...colors]
     updated[ci].color = selected?.value || ''
@@ -467,6 +467,7 @@ const allColors = [
   options={allColors}
   isSearchable={true}
   placeholder="Select or search a color"
+  menuPortalTarget={document.body} // ensures dropdown appears over any overflow:hidden
   styles={{
     control: (provided) => ({
       ...provided,
@@ -476,9 +477,9 @@ const allColors = [
       boxShadow: 'none',
       backgroundColor: '#fffaf5',
     }),
-    menu: (provided) => ({
+    menuPortal: (provided) => ({
       ...provided,
-      borderRadius: '10px',
+      zIndex: 9999,
     }),
     singleValue: (provided) => ({
       ...provided,
@@ -491,6 +492,7 @@ const allColors = [
       color: '#4e2a0f',
     }),
   }}
+  menuPosition="fixed" // ensures menu is positioned correctly
 />
 
 
