@@ -531,12 +531,15 @@ const handleDelete = async () => {
 
             {/* Remove Variant */}
             <button
-              type="button"
-              className={styles.removeButton}
-              onClick={() => removeVariant(ci, vi)}
-            >
-              Remove
-            </button>
+  type="button"
+  className={styles.removeButton}
+  onClick={() => {
+    setPendingRemoveVariant({ ci, vi })
+    setShowRemoveVariantModal(true)
+  }}
+>
+  Remove
+</button>
           </div>
         ))}
 
@@ -550,12 +553,15 @@ const handleDelete = async () => {
             Add Variant
           </button>
           <button
-            type="button"
-            className={styles.deleteButton}
-            onClick={() => removeColor(ci)}
-          >
-            Remove Color
-          </button>
+              type="button"
+                className={styles.deleteButton}
+                onClick={() => {
+                  setPendingRemoveColorIndex(ci)
+                  setShowRemoveColorModal(true)
+                    }}
+                  >
+                  Remove Color
+              </button>
         </div>
       </>
 )}
