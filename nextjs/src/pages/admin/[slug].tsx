@@ -126,6 +126,11 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [modalMessage, setModalMessage] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
+// For color & variant removal
+const [showRemoveColorModal, setShowRemoveColorModal] = useState(false)
+const [showRemoveVariantModal, setShowRemoveVariantModal] = useState(false)
+const [pendingRemoveColorIndex, setPendingRemoveColorIndex] = useState<number | null>(null)
+const [pendingRemoveVariant, setPendingRemoveVariant] = useState<{ ci: number, vi: number } | null>(null)
 
   // Detect changes
   const isProductChanged = useMemo(() => {
@@ -524,34 +529,38 @@ const handleDelete = async () => {
               </button>
             </div>
 
-            {/* Remove Variant */}
-            <button
-              type="button"
-              className={styles.removeButton}
-              onClick={() => removeVariant(ci, vi)}
-            >
-              Remove
-            </button>
-          </div>
-        ))}
+{/* Remove Variant */}
+<button
+  type="button"
+  className={styles.removeButton}
+  onClick={() => {
+    setPendingRemoveVariant({ ci, vi })
+    setShowRemoveVariantModal(true)
+  }}
+>
+  Remove
+</button>
 
-        {/* Add Variant / Remove Color */}
-        <div className={styles.variantActions}>
-          <button
-            type="button"
-            className={styles.button}
-            onClick={() => addVariant(ci)}
-          >
-            Add Variant
-          </button>
-          <button
-            type="button"
-            className={styles.deleteButton}
-            onClick={() => removeColor(ci)}
-          >
-            Remove Color
-          </button>
-        </div>
+{/* Add Variant / Remove Color */}
+<div className={styles.variantActions}>
+  <button
+    type="button"
+    className={styles.button}
+    onClick={() => addVariant(ci)}
+  >
+    Add Variant
+  </button>
+  <button
+    type="button"
+    className={styles.deleteButton}
+    onClick={() => {
+      setPendingRemoveColorIndex(ci)
+      setShowRemoveColorModal(true)
+    }}
+  >
+    Remove Color
+  </button>
+</div>
       </>
 )}
   </div>
@@ -626,6 +635,71 @@ const handleDelete = async () => {
           </div>
         </>
       )}
+    </div>
+  </div>
+)}
+{/* Remove Color Confirmation Modal */}
+{showRemoveColorModal && (
+  <div className={styles.modalOverlay}>
+    <div className={styles.modal}>
+      <h2>Confirm Remove Color</h2>
+      <p>Are you sure you want to remove this color and all its variants?</p>
+      <div className={styles.modalButtons}>
+        <button
+          className={styles.cancelBtn}
+          onClick={() => {
+            setShowRemoveColorModal(false)
+            setPendingRemoveColorIndex(null)
+          }}
+        >
+          Cancel
+        </button>
+        <button
+          className={styles.dangerBtn}
+          onClick={() => {
+            if (pendingRemoveColorIndex !== null) {
+              removeColor(pendingRemoveColorIndex)
+            }
+            setShowRemoveColorModal(false)
+            setPendingRemoveColorIndex(null)
+          }}
+        >
+          Remove
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* Remove Variant Confirmation Modal */}
+{showRemoveVariantModal && (
+  <div className={styles.modalOverlay}>
+    <div className={styles.modal}>
+      <h2>Confirm Remove Variant</h2>
+      <p>Are you sure you want to remove this variant?</p>
+      <div className={styles.modalButtons}>
+        <button
+          className={styles.cancelBtn}
+          onClick={() => {
+            setShowRemoveVariantModal(false)
+            setPendingRemoveVariant(null)
+          }}
+        >
+          Cancel
+        </button>
+        <button
+          className={styles.dangerBtn}
+          onClick={() => {
+            if (pendingRemoveVariant) {
+              removeVariant(pendingRemoveVariant.ci, pendingRemoveVariant.vi)
+            }
+            setShowRemoveVariantModal(false)
+            setPendingRemoveVariant(null)
+          }}
+        >
+          Remove
+        </button>
+      </div>
     </div>
   </div>
 )}
