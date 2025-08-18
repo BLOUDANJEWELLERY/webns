@@ -351,16 +351,17 @@ const handleDelete = async () => {
   }
 };
 
+// Define your option type
+interface ColorOption {
+  label: string
+  value: string
+}
 
-// Example list of all possible colors
-const allColors = [
-  { value: 'Red', label: 'Red' },
-  { value: 'Blue', label: 'Blue' },
-  { value: 'Green', label: 'Green' },
-  { value: 'Yellow', label: 'Yellow' },
-  { value: 'Black', label: 'Black' },
-  { value: 'White', label: 'White' },
-  // ... add all your colors here
+// Example: all colors
+const allColors: ColorOption[] = [
+  { label: 'Red', value: 'red' },
+  { label: 'Blue', value: 'blue' },
+  { label: 'Gold', value: 'gold' },
 ]
 
 
@@ -459,42 +460,29 @@ const allColors = [
   
         {/* Color Name */}
         <label className={styles.label}>Color Name</label>
+// Define your option type
+interface ColorOption {
+  label: string
+  value: string
+}
+
+// Example: all colors
+const allColors: ColorOption[] = [
+  { label: 'Red', value: 'red' },
+  { label: 'Blue', value: 'blue' },
+  { label: 'Gold', value: 'gold' },
+]
+
+// In JSX:
 <Select
-  value={allColors.find(c => c.value === color.color) || null} // must fallback to null
-  onChange={selected => {
+  value={allColors.find(c => c.value === color.color)}
+  onChange={(selected: ColorOption | null) => {
     const updated = [...colors]
     updated[ci].color = selected?.value || ''
     setColors(updated)
   }}
   options={allColors}
-  isSearchable={true}
-  placeholder="Select or search a color"
-  menuPortalTarget={document.body} // ensures dropdown appears over any overflow:hidden
-  styles={{
-    control: (provided) => ({
-      ...provided,
-      borderRadius: '10px',
-      borderColor: '#d6bca6',
-      minHeight: '40px',
-      boxShadow: 'none',
-      backgroundColor: '#fffaf5',
-    }),
-    menuPortal: (provided) => ({
-      ...provided,
-      zIndex: 9999,
-    }),
-    singleValue: (provided) => ({
-      ...provided,
-      color: '#4e2a0f',
-      fontWeight: 500,
-    }),
-    option: (provided, state) => ({
-      ...provided,
-      backgroundColor: state.isFocused ? '#fff3e5' : '#fffaf5',
-      color: '#4e2a0f',
-    }),
-  }}
-  menuPosition="fixed" // ensures menu is positioned correctly
+  isSearchable
 />
 
 
