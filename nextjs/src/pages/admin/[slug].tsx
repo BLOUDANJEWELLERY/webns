@@ -6,6 +6,9 @@ import imageUrlBuilder from '@sanity/image-url'
 import Image from 'next/image'
 import styles from '../../styles/adminEdit.module.css'
 import Select from 'react-select'
+import dynamic from 'next/dynamic'
+
+const Select = dynamic(() => import('react-select'), { ssr: false })
 
 
 const client = createClient({
