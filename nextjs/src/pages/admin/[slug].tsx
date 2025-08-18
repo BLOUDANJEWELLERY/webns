@@ -459,19 +459,19 @@ const allColors: ColorOption[] = [
     {/* All inputs, variants, buttons… */}
   
         {/* Color Name */}
-        <label className={styles.label}>Color Name</label>
+<label className={styles.label}>Color Name</label>
 <Select
-  value={allColors.find(c => c.value === color.color)}
+  value={allColors.find(c => c.value === color.color) || null} // match current color
   onChange={(selected: ColorOption | null) => {
     const updated = [...colors]
-    updated[ci].color = selected?.value || ''
+    updated[ci].color = selected?.value || ''  // update the color state
     setColors(updated)
   }}
-  options={allColors}
-  isSearchable
+  options={allColors}      // the dropdown options
+  isSearchable             // allows searching
+  placeholder="Select a color..."
+  classNamePrefix="react-select" // optional for styling
 />
-
-
 
         {/* Color Image */}
         <label className={styles.label}>Color Image</label>
