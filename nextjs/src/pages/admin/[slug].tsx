@@ -5,10 +5,6 @@ import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import Image from 'next/image'
 import styles from '../../styles/adminEdit.module.css'
-import dynamic from 'next/dynamic'
-
-const Select = dynamic(() => import('react-select'), { ssr: false })
-
 
 const client = createClient({
   projectId: '3jc8hsku',
@@ -350,20 +346,6 @@ const handleDelete = async () => {
     setLoading(false);
   }
 };
-
-// Define your option type
-interface ColorOption {
-  label: string
-  value: string
-}
-
-// Example: all colors
-const allColors: ColorOption[] = [
-  { label: 'Red', value: 'red' },
-  { label: 'Blue', value: 'blue' },
-  { label: 'Gold', value: 'gold' },
-]
-
 
   return (
 <>
