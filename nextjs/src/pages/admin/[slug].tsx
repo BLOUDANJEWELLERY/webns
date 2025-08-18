@@ -460,20 +460,6 @@ const allColors: ColorOption[] = [
   
         {/* Color Name */}
         <label className={styles.label}>Color Name</label>
-// Define your option type
-interface ColorOption {
-  label: string
-  value: string
-}
-
-// Example: all colors
-const allColors: ColorOption[] = [
-  { label: 'Red', value: 'red' },
-  { label: 'Blue', value: 'blue' },
-  { label: 'Gold', value: 'gold' },
-]
-
-// In JSX:
 <Select
   value={allColors.find(c => c.value === color.color)}
   onChange={(selected: ColorOption | null) => {
