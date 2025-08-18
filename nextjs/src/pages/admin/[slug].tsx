@@ -39,6 +39,7 @@ interface Product {
   _id: string
   title: string
   price: number
+  description: string
   defaultImage?: any
   variants?: Variant[]
   colorImages?: any[]
@@ -80,7 +81,7 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
   // Core product states
   const [title, setTitle] = useState(product?.title || '')
   const [price, setPrice] = useState(product?.price.toString() || '')
-  const [description, setDescription] = useState(product.description || "")
+  const [description, setDescription] = useState(product?.description || "")
   const [defaultImageFile, setDefaultImageFile] = useState<File | null>(null)
   const [defaultImagePreview, setDefaultImagePreview] = useState(
     product?.defaultImage ? urlFor(product.defaultImage) : null
