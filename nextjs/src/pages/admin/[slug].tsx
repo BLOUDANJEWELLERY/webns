@@ -60,6 +60,7 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
     _id,
     title,
     price,
+    description,
     defaultImage,
     variants,
     colorImages,
@@ -79,6 +80,7 @@ export default function AdminEditPage({ product }: { product: Product | null }) 
   // Core product states
   const [title, setTitle] = useState(product?.title || '')
   const [price, setPrice] = useState(product?.price.toString() || '')
+  const [description, setDescription] = useState(product.description || "")
   const [defaultImageFile, setDefaultImageFile] = useState<File | null>(null)
   const [defaultImagePreview, setDefaultImagePreview] = useState(
     product?.defaultImage ? urlFor(product.defaultImage) : null
@@ -132,35 +134,36 @@ const [showRemoveVariantModal, setShowRemoveVariantModal] = useState(false)
 const [pendingRemoveColorIndex, setPendingRemoveColorIndex] = useState<number | null>(null)
 const [pendingRemoveVariant, setPendingRemoveVariant] = useState<{ ci: number, vi: number } | null>(null)
 
-  // Detect changes
-  const isProductChanged = useMemo(() => {
-    if (!product) return false
-    if (title !== product.title) return true
-    if (Number(price) !== product.price) return true
-    if (defaultImageFile) return true
-    if (colors.length !== (product.colorImages?.length || 0)) return true
+// Detect changes
+const isProductChanged = useMemo(() => {
+  if (!product) return false
+  if (title !== product.title) return true
+  if (description !== (product.description || '')) return true // ✅ check description
+  if (Number(price) !== product.price) return true
+  if (defaultImageFile) return true
+  if (colors.length !== (product.colorImages?.length || 0)) return true
 
-    for (let i = 0; i < colors.length; i++) {
-      const color = colors[i]
-      const origColor = product.colorImages?.[i]
+  for (let i = 0; i < colors.length; i++) {
+    const color = colors[i]
+    const origColor = product.colorImages?.[i]
 
-      if (color.color !== origColor?.color) return true
-      if (color.imageFile) return true
+    if (color.color !== origColor?.color) return true
+    if (color.imageFile) return true
 
-      const origVariants = product.variants?.filter(v => v.color === color.color) || []
-      if (color.variants.length !== origVariants.length) return true
+    const origVariants = product.variants?.filter(v => v.color === color.color) || []
+    if (color.variants.length !== origVariants.length) return true
 
-      for (let j = 0; j < color.variants.length; j++) {
-        const v = color.variants[j]
-        const ov = origVariants[j]
-        if (!ov) return true
-        if (v.size !== ov.size) return true
-        if (v.quantity !== ov.quantity) return true
-        if ((v.priceOverride || 0) !== (ov.priceOverride || 0)) return true
-      }
+    for (let j = 0; j < color.variants.length; j++) {
+      const v = color.variants[j]
+      const ov = origVariants[j]
+      if (!ov) return true
+      if (v.size !== ov.size) return true
+      if (v.quantity !== ov.quantity) return true
+      if ((v.priceOverride || 0) !== (ov.priceOverride || 0)) return true
     }
-    return false
-  }, [title, price, defaultImageFile, colors, product])
+  }
+  return false
+}, [title, description, price, defaultImageFile, colors, product])
 
   // Default image preview
   useEffect(() => {
@@ -291,6 +294,7 @@ const handleSubmit = async () => {
         id: product._id,
         title,
         price: Number(price),
+        description,
         defaultImage: defaultAssetId
           ? { _type: 'image', asset: { _type: 'reference', _ref: defaultAssetId } }
           : undefined,
@@ -399,6 +403,18 @@ const handleDelete = async () => {
       />
     </div>
   )}
+</div>
+
+{/* Description */}
+<div className={styles.formGroup}>
+  <label className={styles.label}>Description</label>
+  <textarea
+    className={styles.textarea}
+    value={description}
+    onChange={e => setDescription(e.target.value)}
+    rows={4}
+    placeholder="Enter product description..."
+  />
 </div>
 
 {/* Colors & Variants */}
