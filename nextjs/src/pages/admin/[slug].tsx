@@ -347,6 +347,23 @@ const handleDelete = async () => {
   }
 };
 
+const colorOptions = ["Red", "Blue", "Green", "Yellow", "Orange", "Black", "White"];
+
+function ColorDropdown({ color, ci, colors, setColors }) {
+  const [search, setSearch] = useState("");
+
+  const filteredOptions = colorOptions.filter(c =>
+    c.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleSelect = (selectedColor) => {
+    const updated = [...colors];
+    updated[ci].color = selectedColor;
+    setColors(updated);
+    setSearch(""); // clear search after selection
+  };
+
+
   return (
 <>
     <div className={styles.mainContainer}>
@@ -441,17 +458,47 @@ const handleDelete = async () => {
     {/* All inputs, variants, buttons… */}
   
         {/* Color Name */}
-<label className={styles.label}>Color Name</label>
-        <input
-          className={styles.input}
-          value={color.color}
-          onChange={e => {
-            const updated = [...colors];
-            updated[ci].color = e.target.value;
-            setColors(updated);
+<div style={{ position: "relative", width: "100%" }}>
+  <label className={styles.label}>Color Name</label>
+  <input
+    className={styles.input}
+    value={search || color.color}
+    onChange={(e) => setSearch(e.target.value)}
+    placeholder="Type to search..."
+    required
+    style={{ padding: "12px", fontSize: "16px", width: "100%" }}
+  />
+  {search && filteredOptions.length > 0 && (
+    <ul style={{
+      position: "absolute",
+      background: "white",
+      border: "1px solid #ccc",
+      width: "100%",
+      maxHeight: "200px", // taller for mobile scrolling
+      overflowY: "auto",
+      zIndex: 1000,
+      margin: 0,
+      padding: 0,
+      listStyle: "none",
+      borderRadius: "4px",
+      boxShadow: "0 2px 6px rgba(0,0,0,0.2)"
+    }}>
+      {filteredOptions.map((c, index) => (
+        <li
+          key={index}
+          style={{
+            padding: "12px",
+            cursor: "pointer",
+            fontSize: "16px"
           }}
-          required
-        />
+          onClick={() => handleSelect(c)}
+        >
+          {c}
+        </li>
+      ))}
+    </ul>
+  )}
+</div>
 
         {/* Color Image */}
         <label className={styles.label}>Color Image</label>
