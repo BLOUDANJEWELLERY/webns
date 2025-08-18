@@ -634,7 +634,71 @@ const handleDelete = async () => {
     </div>
   </div>
 )}
+{/* Remove Color Confirmation Modal */}
+{showRemoveColorModal && (
+  <div className={styles.modalOverlay}>
+    <div className={styles.modal}>
+      <h2>Confirm Remove Color</h2>
+      <p>Are you sure you want to remove this color and all its variants?</p>
+      <div className={styles.modalButtons}>
+        <button
+          className={styles.cancelBtn}
+          onClick={() => {
+            setShowRemoveColorModal(false)
+            setPendingRemoveColorIndex(null)
+          }}
+        >
+          Cancel
+        </button>
+        <button
+          className={styles.dangerBtn}
+          onClick={() => {
+            if (pendingRemoveColorIndex !== null) {
+              removeColor(pendingRemoveColorIndex)
+            }
+            setShowRemoveColorModal(false)
+            setPendingRemoveColorIndex(null)
+          }}
+        >
+          Remove
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
+{/* Remove Variant Confirmation Modal */}
+{showRemoveVariantModal && (
+  <div className={styles.modalOverlay}>
+    <div className={styles.modal}>
+      <h2>Confirm Remove Variant</h2>
+      <p>Are you sure you want to remove this variant?</p>
+      <div className={styles.modalButtons}>
+        <button
+          className={styles.cancelBtn}
+          onClick={() => {
+            setShowRemoveVariantModal(false)
+            setPendingRemoveVariant(null)
+          }}
+        >
+          Cancel
+        </button>
+        <button
+          className={styles.dangerBtn}
+          onClick={() => {
+            if (pendingRemoveVariant) {
+              removeVariant(pendingRemoveVariant.ci, pendingRemoveVariant.vi)
+            }
+            setShowRemoveVariantModal(false)
+            setPendingRemoveVariant(null)
+          }}
+        >
+          Remove
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 </>
   )
 }
