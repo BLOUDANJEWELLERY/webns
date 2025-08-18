@@ -7,7 +7,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== 'PUT') return res.status(405).json({ error: 'Method not allowed' })
 
   try {
-    const { id, title, price, defaultImage, colorImages, variants } = req.body
+    const { id, title, price, description, defaultImage, colorImages, variants } = req.body
 
     if (!id) return res.status(400).json({ error: 'Missing product ID' })
     if (!title) return res.status(400).json({ error: 'Missing title' })
@@ -18,13 +18,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       price: Number(price),
     }
 
+    // Add description if provided
+    if (description !== undefined) patchData.description = description
+
     // Default image
     if (defaultImage) patchData.defaultImage = defaultImage
 
     // Color images
     if (Array.isArray(colorImages)) {
       patchData.colorImages = colorImages.map((c: any) => ({
-        _key: c._key || uuidv4(), // ✅ Ensure each has a _key
+        _key: c._key || uuidv4(),
         color: c.color,
         image: c.image || undefined,
       }))
@@ -33,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Variants
     if (Array.isArray(variants)) {
       patchData.variants = variants.map((v: any) => ({
-        _key: v._key || uuidv4(), // ✅ Ensure each has a _key
+        _key: v._key || uuidv4(),
         size: v.size,
         color: v.color,
         quantity: Number(v.quantity),
