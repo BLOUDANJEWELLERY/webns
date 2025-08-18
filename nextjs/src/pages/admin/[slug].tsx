@@ -39,7 +39,7 @@ interface Product {
   _id: string
   title: string
   price: number
-  description: Text
+  description: string
   defaultImage?: any
   variants?: Variant[]
   colorImages?: any[]
