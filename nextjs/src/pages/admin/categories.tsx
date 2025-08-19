@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { client } from "@/lib/sanity"; // Your Sanity client
-import styles from "@/styles/Admin.module.css"; // Optional styling
+import styles from "@/styles/AdminEdit.module.css"; // Optional styling
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
