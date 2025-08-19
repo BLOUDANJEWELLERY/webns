@@ -1,120 +1,91 @@
 .container {
-  max-width: 800px;
+  max-width: 700px;
   margin: 2rem auto;
-  padding: 1.5rem;
-  background: #fef9f3;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  font-family: 'Arial', sans-serif;
+  padding: 2rem;
+  background: #fffaf3;
+  border: 1px solid #e0c097;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  font-family: system-ui, sans-serif;
 }
 
-.heading {
+.title {
   font-size: 1.8rem;
-  font-weight: 600;
-  color: #6b4226;
-  margin-bottom: 1rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  color: #5b3921;
   text-align: center;
 }
 
-.subHeading {
-  font-size: 1.4rem;
-  font-weight: 500;
-  margin-top: 2rem;
-  color: #4b2e1b;
-}
-
-.formGroup {
-  margin-bottom: 1rem;
-}
-
-.input, .textarea, .select {
-  width: 100%;
-  padding: 0.6rem 0.8rem;
-  border: 1px solid #d0b8a8;
-  border-radius: 6px;
-  font-size: 1rem;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.input:focus, .textarea:focus, .select:focus {
-  border-color: #a77245;
-}
-
-.textarea {
-  resize: vertical;
-}
-
-.saveButton {
-  background: #a77245;
-  color: #fff;
-  padding: 0.7rem 1.2rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background 0.2s;
-}
-
-.saveButton:hover {
-  background: #8c5a2f;
-}
-
-.categoryList {
+.tree {
   list-style: none;
-  padding-left: 0;
-  margin-top: 1rem;
+  padding-left: 1.2rem;
+  border-left: 2px solid #e0c097;
+  margin: 0.5rem 0;
 }
 
-.categoryItem {
-  margin-bottom: 0.5rem;
-}
-
-.categoryRow {
+.node {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #fff4e6;
-  padding: 0.5rem 0.8rem;
+  padding: 0.3rem 0.5rem;
   border-radius: 6px;
-  border: 1px solid #e3d3c0;
+  transition: background 0.2s;
 }
 
-.categoryTitle {
+.node:hover {
+  background: #f8e9da;
+}
+
+.node span {
+  flex: 1;
   font-weight: 500;
-  color: #5b3a21;
+  color: #4b2e1a;
 }
 
-.actionButtons button {
-  margin-left: 0.5rem;
-  padding: 0.3rem 0.6rem;
+.actions button {
+  margin-left: 0.3rem;
   border: none;
-  border-radius: 4px;
+  background: transparent;
   cursor: pointer;
   font-size: 0.9rem;
 }
 
-.editButton {
-  background: #6b8e23;
+.actions button:hover {
+  color: #b55c2a;
+}
+
+.inlineForm {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0.3rem 0 0.3rem 1rem;
+}
+
+.input {
+  padding: 0.3rem 0.6rem;
+  border: 1px solid #c9a879;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.inlineForm button {
+  padding: 0.3rem 0.6rem;
+  border: none;
+  border-radius: 4px;
+  background: #d9a05b;
   color: white;
+  cursor: pointer;
+  font-size: 0.8rem;
 }
 
-.editButton:hover {
-  background: #55780e;
+.inlineForm button:hover {
+  background: #b97f3c;
 }
 
-.deleteButton {
-  background: #c0392b;
-  color: white;
-}
-
-.deleteButton:hover {
-  background: #96281b;
-}
-
-.noCategories {
-  font-style: italic;
-  color: #7d5a4f;
-  text-align: center;
+.loading {
   margin-top: 1rem;
+  text-align: center;
+  font-style: italic;
+  color: #a1662f;
 }
