@@ -1,7 +1,11 @@
-// src/pages/admin/categories.tsx
+// src/pages/index.tsx
+
 import { useState } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from 'next-sanity'
-import styles from '../../styles/admincat.module.css'
+import imageUrlBuilder from '@sanity/image-url'
+import styles from '../styles/Home.module.css'
 
 const client = createClient({
   projectId: '3jc8hsku',
@@ -10,105 +14,83 @@ const client = createClient({
   useCdn: false,
 })
 
-type Category = {
+const builder = imageUrlBuilder(client)
+const urlFor = (source: any) => builder.image(source)
+
+type Collection = {
   _id: string
-  title: string
-  description?: string
-  parent?: { _id: string; title: string }
+  name: string
+  description: string
+  image: any
+  linkTarget: string
 }
 
 export async function getServerSideProps() {
-  const query = `*[_type == "category"]{
+  const query = `*[_type == "collection"]{
     _id,
-    title,
+    name,
     description,
-    parent->{ _id, title }
+    image,
+    linkTarget
   }`
-  const categories: Category[] = await client.fetch(query)
-  return { props: { categories } }
+  const collections: Collection[] = await client.fetch(query)
+  return { props: { collections } }
 }
 
-export default function Categories({ categories }: { categories: Category[] }) {
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [parent, setParent] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-
-    try {
-      const res = await fetch('/api/categories/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, description, parent }),
-      })
-      const data = await res.json()
-      if (!data.success) throw new Error(data.error || 'Failed to save category')
-      window.location.reload() // reload page to see new category
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
+export default function Home({ collections }: { collections: Collection[] }) {
+  const [menuOpen, setMenuOpen] = useState(false)
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Manage Categories</h1>
-
-      {/* Create Form */}
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <input
-          className={styles.input}
-          type="text"
-          placeholder="Category Name"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <textarea
-          className={styles.textarea}
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-        <select
-          className={styles.select}
-          value={parent}
-          onChange={(e) => setParent(e.target.value)}
-        >
-          <option value="">No Parent (Top-level)</option>
-          {categories.map((cat) => (
-            <option key={cat._id} value={cat._id}>
-              {cat.title}
-            </option>
-          ))}
-        </select>
-        <button type="submit" className={styles.button} disabled={loading}>
-          {loading ? 'Saving...' : 'Create Category'}
+    <main className={styles.container}>
+      {/* Hamburger and Brand Header */}
+      <header className={styles.header}>
+        <button className={styles.hamburger} onClick={() => setMenuOpen(!menuOpen)}>
+          ☰
         </button>
-      </form>
+        <h1 className={styles.siteTitle}>Marvello Threads</h1>
+        <p className={styles.siteDescription}>
+          Where modern elegance meets timeless tradition. Discover statement pieces made to turn heads.
+        </p>
+      </header>
 
-      {error && <p className={styles.error}>{error}</p>}
-
-      {/* Existing Categories */}
-      <div className={styles.list}>
-        <h2 className={styles.subtitle}>Existing Categories</h2>
-        <ul>
-          {categories.map((cat) => (
-            <li key={cat._id} className={styles.item}>
-              <span className={styles.catTitle}>{cat.title}</span>
-              {cat.parent && <span className={styles.catParent}> → {cat.parent.title}</span>}
-              {cat.description && (
-                <p className={styles.catDescription}>{cat.description}</p>
-              )}
-            </li>
+      {/* Sidebar Menu */}
+      <div className={`${styles.sidebar} ${menuOpen ? styles.open : ''}`}>
+        <nav className={styles.menu}>
+          <button className={styles.closeButton} onClick={() => setMenuOpen(false)}>×</button>
+          <Link href="/" onClick={() => setMenuOpen(false)}>Home</Link>
+          <Link href="/product" onClick={() => setMenuOpen(false)}>All Product</Link>
+          {collections.map(col => (
+            <Link key={col._id} href={col.linkTarget} onClick={() => setMenuOpen(false)}>
+              {col.name}
+            </Link>
           ))}
-        </ul>
+        </nav>
       </div>
-    </div>
+
+      {/* Collections */}
+      <section className={styles.collections}>
+        <h2 className={styles.sectionTitle}>Explore Our Collections</h2>
+        <div className={styles.collectionGrid}>
+          {collections.map((col) => (
+            <div key={col._id} className={styles.collectionCard}>
+              {col.image && (
+                <Image
+                  src={urlFor(col.image).width(400).height(300).url()}
+                  alt={col.name}
+                  width={400}
+                  height={300}
+                  className={styles.collectionImage}
+                />
+              )}
+              <h3 className={styles.collectionTitle}>{col.name}</h3>
+              <p className={styles.collectionDescription}>{col.description}</p>
+              <Link href={col.linkTarget} className={styles.collectionLink}>
+                View Collection →
+              </Link>
+            </div>
+          ))}
+        </div>
+      </section>
+    </main>
   )
 }
