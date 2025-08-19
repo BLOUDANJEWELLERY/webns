@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { client } from "@/lib/sanity";
-import styles from "@/styles/admincat.module.css";
+import { client } from "../../lib/sanity";
+import styles from "../../styles/admincat.module.css";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
