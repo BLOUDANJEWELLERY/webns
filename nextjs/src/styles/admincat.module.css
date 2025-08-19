@@ -1,119 +1,120 @@
 .container {
   max-width: 800px;
-  margin: 20px auto;
-  padding: 20px;
-  background: #fff8f0;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  font-family: 'Inter', sans-serif;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background: #fef9f3;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  font-family: 'Arial', sans-serif;
 }
 
 .heading {
   font-size: 1.8rem;
-  font-weight: 700;
-  margin-bottom: 20px;
-  color: #5c3d2e;
+  font-weight: 600;
+  color: #6b4226;
+  margin-bottom: 1rem;
+  text-align: center;
 }
 
 .subHeading {
-  margin-top: 40px;
   font-size: 1.4rem;
-  font-weight: 600;
-  color: #5c3d2e;
-  margin-bottom: 10px;
+  font-weight: 500;
+  margin-top: 2rem;
+  color: #4b2e1b;
 }
 
 .formGroup {
-  margin-bottom: 20px;
-  display: flex;
-  flex-direction: column;
+  margin-bottom: 1rem;
 }
 
 .input, .textarea, .select {
   width: 100%;
-  padding: 12px 16px;
-  font-size: 16px;
-  border-radius: 8px;
-  border: 1px solid #d0bfa5;
-  background: #fffaf4;
-  color: #4b3a2e;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #d0b8a8;
+  border-radius: 6px;
+  font-size: 1rem;
   outline: none;
-  transition: border 0.2s ease;
+  transition: border-color 0.2s;
 }
 
 .input:focus, .textarea:focus, .select:focus {
-  border-color: #b3864a;
+  border-color: #a77245;
+}
+
+.textarea {
+  resize: vertical;
 }
 
 .saveButton {
-  background: #b3864a;
+  background: #a77245;
   color: #fff;
-  padding: 12px 20px;
+  padding: 0.7rem 1.2rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  font-weight: 600;
-  transition: background 0.2s ease;
+  font-size: 1rem;
+  transition: background 0.2s;
 }
 
 .saveButton:hover {
-  background: #9c6e38;
+  background: #8c5a2f;
 }
 
 .categoryList {
   list-style: none;
   padding-left: 0;
+  margin-top: 1rem;
 }
 
 .categoryItem {
-  margin-bottom: 10px;
+  margin-bottom: 0.5rem;
 }
 
 .categoryRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #fff1e0;
-  padding: 10px 12px;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  background: #fff4e6;
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+  border: 1px solid #e3d3c0;
 }
 
 .categoryTitle {
-  font-weight: 600;
-  color: #5c3d2e;
+  font-weight: 500;
+  color: #5b3a21;
 }
 
 .actionButtons button {
-  margin-left: 8px;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
+  margin-left: 0.5rem;
+  padding: 0.3rem 0.6rem;
   border: none;
-  font-weight: 500;
-  transition: 0.2s;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
 }
 
 .editButton {
-  background: #f0c987;
-  color: #5c3d2e;
+  background: #6b8e23;
+  color: white;
 }
 
 .editButton:hover {
-  background: #e0b066;
+  background: #55780e;
 }
 
 .deleteButton {
-  background: #e57373;
-  color: #fff;
+  background: #c0392b;
+  color: white;
 }
 
 .deleteButton:hover {
-  background: #d04545;
+  background: #96281b;
 }
 
 .noCategories {
   font-style: italic;
-  color: #7d6a5e;
+  color: #7d5a4f;
+  text-align: center;
+  margin-top: 1rem;
 }
