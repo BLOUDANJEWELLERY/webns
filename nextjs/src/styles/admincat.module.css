@@ -1,0 +1,127 @@
+/* admincat.module.css */
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Inter', sans-serif;
+  color: #333;
+}
+
+.heading {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #5c4d7d;
+}
+
+.subHeading {
+  font-size: 20px;
+  margin-top: 30px;
+  margin-bottom: 10px;
+  color: #3a3a3a;
+}
+
+.input,
+.textarea,
+.select {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  box-sizing: border-box;
+  transition: border 0.2s ease;
+}
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+  border-color: #5c4d7d;
+  outline: none;
+}
+
+.textarea {
+  resize: vertical;
+}
+
+.saveButton {
+  background-color: #5c4d7d;
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.saveButton:hover {
+  background-color: #47355f;
+}
+
+.categoryList {
+  list-style: none;
+  padding-left: 0;
+}
+
+.categoryItem {
+  background-color: #f7f7f7;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s ease;
+}
+
+.categoryItem:hover {
+  background-color: #ece7f2;
+}
+
+.categoryTitle {
+  font-weight: 500;
+  color: #333;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.actionButtons button {
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.actionButtons button:hover {
+  background-color: #5c4d7d;
+  color: #fff;
+}
+
+.deleteButton {
+  background-color: #e74c3c;
+  color: #fff;
+}
+
+.deleteButton:hover {
+  background-color: #c0392b;
+}
+
+@media (max-width: 600px) {
+  .actionButtons {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .saveButton {
+    width: 100%;
+    margin-top: 10px;
+  }
+}
