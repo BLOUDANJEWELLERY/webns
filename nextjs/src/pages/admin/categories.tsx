@@ -2,16 +2,24 @@ import { useState, useEffect } from "react";
 import { client } from "../../lib/sanityClient";
 import styles from "../../styles/admincat.module.css";
 
+// Define TypeScript type for category
+type Category = {
+  _id: string;
+  title: string;
+  description?: string;
+  parent?: { _id: string; title: string };
+};
+
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [parent, setParent] = useState("");
-  const [editing, setEditing] = useState(null);
+  const [editing, setEditing] = useState<string | null>(null);
 
   // Fetch categories
   const fetchCategories = async () => {
-    const data = await client.fetch(
+    const data: Category[] = await client.fetch(
       `*[_type == "category"]{_id, title, description, parent->{_id, title}}`
     );
     setCategories(data);
@@ -25,7 +33,7 @@ export default function CategoriesPage() {
   const handleSave = async () => {
     if (!title.trim()) return alert("Category name is required");
 
-    const doc = {
+    const doc: Partial<Category> & { _type: string; parent?: any } = {
       _type: "category",
       title: title.trim(),
       description: description.trim(),
@@ -53,7 +61,7 @@ export default function CategoriesPage() {
   };
 
   // Edit category
-  const handleEdit = (category) => {
+  const handleEdit = (category: Category) => {
     setEditing(category._id);
     setTitle(category.title);
     setDescription(category.description || "");
@@ -61,15 +69,28 @@ export default function CategoriesPage() {
   };
 
   // Render nested categories
-  const renderCategoryTree = (cats, parentId = null, level = 0) =>
+  const renderCategoryTree = (
+    cats: Category[],
+    parentId: string | null = null,
+    level = 0
+  ) =>
     cats
-      .filter(c => (c.parent?._id || null) === parentId)
-      .map(c => (
-        <li key={c._id} className={styles.categoryItem} style={{ marginLeft: `${level * 20}px` }}>
+      .filter((c) => (c.parent?._id || null) === parentId)
+      .map((c) => (
+        <li
+          key={c._id}
+          className={styles.categoryItem}
+          style={{ marginLeft: `${level * 20}px` }}
+        >
           <span className={styles.categoryTitle}>{c.title}</span>
           <div className={styles.actionButtons}>
             <button onClick={() => handleEdit(c)}>Edit</button>
-            <button className={styles.deleteButton} onClick={() => handleDelete(c._id)}>Delete</button>
+            <button
+              className={styles.deleteButton}
+              onClick={() => handleDelete(c._id)}
+            >
+              Delete
+            </button>
           </div>
           <ul>{renderCategoryTree(cats, c._id, level + 1)}</ul>
         </li>
@@ -77,27 +98,35 @@ export default function CategoriesPage() {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.heading}>{editing ? "Edit Category" : "Create Category"}</h2>
+      <h2 className={styles.heading}>
+        {editing ? "Edit Category" : "Create Category"}
+      </h2>
 
       <input
         className={styles.input}
         value={title}
-        onChange={e => setTitle(e.target.value)}
+        onChange={(e) => setTitle(e.target.value)}
         placeholder="Category name"
       />
 
       <textarea
         className={styles.textarea}
         value={description}
-        onChange={e => setDescription(e.target.value)}
+        onChange={(e) => setDescription(e.target.value)}
         placeholder="Description"
         rows={3}
       />
 
-      <select className={styles.select} value={parent} onChange={e => setParent(e.target.value)}>
+      <select
+        className={styles.select}
+        value={parent}
+        onChange={(e) => setParent(e.target.value)}
+      >
         <option value="">No parent (top-level)</option>
-        {categories.map(c => (
-          <option key={c._id} value={c._id}>{c.title}</option>
+        {categories.map((c) => (
+          <option key={c._id} value={c._id}>
+            {c.title}
+          </option>
         ))}
       </select>
 
@@ -106,9 +135,7 @@ export default function CategoriesPage() {
       </button>
 
       <h3 className={styles.subHeading}>Existing Categories</h3>
-      <ul className={styles.categoryList}>
-        {renderCategoryTree(categories)}
-      </ul>
+      <ul className={styles.categoryList}>{renderCategoryTree(categories)}</ul>
     </div>
   );
 }
