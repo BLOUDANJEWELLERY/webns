@@ -1,29 +1,14 @@
-// src/pages/admin/categories.tsx
-import { useState } from 'react'
-import { createClient } from 'next-sanity'
+import { useState, useEffect } from 'react'
 import styles from '../../styles/admincat.module.css'
-
-const client = createClient({
-  projectId: '3jc8hsku',
-  dataset: 'production',
-  apiVersion: '2023-07-30',
-  useCdn: false,
-})
 
 type Category = {
   _id: string
   title: string
   parent?: { _id: string; title: string }
+  children?: Category[]
 }
 
-export async function getServerSideProps() {
-  const query = `*[_type == "category"]{ _id, title, parent->{ _id, title } }`
-  const categories: Category[] = await client.fetch(query)
-  return { props: { categories } }
-}
-
-// Build hierarchy (parent/child tree)
-function buildTree(categories: Category[], parentId: string | null = null) {
+function buildTree(categories: Category[], parentId: string | null = null): Category[] {
   return categories
     .filter((cat) => (parentId ? cat.parent?._id === parentId : !cat.parent))
     .map((cat) => ({
@@ -32,7 +17,8 @@ function buildTree(categories: Category[], parentId: string | null = null) {
     }))
 }
 
-export default function Categories({ categories }: { categories: Category[] }) {
+export default function Categories() {
+  const [categories, setCategories] = useState<Category[]>([])
   const [newCategory, setNewCategory] = useState<{ parent: string | null; title: string }>({
     parent: null,
     title: '',
@@ -40,9 +26,20 @@ export default function Categories({ categories }: { categories: Category[] }) {
   const [editing, setEditing] = useState<{ id: string; title: string } | null>(null)
   const [loading, setLoading] = useState(false)
 
+  // Fetch categories
+  const fetchCategories = async () => {
+    const res = await fetch('/api/categories')
+    const data = await res.json()
+    setCategories(data)
+  }
+
+  useEffect(() => {
+    fetchCategories()
+  }, [])
+
   const tree = buildTree(categories)
 
-  // Create category
+  // Create
   const handleCreate = async (parent: string | null) => {
     if (!newCategory.title.trim()) return
     setLoading(true)
@@ -50,19 +47,16 @@ export default function Categories({ categories }: { categories: Category[] }) {
       await fetch('/api/categories/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: newCategory.title,
-          parent,
-        }),
+        body: JSON.stringify({ title: newCategory.title, parent }),
       })
-      window.location.reload()
+      await fetchCategories()
     } finally {
       setLoading(false)
       setNewCategory({ parent: null, title: '' })
     }
   }
 
-  // Update category
+  // Update
   const handleUpdate = async (id: string, title: string) => {
     if (!title.trim()) return
     setLoading(true)
@@ -72,14 +66,14 @@ export default function Categories({ categories }: { categories: Category[] }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, title }),
       })
-      window.location.reload()
+      await fetchCategories()
     } finally {
       setLoading(false)
       setEditing(null)
     }
   }
 
-  // Delete category
+  // Delete
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this category?')) return
     setLoading(true)
@@ -89,14 +83,14 @@ export default function Categories({ categories }: { categories: Category[] }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id }),
       })
-      window.location.reload()
+      await fetchCategories()
     } finally {
       setLoading(false)
     }
   }
 
   // Recursive UI
-  const renderTree = (nodes: any[], parent: string | null = null) => (
+  const renderTree = (nodes: Category[], parent: string | null = null) => (
     <ul className={styles.tree}>
       {nodes.map((node) => (
         <li key={node._id}>
@@ -114,13 +108,9 @@ export default function Categories({ categories }: { categories: Category[] }) {
             <div className={styles.node}>
               <span>{node.title}</span>
               <div className={styles.actions}>
-                <button onClick={() => setEditing({ id: node._id, title: node.title })}>
-                  ✏️
-                </button>
+                <button onClick={() => setEditing({ id: node._id, title: node.title })}>✏️</button>
                 <button onClick={() => handleDelete(node._id)}>🗑</button>
-                <button onClick={() => setNewCategory({ parent: node._id, title: '' })}>
-                  ➕
-                </button>
+                <button onClick={() => setNewCategory({ parent: node._id, title: '' })}>➕</button>
               </div>
             </div>
           )}
