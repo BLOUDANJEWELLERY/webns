@@ -17,11 +17,13 @@ export default function CategoriesPage() {
   const [editing, setEditing] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Fetch categories via API route
+  // --- Fetch categories directly via Sanity client ---
   const fetchCategories = async () => {
     try {
-      const res = await fetch("/api/categories/fetch");
-      const data: SanityCategory[] = await res.json();
+      // Use the Sanity client directly here
+      const data: SanityCategory[] = await (await import("../../lib/sanityClient")).client.fetch(
+        `*[_type == "category"]{_id, title, description, parent->{_id, title}}`
+      );
       setCategories(data || []);
     } catch (err) {
       console.error(err);
@@ -33,57 +35,30 @@ export default function CategoriesPage() {
     fetchCategories();
   }, []);
 
+  // --- Save category via your existing API ---
   const handleSave = async () => {
     if (!title.trim()) return alert("Category name is required");
 
     setLoading(true);
     try {
       const payload = { title, description, parent: parent || null };
-
-      if (editing) {
-        // Update existing category
-        const res = await fetch(`/api/categories/update?id=${editing}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.error || "Failed to update category");
-        setEditing(null);
-      } else {
-        // Create new category
-        const res = await fetch("/api/categories/create", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.error || "Failed to create category");
-      }
+      const res = await fetch("/api/categories/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || "Failed to create category");
 
       setTitle("");
       setDescription("");
       setParent("");
-      fetchCategories();
+      fetchCategories(); // refresh list
     } catch (err: any) {
       console.error(err);
       alert(err.message || "Failed to save category");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this category?")) return;
-
-    try {
-      const res = await fetch(`/api/categories/delete?id=${id}`, { method: "DELETE" });
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || "Failed to delete category");
-      fetchCategories();
-    } catch (err) {
-      console.error(err);
-      alert("Failed to delete category");
     }
   };
 
@@ -107,7 +82,7 @@ export default function CategoriesPage() {
             <span className={styles.categoryTitle}>{c.title}</span>
             <div className={styles.actionButtons}>
               <button className={styles.editButton} onClick={() => handleEdit(c)}>Edit</button>
-              <button className={styles.deleteButton} onClick={() => handleDelete(c._id)}>Delete</button>
+              {/* Delete button can call your future API */}
             </div>
           </div>
           <ul>{renderCategoryTree(cats, c._id, level + 1)}</ul>
