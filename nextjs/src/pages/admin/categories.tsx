@@ -1,3 +1,4 @@
+// src/pages/admin/categories.tsx
 import { useState, useEffect } from "react";
 import { client } from "../../lib/sanityClient";
 import styles from "../../styles/admincat.module.css";
@@ -15,74 +16,86 @@ export default function CategoriesPage() {
   const [description, setDescription] = useState("");
   const [parent, setParent] = useState("");
   const [editing, setEditing] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  // Fetch categories
+  // Fetch categories from Sanity
   const fetchCategories = async () => {
-    const data: SanityCategory[] = await client.fetch(
-      `*[_type == "category"]{_id, title, description, parent->{_id, title}}`
-    );
-    setCategories(data);
+    try {
+      const data: SanityCategory[] = await client.fetch(
+        `*[_type == "category"]{_id, title, description, parent->{_id, title}}`
+      );
+      setCategories(data);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to fetch categories");
+    }
   };
 
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  // Create or update category
+  // Save or update category
   const handleSave = async () => {
     if (!title.trim()) return alert("Category name is required");
 
-    const doc: any = {
-      title: title.trim(),
-      description: description.trim(),
-    };
-
-    // Only set parent if selected
-    if (parent) {
-      doc.parent = { _type: "reference", _ref: parent };
-    }
+    setLoading(true);
 
     try {
       if (editing) {
-        // Patch
-        await client.patch(editing).set(doc).unset(!parent ? ["parent"] : []).commit();
+        // Update existing category directly via patch
+        const doc: any = { title: title.trim(), description: description.trim() };
+        if (parent) doc.parent = { _type: "reference", _ref: parent };
+
+        await client.patch(editing)
+          .set(doc)
+          .unset(!parent ? ["parent"] : [])
+          .commit();
+
         setEditing(null);
       } else {
-        // Create
-        await client.create({ _type: "category", ...doc });
+        // Use API route for creation
+        const res = await fetch("/api/categories/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, description, parent }),
+        });
+
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || "Failed to create category");
       }
 
       setTitle("");
       setDescription("");
       setParent("");
       fetchCategories();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to save category.");
+      alert(err.message || "Failed to save category");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Delete category
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this category?")) return;
+
     try {
       await client.delete(id);
       fetchCategories();
     } catch (err) {
       console.error(err);
-      alert("Failed to delete category.");
+      alert("Failed to delete category");
     }
   };
 
-  // Edit category
-  const handleEdit = (category: SanityCategory) => {
-    setEditing(category._id);
-    setTitle(category.title);
-    setDescription(category.description || "");
-    setParent(category.parent?._id || "");
+  const handleEdit = (cat: SanityCategory) => {
+    setEditing(cat._id);
+    setTitle(cat.title);
+    setDescription(cat.description || "");
+    setParent(cat.parent?._id || "");
   };
 
-  // Render nested categories
   const renderCategoryTree = (
     cats: SanityCategory[],
     parentId: string | null = null,
@@ -91,11 +104,7 @@ export default function CategoriesPage() {
     cats
       .filter(c => (c.parent?._id || null) === parentId)
       .map(c => (
-        <li
-          key={c._id}
-          className={styles.categoryItem}
-          style={{ marginLeft: `${level * 20}px` }}
-        >
+        <li key={c._id} className={styles.categoryItem} style={{ marginLeft: `${level * 20}px` }}>
           <div className={styles.categoryRow}>
             <span className={styles.categoryTitle}>{c.title}</span>
             <div className={styles.actionButtons}>
@@ -114,18 +123,18 @@ export default function CategoriesPage() {
       <div className={styles.formGroup}>
         <input
           className={styles.input}
+          placeholder="Category Name"
           value={title}
           onChange={e => setTitle(e.target.value)}
-          placeholder="Category name"
         />
       </div>
 
       <div className={styles.formGroup}>
         <textarea
           className={styles.textarea}
+          placeholder="Description (optional)"
           value={description}
           onChange={e => setDescription(e.target.value)}
-          placeholder="Description (optional)"
           rows={3}
         />
       </div>
@@ -143,8 +152,12 @@ export default function CategoriesPage() {
         </select>
       </div>
 
-      <button className={styles.saveButton} onClick={handleSave}>
-        {editing ? "Update" : "Create"}
+      <button
+        className={styles.saveButton}
+        onClick={handleSave}
+        disabled={loading}
+      >
+        {loading ? "Saving..." : editing ? "Update" : "Create"}
       </button>
 
       <h3 className={styles.subHeading}>Existing Categories</h3>
