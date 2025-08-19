@@ -46,7 +46,7 @@ export default function CategoriesPage() {
   };
 
   // Delete category
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this category?")) return;
     await client.delete(id);
     fetchCategories();
