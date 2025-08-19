@@ -13,102 +13,154 @@ const client = createClient({
 type Category = {
   _id: string
   title: string
-  description?: string
   parent?: { _id: string; title: string }
 }
 
 export async function getServerSideProps() {
-  const query = `*[_type == "category"]{
-    _id,
-    title,
-    description,
-    parent->{ _id, title }
-  }`
+  const query = `*[_type == "category"]{ _id, title, parent->{ _id, title } }`
   const categories: Category[] = await client.fetch(query)
   return { props: { categories } }
 }
 
+// Build hierarchy (parent/child tree)
+function buildTree(categories: Category[], parentId: string | null = null) {
+  return categories
+    .filter((cat) => (parentId ? cat.parent?._id === parentId : !cat.parent))
+    .map((cat) => ({
+      ...cat,
+      children: buildTree(categories, cat._id),
+    }))
+}
+
 export default function Categories({ categories }: { categories: Category[] }) {
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [parent, setParent] = useState('')
+  const [newCategory, setNewCategory] = useState<{ parent: string | null; title: string }>({
+    parent: null,
+    title: '',
+  })
+  const [editing, setEditing] = useState<{ id: string; title: string } | null>(null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const tree = buildTree(categories)
+
+  // Create category
+  const handleCreate = async (parent: string | null) => {
+    if (!newCategory.title.trim()) return
     setLoading(true)
-    setError(null)
-
     try {
-      const res = await fetch('/api/categories/create', {
+      await fetch('/api/categories/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, description, parent }),
+        body: JSON.stringify({
+          title: newCategory.title,
+          parent,
+        }),
       })
-      const data = await res.json()
-      if (!data.success) throw new Error(data.error || 'Failed to save category')
-      window.location.reload() // reload page to see new category
-    } catch (err: any) {
-      setError(err.message)
+      window.location.reload()
+    } finally {
+      setLoading(false)
+      setNewCategory({ parent: null, title: '' })
+    }
+  }
+
+  // Update category
+  const handleUpdate = async (id: string, title: string) => {
+    if (!title.trim()) return
+    setLoading(true)
+    try {
+      await fetch(`/api/categories/update`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, title }),
+      })
+      window.location.reload()
+    } finally {
+      setLoading(false)
+      setEditing(null)
+    }
+  }
+
+  // Delete category
+  const handleDelete = async (id: string) => {
+    if (!confirm('Delete this category?')) return
+    setLoading(true)
+    try {
+      await fetch(`/api/categories/delete`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      })
+      window.location.reload()
     } finally {
       setLoading(false)
     }
   }
 
+  // Recursive UI
+  const renderTree = (nodes: any[], parent: string | null = null) => (
+    <ul className={styles.tree}>
+      {nodes.map((node) => (
+        <li key={node._id}>
+          {editing?.id === node._id ? (
+            <div className={styles.inlineForm}>
+              <input
+                className={styles.input}
+                value={editing.title}
+                onChange={(e) => setEditing({ ...editing, title: e.target.value })}
+              />
+              <button onClick={() => handleUpdate(node._id, editing.title)}>Save</button>
+              <button onClick={() => setEditing(null)}>Cancel</button>
+            </div>
+          ) : (
+            <div className={styles.node}>
+              <span>{node.title}</span>
+              <div className={styles.actions}>
+                <button onClick={() => setEditing({ id: node._id, title: node.title })}>
+                  ✏️
+                </button>
+                <button onClick={() => handleDelete(node._id)}>🗑</button>
+                <button onClick={() => setNewCategory({ parent: node._id, title: '' })}>
+                  ➕
+                </button>
+              </div>
+            </div>
+          )}
+
+          {newCategory.parent === node._id && (
+            <div className={styles.inlineForm}>
+              <input
+                className={styles.input}
+                placeholder="New subcategory"
+                value={newCategory.title}
+                onChange={(e) => setNewCategory({ ...newCategory, title: e.target.value })}
+              />
+              <button onClick={() => handleCreate(node._id)}>Add</button>
+              <button onClick={() => setNewCategory({ parent: null, title: '' })}>Cancel</button>
+            </div>
+          )}
+
+          {node.children?.length > 0 && renderTree(node.children, node._id)}
+        </li>
+      ))}
+
+      {parent === null && newCategory.parent === null && (
+        <div className={styles.inlineForm}>
+          <input
+            className={styles.input}
+            placeholder="New top-level category"
+            value={newCategory.title}
+            onChange={(e) => setNewCategory({ parent: null, title: e.target.value })}
+          />
+          <button onClick={() => handleCreate(null)}>Add</button>
+        </div>
+      )}
+    </ul>
+  )
+
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Manage Categories</h1>
-
-      {/* Create Form */}
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <input
-          className={styles.input}
-          type="text"
-          placeholder="Category Name"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <textarea
-          className={styles.textarea}
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-        <select
-          className={styles.select}
-          value={parent}
-          onChange={(e) => setParent(e.target.value)}
-        >
-          <option value="">No Parent (Top-level)</option>
-          {categories.map((cat) => (
-            <option key={cat._id} value={cat._id}>
-              {cat.title}
-            </option>
-          ))}
-        </select>
-        <button type="submit" className={styles.button} disabled={loading}>
-          {loading ? 'Saving...' : 'Create Category'}
-        </button>
-      </form>
-
-      {error && <p className={styles.error}>{error}</p>}
-
-      {/* Existing Categories */}
-      <div className={styles.list}>
-        <h2 className={styles.subtitle}>Existing Categories</h2>
-        <ul>
-          {categories.map((cat) => (
-            <li key={cat._id} className={styles.item}>
-              <span className={styles.catTitle}>{cat.title}</span>
-              {cat.parent && <span className={styles.catParent}> → {cat.parent.title}</span>}
-              {cat.description && (
-                <p className={styles.catDescription}>{cat.description}</p>
-              )}
-            </li>
-          ))}
-        </ul>
-      </div>
+      <h1 className={styles.title}>Category Manager</h1>
+      {renderTree(tree)}
+      {loading && <p className={styles.loading}>Working...</p>}
     </div>
   )
 }
