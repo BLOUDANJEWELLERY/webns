@@ -75,7 +75,7 @@ export default function CategoriesPage() {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h2>{editing ? "Edit Category" : "Create Category"}</h2>
+      <h2>{editing ? "Editing Category" : "Create Category"}</h2>
 
       <input
         value={title}
