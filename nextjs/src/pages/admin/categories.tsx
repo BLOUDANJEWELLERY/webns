@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { client } from "../../lib/sanityClient";
 import styles from "../../styles/admincat.module.css";
 
-type Category = {
+type SanityCategory = {
   _id: string;
   title: string;
   description?: string;
@@ -10,15 +10,15 @@ type Category = {
 };
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<SanityCategory[]>([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [parent, setParent] = useState("");
   const [editing, setEditing] = useState<string | null>(null);
 
-  // Fetch categories from Sanity
+  // Fetch categories
   const fetchCategories = async () => {
-    const data: Category[] = await client.fetch(
+    const data: SanityCategory[] = await client.fetch(
       `*[_type == "category"]{_id, title, description, parent->{_id, title}}`
     );
     setCategories(data);
@@ -32,19 +32,24 @@ export default function CategoriesPage() {
   const handleSave = async () => {
     if (!title.trim()) return alert("Category name is required");
 
-    const doc = {
-      _type: "category",
+    const doc: any = {
       title: title.trim(),
       description: description.trim(),
-      parent: parent ? { _type: "reference", _ref: parent } : undefined,
     };
+
+    // Only set parent if selected
+    if (parent) {
+      doc.parent = { _type: "reference", _ref: parent };
+    }
 
     try {
       if (editing) {
-        await client.patch(editing).set(doc).commit();
+        // Patch
+        await client.patch(editing).set(doc).unset(!parent ? ["parent"] : []).commit();
         setEditing(null);
       } else {
-        await client.create(doc);
+        // Create
+        await client.create({ _type: "category", ...doc });
       }
 
       setTitle("");
@@ -52,7 +57,7 @@ export default function CategoriesPage() {
       setParent("");
       fetchCategories();
     } catch (err) {
-      console.error("Error saving category:", err);
+      console.error(err);
       alert("Failed to save category.");
     }
   };
@@ -64,13 +69,13 @@ export default function CategoriesPage() {
       await client.delete(id);
       fetchCategories();
     } catch (err) {
-      console.error("Error deleting category:", err);
+      console.error(err);
       alert("Failed to delete category.");
     }
   };
 
   // Edit category
-  const handleEdit = (category: Category) => {
+  const handleEdit = (category: SanityCategory) => {
     setEditing(category._id);
     setTitle(category.title);
     setDescription(category.description || "");
@@ -78,7 +83,11 @@ export default function CategoriesPage() {
   };
 
   // Render nested categories
-  const renderCategoryTree = (cats: Category[], parentId: string | null = null, level = 0) =>
+  const renderCategoryTree = (
+    cats: SanityCategory[],
+    parentId: string | null = null,
+    level = 0
+  ) =>
     cats
       .filter(c => (c.parent?._id || null) === parentId)
       .map(c => (
