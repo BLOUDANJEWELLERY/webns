@@ -1,13 +1,12 @@
 // src/pages/admin/categories.tsx
 import { useState, useEffect } from "react";
-import { client } from "../../lib/sanityClient";
 import styles from "../../styles/admincat.module.css";
 
 type SanityCategory = {
   _id: string;
   title: string;
   description?: string;
-  parent?: { _id: string; title: string };
+  parent?: { _id: string; title: string } | null;
 };
 
 export default function CategoriesPage() {
@@ -18,13 +17,12 @@ export default function CategoriesPage() {
   const [editing, setEditing] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Fetch categories from Sanity
+  // Fetch categories via API route
   const fetchCategories = async () => {
     try {
-      const data: SanityCategory[] = await client.fetch(
-        `*[_type == "category"]{_id, title, description, parent->{_id, title}}`
-      );
-      setCategories(data);
+      const res = await fetch("/api/categories/fetch");
+      const data: SanityCategory[] = await res.json();
+      setCategories(data || []);
     } catch (err) {
       console.error(err);
       alert("Failed to fetch categories");
@@ -35,32 +33,30 @@ export default function CategoriesPage() {
     fetchCategories();
   }, []);
 
-  // Save or update category
   const handleSave = async () => {
     if (!title.trim()) return alert("Category name is required");
 
     setLoading(true);
-
     try {
+      const payload = { title, description, parent: parent || null };
+
       if (editing) {
-        // Update existing category directly via patch
-        const doc: any = { title: title.trim(), description: description.trim() };
-        if (parent) doc.parent = { _type: "reference", _ref: parent };
-
-        await client.patch(editing)
-          .set(doc)
-          .unset(!parent ? ["parent"] : [])
-          .commit();
-
+        // Update existing category
+        const res = await fetch(`/api/categories/update?id=${editing}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || "Failed to update category");
         setEditing(null);
       } else {
-        // Use API route for creation
+        // Create new category
         const res = await fetch("/api/categories/create", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title, description, parent }),
+          body: JSON.stringify(payload),
         });
-
         const data = await res.json();
         if (!data.success) throw new Error(data.error || "Failed to create category");
       }
@@ -81,7 +77,9 @@ export default function CategoriesPage() {
     if (!confirm("Are you sure you want to delete this category?")) return;
 
     try {
-      await client.delete(id);
+      const res = await fetch(`/api/categories/delete?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || "Failed to delete category");
       fetchCategories();
     } catch (err) {
       console.error(err);
@@ -152,11 +150,7 @@ export default function CategoriesPage() {
         </select>
       </div>
 
-      <button
-        className={styles.saveButton}
-        onClick={handleSave}
-        disabled={loading}
-      >
+      <button className={styles.saveButton} onClick={handleSave} disabled={loading}>
         {loading ? "Saving..." : editing ? "Update" : "Create"}
       </button>
 
