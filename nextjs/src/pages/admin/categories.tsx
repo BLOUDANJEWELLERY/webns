@@ -140,6 +140,7 @@ function SortableTree({
 export default function Categories() {
   const [categories, setCategories] = useState<Category[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const [inputTitle, setInputTitle] = useState('')
   const [loading, setLoading] = useState(false)
   const [expanded, setExpanded] = useState<string[]>([])
@@ -227,23 +228,24 @@ export default function Categories() {
   }
 
   const handleDelete = async () => {
-    if (!selectedId) return
+    if (!deleteTargetId) return
     setIsProcessing(true)
     try {
       const res = await fetch('/api/categories/delete', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: selectedId }),
+        body: JSON.stringify({ id: deleteTargetId }),
       })
       if (!res.ok) throw new Error('Failed to delete')
       await fetchCategories()
-      setSelectedId(null)
+      if (selectedId === deleteTargetId) setSelectedId(null)
       setShowDeleteModal(false)
     } catch (err) {
       console.error(err)
       alert('Failed to delete category')
     } finally {
       setIsProcessing(false)
+      setDeleteTargetId(null)
     }
   }
 
@@ -281,7 +283,16 @@ export default function Categories() {
           onChange={e => setInputTitle(e.target.value)}
         />
         <button onClick={handleCreate} disabled={!inputTitle.trim()}>Add</button>
-        <button onClick={() => setShowDeleteModal(true)} disabled={!selectedId}>Delete</button>
+        <button
+          onClick={() => {
+            if (!selectedId) return
+            setDeleteTargetId(selectedId)
+            setShowDeleteModal(true)
+          }}
+          disabled={!selectedId}
+        >
+          Delete
+        </button>
         <button onClick={handleUpdate} disabled={!selectedId || !inputTitle.trim()}>Update</button>
       </div>
 
@@ -312,7 +323,12 @@ export default function Categories() {
                 <h2>Confirm Deletion</h2>
                 <p>This action cannot be undone. Are you sure you want to delete this category?</p>
                 <div className={styles.modalButtons}>
-                  <button className={styles.cancelBtn} onClick={() => setShowDeleteModal(false)}>Cancel</button>
+                  <button
+                    className={styles.cancelBtn}
+                    onClick={() => setShowDeleteModal(false)}
+                  >
+                    Cancel
+                  </button>
                   <button
                     className={styles.dangerBtn}
                     onClick={e => { e.stopPropagation(); handleDelete() }}
