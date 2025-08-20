@@ -11,7 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { order, parentId } = req.body
+    const { order } = req.body
 
     if (
       !Array.isArray(order) ||
@@ -23,10 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const mutations = order.map((item: ReorderItem) => ({
       patch: {
         id: item.id,
-        set: {
-          order: item.order,
-          parent: parentId || null,
-        },
+        set: { order: item.order }, // Only update order, do NOT touch parent
       },
     }))
 
