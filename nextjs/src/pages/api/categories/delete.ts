@@ -10,16 +10,39 @@ const client = createClient({
   useCdn: false,
 })
 
+// Recursive function to delete a category and its children
+async function deleteCategoryAndChildren(id: string): Promise<void> {
+  // Find subcategories
+  const children: { _id: string }[] = await client.fetch(
+    `*[_type == "category" && parent._ref == $id]{ _id }`,
+    { id }
+  )
+
+  // Recursively delete children
+  for (const child of children) {
+    await deleteCategoryAndChildren(child._id)
+  }
+
+  // Delete this category
+  await client.delete(id)
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'DELETE') return res.status(405).json({ success: false, error: 'Method not allowed' })
+  if (req.method !== 'DELETE') {
+    return res.status(405).json({ success: false, error: 'Method not allowed' })
+  }
 
   try {
     const { id } = req.body
+    if (!id) {
+      return res.status(400).json({ success: false, error: 'Missing category id' })
+    }
 
-    const result = await client.delete(id)
+    await deleteCategoryAndChildren(id)
 
-    res.status(200).json({ success: true, deleted: result })
+    return res.status(200).json({ success: true, message: 'Category and subcategories deleted' })
   } catch (err: any) {
-    res.status(500).json({ success: false, error: err.message })
+    console.error('Recursive delete failed:', err)
+    return res.status(500).json({ success: false, error: err.message })
   }
 }
