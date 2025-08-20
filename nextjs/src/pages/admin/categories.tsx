@@ -54,19 +54,12 @@ function SortableItem({
   const isSelected = selectedId === category._id
 
   return (
-    <li
-      ref={setNodeRef}
-      style={{
-        ...style,
-        backgroundColor: isSelected ? '#f0e68c' : 'transparent',
-        cursor: 'pointer',
-        padding: '0.2rem 0.4rem',
-        borderRadius: '4px',
-      }}
-      {...attributes}
-      onClick={() => setSelectedId(category._id)}
-    >
-      <div className={styles.node}>
+    <li ref={setNodeRef} style={style} {...attributes}>
+      <div
+        className={`${styles.node} ${isSelected ? styles.nodeSelected : ''}`}
+        {...listeners}
+        onClick={() => setSelectedId(category._id)}
+      >
         {category.children.length > 0 && (
           <button
             className={styles.toggle}
@@ -75,7 +68,7 @@ function SortableItem({
             {isExpanded ? '▼' : '▶'}
           </button>
         )}
-        <span {...listeners}>{category.title}</span>
+        <span>{category.title}</span>
       </div>
 
       {category.children.length > 0 && isExpanded && (
@@ -85,7 +78,7 @@ function SortableItem({
           toggleExpand={toggleExpand}
           selectedId={selectedId}
           setSelectedId={setSelectedId}
-          onReorder={(nodes: Category[], oldIndex: number, newIndex: number) =>
+          onReorder={(nodes, oldIndex, newIndex) =>
             onReorder(nodes, oldIndex, newIndex, category._id)
           }
         />
@@ -248,7 +241,6 @@ export default function Categories() {
     <div className={styles.container}>
       <h1 className={styles.title}>Category Manager</h1>
 
-      {/* Global Controls */}
       <div className={styles.controls}>
         <input
           className={styles.input}
