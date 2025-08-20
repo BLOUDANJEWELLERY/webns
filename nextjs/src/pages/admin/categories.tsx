@@ -6,13 +6,15 @@ type Category = {
   title: string
   parent?: { _id: string; title: string }
   children: Category[]
+  order?: number
 }
 
 // ---------- Helpers ----------
 function buildTree(categories: Category[], parentId: string | null = null): Category[] {
   return categories
-    .filter((cat) => (parentId ? cat.parent?._id === parentId : !cat.parent))
-    .map((cat) => ({
+    .filter(cat => (parentId ? cat.parent?._id === parentId : !cat.parent))
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) // sort by order
+    .map(cat => ({
       ...cat,
       children: buildTree(categories, cat._id),
     }))
@@ -27,7 +29,7 @@ export default function Categories() {
   })
   const [editing, setEditing] = useState<{ id: string; title: string } | null>(null)
   const [loading, setLoading] = useState(false)
-  const [expanded, setExpanded] = useState<string[]>([]) // keep track of expanded nodes
+  const [expanded, setExpanded] = useState<string[]>([]) // track expanded nodes
 
   // Fetch all categories
   const fetchCategories = async () => {
@@ -58,15 +60,11 @@ export default function Categories() {
         body: JSON.stringify({ title: newCategory.title, parent }),
       })
       const created = await res.json()
-
       await fetchCategories()
 
-      // auto-expand the parent (so the new child is visible)
-      if (parent) {
-        setExpanded((prev) => [...new Set([...prev, parent])])
-      }
-      // also expand the new category itself in case it can have children later
-      setExpanded((prev) => [...new Set([...prev, created._id])])
+      // auto-expand parent & new category
+      if (parent) setExpanded(prev => [...new Set([...prev, parent])])
+      setExpanded(prev => [...new Set([...prev, created._id])])
     } finally {
       setLoading(false)
       setNewCategory({ parent: null, title: '' })
@@ -99,23 +97,22 @@ export default function Categories() {
         body: JSON.stringify({ id }),
       })
       await fetchCategories()
-      // remove from expanded if deleted
-      setExpanded((prev) => prev.filter((eid) => eid !== id))
+      setExpanded(prev => prev.filter(eid => eid !== id))
     } finally {
       setLoading(false)
     }
   }
 
   const toggleExpand = (id: string) => {
-    setExpanded((prev) =>
-      prev.includes(id) ? prev.filter((eid) => eid !== id) : [...prev, id]
+    setExpanded(prev =>
+      prev.includes(id) ? prev.filter(eid => eid !== id) : [...prev, id]
     )
   }
 
   // ---------- Recursive Renderer ----------
   const renderTree = (nodes: Category[], parent: string | null = null) => (
     <ul className={styles.tree}>
-      {nodes.map((node) => {
+      {nodes.map(node => {
         const isExpanded = expanded.includes(node._id)
         return (
           <li key={node._id}>
@@ -124,7 +121,7 @@ export default function Categories() {
                 <input
                   className={styles.input}
                   value={editing.title}
-                  onChange={(e) => setEditing({ ...editing, title: e.target.value })}
+                  onChange={e => setEditing({ ...editing, title: e.target.value })}
                 />
                 <button onClick={() => handleUpdate(node._id, editing.title)}>Save</button>
                 <button onClick={() => setEditing(null)}>Cancel</button>
@@ -152,7 +149,7 @@ export default function Categories() {
                   className={styles.input}
                   placeholder="New subcategory"
                   value={newCategory.title}
-                  onChange={(e) => setNewCategory({ ...newCategory, title: e.target.value })}
+                  onChange={e => setNewCategory({ ...newCategory, title: e.target.value })}
                 />
                 <button onClick={() => handleCreate(node._id)}>Add</button>
                 <button onClick={() => setNewCategory({ parent: null, title: '' })}>Cancel</button>
@@ -172,7 +169,7 @@ export default function Categories() {
             className={styles.input}
             placeholder="New top-level category"
             value={newCategory.title}
-            onChange={(e) => setNewCategory({ parent: null, title: e.target.value })}
+            onChange={e => setNewCategory({ parent: null, title: e.target.value })}
           />
           <button onClick={() => handleCreate(null)}>Add</button>
         </div>
