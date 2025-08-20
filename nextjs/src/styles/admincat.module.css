@@ -44,11 +44,12 @@
   color: white;
   cursor: pointer;
   font-weight: 500;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.1s;
 }
 
 .controls button:hover:not(:disabled) {
   background: #b97f3c;
+  transform: translateY(-1px);
 }
 
 .controls button:disabled {
@@ -99,13 +100,15 @@
   font-size: 0.85rem;
   font-weight: bold;
   color: #7b4d28;
+  transition: color 0.2s, transform 0.1s;
 }
 
 .toggle:hover {
   color: #b55c2a;
+  transform: scale(1.1);
 }
 
-/* ---------- Inline Form ---------- */
+/* ---------- Inline Form (For Adding Subcategories) ---------- */
 .inlineForm {
   display: flex;
   align-items: center;
@@ -129,11 +132,12 @@
   cursor: pointer;
   font-size: 0.85rem;
   font-weight: 500;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.1s;
 }
 
 .inlineForm button:hover {
   background: #b97f3c;
+  transform: translateY(-1px);
 }
 
 /* ---------- Loading Text ---------- */
@@ -142,4 +146,13 @@
   text-align: center;
   font-style: italic;
   color: #a1662f;
+}
+
+/* ---------- Misc ---------- */
+ul.tree ul {
+  margin-left: 1rem;
+}
+
+button:focus {
+  outline: none;
 }
