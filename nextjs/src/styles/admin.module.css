@@ -6,28 +6,28 @@
 }
 
 .settingsButton {
-  background-color: #f5f5f5;
-  border: none;
+  background-color: #fffaf5; /* match card backgrounds */
+  border: 2px solid #D6BCA6; /* subtle border like cards */
   border-radius: 50%;
   padding: 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s, transform 0.1s;
+  transition: all 0.2s ease;
+  color: #C89B3C; /* main accent color */
 }
 
 .settingsButton:hover {
-  background-color: #e0e0e0;
+  background-color: #f8f2e8; /* slightly darker for hover */
   transform: scale(1.1);
+  color: #b3842f; /* darker accent on hover */
 }
 
 .settingsButton svg {
-  stroke: #555;
-}
-
-.settingsButton:hover svg {
-  stroke: #000;
+  fill: currentColor; /* inherit the button color */
+  width: 20px;
+  height: 20px;
 }
 
 .mainContainer {
@@ -88,6 +88,7 @@
   margin-top: 1.5rem;
 }
 
+/* Grid & Cards */
 .grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
