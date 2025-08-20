@@ -37,86 +37,52 @@ function SortableItem({
   category,
   expanded,
   toggleExpand,
-  editing,
-  setEditing,
-  newCategory,
-  setNewCategory,
-  handleCreate,
-  handleUpdate,
-  handleDelete,
+  selectedId,
+  setSelectedId,
   onReorder,
 }: {
   category: Category
   expanded: string[]
   toggleExpand: (id: string) => void
-  editing: { id: string; title: string } | null
-  setEditing: (edit: { id: string; title: string } | null) => void
-  newCategory: { parent: string | null; title: string }
-  setNewCategory: (cat: { parent: string | null; title: string }) => void
-  handleCreate: (parent: string | null) => void
-  handleUpdate: (id: string, title: string) => void
-  handleDelete: (id: string) => void
+  selectedId: string | null
+  setSelectedId: (id: string) => void
   onReorder: (nodes: Category[], oldIndex: number, newIndex: number, parentId: string | null) => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: category._id })
   const style = { transform: CSS.Transform.toString(transform), transition }
   const isExpanded = expanded.includes(category._id)
+  const isSelected = selectedId === category._id
 
   return (
-    <li ref={setNodeRef} style={style} {...attributes}>
-      {editing?.id === category._id ? (
-        <div className={styles.inlineForm}>
-          <input
-            className={styles.input}
-            value={editing.title}
-            onChange={e => setEditing({ ...editing, title: e.target.value })}
-          />
-          <button onClick={() => handleUpdate(category._id, editing.title)}>Save</button>
-          <button onClick={() => setEditing(null)}>Cancel</button>
-        </div>
-      ) : (
-        <div className={styles.node}>
-          {category.children.length > 0 && (
-            <button className={styles.toggle} onClick={() => toggleExpand(category._id)}>
-              {isExpanded ? '▼' : '▶'}
-            </button>
-          )}
-          <span {...listeners}>{category.title}</span>
-          <div className={styles.actions}>
-            <button onClick={() => setEditing({ id: category._id, title: category.title })}>✏️</button>
-            <button onClick={() => handleDelete(category._id)}>🗑</button>
-            <button onClick={() => setNewCategory({ parent: category._id, title: '' })}>➕</button>
-          </div>
-        </div>
-      )}
-
-      {newCategory.parent === category._id && (
-        <div className={styles.inlineForm}>
-          <input
-            className={styles.input}
-            placeholder="New subcategory"
-            value={newCategory.title}
-            onChange={e => setNewCategory({ ...newCategory, title: e.target.value })}
-          />
-          <button onClick={() => handleCreate(category._id)}>Add</button>
-          <button onClick={() => setNewCategory({ parent: null, title: '' })}>Cancel</button>
-        </div>
-      )}
+    <li
+      ref={setNodeRef}
+      style={{
+        ...style,
+        backgroundColor: isSelected ? '#f0e68c' : 'transparent',
+        cursor: 'pointer',
+      }}
+      {...attributes}
+      onClick={() => setSelectedId(category._id)}
+    >
+      <div className={styles.node}>
+        {category.children.length > 0 && (
+          <button className={styles.toggle} onClick={() => toggleExpand(category._id)}>
+            {isExpanded ? '▼' : '▶'}
+          </button>
+        )}
+        <span {...listeners}>{category.title}</span>
+      </div>
 
       {category.children.length > 0 && isExpanded && (
         <SortableTree
           nodes={category.children}
           expanded={expanded}
           toggleExpand={toggleExpand}
-          editing={editing}
-          setEditing={setEditing}
-          newCategory={newCategory}
-          setNewCategory={setNewCategory}
-          handleCreate={handleCreate}
-          handleUpdate={handleUpdate}
-          handleDelete={handleDelete}
-          parentId={category._id}
-          onReorder={onReorder}
+          selectedId={selectedId}
+          setSelectedId={setSelectedId}
+          onReorder={(nodes: Category[], oldIndex: number, newIndex: number) =>
+            onReorder(nodes, oldIndex, newIndex, category._id)
+          }
         />
       )}
     </li>
@@ -128,26 +94,16 @@ function SortableTree({
   nodes,
   expanded,
   toggleExpand,
-  editing,
-  setEditing,
-  newCategory,
-  setNewCategory,
-  handleCreate,
-  handleUpdate,
-  handleDelete,
+  selectedId,
+  setSelectedId,
   parentId = null,
   onReorder,
 }: {
   nodes: Category[]
   expanded: string[]
   toggleExpand: (id: string) => void
-  editing: { id: string; title: string } | null
-  setEditing: (edit: { id: string; title: string } | null) => void
-  newCategory: { parent: string | null; title: string }
-  setNewCategory: (cat: { parent: string | null; title: string }) => void
-  handleCreate: (parent: string | null) => void
-  handleUpdate: (id: string, title: string) => void
-  handleDelete: (id: string) => void
+  selectedId: string | null
+  setSelectedId: (id: string) => void
   parentId?: string | null
   onReorder: (nodes: Category[], oldIndex: number, newIndex: number, parentId: string | null) => void
 }) {
@@ -171,13 +127,8 @@ function SortableTree({
               category={node}
               expanded={expanded}
               toggleExpand={toggleExpand}
-              editing={editing}
-              setEditing={setEditing}
-              newCategory={newCategory}
-              setNewCategory={setNewCategory}
-              handleCreate={handleCreate}
-              handleUpdate={handleUpdate}
-              handleDelete={handleDelete}
+              selectedId={selectedId}
+              setSelectedId={setSelectedId}
               onReorder={onReorder}
             />
           ))}
@@ -190,8 +141,8 @@ function SortableTree({
 // ---------- Main Component ----------
 export default function Categories() {
   const [categories, setCategories] = useState<Category[]>([])
-  const [newCategory, setNewCategory] = useState<{ parent: string | null; title: string }>({ parent: null, title: '' })
-  const [editing, setEditing] = useState<{ id: string; title: string } | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [inputTitle, setInputTitle] = useState('')
   const [loading, setLoading] = useState(false)
   const [expanded, setExpanded] = useState<string[]>([])
 
@@ -206,71 +157,71 @@ export default function Categories() {
     }
   }
 
-  useEffect(() => { fetchCategories() }, [])
+  useEffect(() => {
+    fetchCategories()
+  }, [])
 
   const tree = buildTree(categories)
 
+  const toggleExpand = (id: string) => {
+    setExpanded(prev => (prev.includes(id) ? prev.filter(eid => eid !== id) : [...prev, id]))
+  }
+
   // ---------- CRUD ----------
-  const handleCreate = async (parent: string | null) => {
-    if (!newCategory.title.trim()) return
+  const handleCreate = async () => {
+    if (!inputTitle.trim()) return
     setLoading(true)
     try {
-      const res = await fetch('/api/categories/create', {
+      await fetch('/api/categories/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newCategory.title, parent }),
+        body: JSON.stringify({ title: inputTitle, parent: selectedId }),
       })
-      const created = await res.json()
       await fetchCategories()
-      if (parent) setExpanded(prev => [...new Set([...prev, parent])])
-      setExpanded(prev => [...new Set([...prev, created._id])])
+      if (selectedId) setExpanded(prev => [...new Set([...prev, selectedId])])
     } finally {
       setLoading(false)
-      setNewCategory({ parent: null, title: '' })
+      setInputTitle('')
     }
   }
 
-  const handleUpdate = async (id: string, title: string) => {
-    if (!title.trim()) return
+  const handleUpdate = async () => {
+    if (!selectedId || !inputTitle.trim()) return
     setLoading(true)
     try {
       await fetch('/api/categories/update', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, title }),
+        body: JSON.stringify({ id: selectedId, title: inputTitle }),
       })
       await fetchCategories()
     } finally {
       setLoading(false)
-      setEditing(null)
+      setInputTitle('')
     }
   }
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async () => {
+    if (!selectedId) return
     if (!confirm('Delete this category and all its subcategories?')) return
     setLoading(true)
     try {
       await fetch('/api/categories/delete', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ id: selectedId }),
       })
       await fetchCategories()
-      setExpanded(prev => prev.filter(eid => eid !== id))
+      setSelectedId(null)
     } finally {
       setLoading(false)
     }
-  }
-
-  const toggleExpand = (id: string) => {
-    setExpanded(prev => (prev.includes(id) ? prev.filter(eid => eid !== id) : [...prev, id]))
   }
 
   // ---------- Reorder ----------
   const handleReorder = async (nodes: Category[], oldIndex: number, newIndex: number, parentId: string | null) => {
     const newOrder = arrayMove(nodes, oldIndex, newIndex)
 
-    // Update local state
     setCategories(prev => {
       const updated = [...prev]
       newOrder.forEach((cat, i) => {
@@ -280,11 +231,11 @@ export default function Categories() {
       return updated
     })
 
-    // Send only sibling items to backend
     await fetch('/api/categories/reorder', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        parent: parentId,
         order: newOrder.map((c, i) => ({ id: c._id, order: i })),
       }),
     })
@@ -294,33 +245,29 @@ export default function Categories() {
     <div className={styles.container}>
       <h1 className={styles.title}>Category Manager</h1>
 
+      {/* Global Controls */}
+      <div className={styles.controls}>
+        <input
+          className={styles.input}
+          placeholder={selectedId ? 'Edit or add subcategory' : 'Add new top-level category'}
+          value={inputTitle}
+          onChange={e => setInputTitle(e.target.value)}
+        />
+        <button onClick={handleCreate} disabled={!inputTitle.trim()}>Add</button>
+        <button onClick={handleUpdate} disabled={!selectedId || !inputTitle.trim()}>Update</button>
+        <button onClick={handleDelete} disabled={!selectedId}>Delete</button>
+      </div>
+
       <SortableTree
         nodes={tree}
         expanded={expanded}
         toggleExpand={toggleExpand}
-        editing={editing}
-        setEditing={setEditing}
-        newCategory={newCategory}
-        setNewCategory={setNewCategory}
-        handleCreate={handleCreate}
-        handleUpdate={handleUpdate}
-        handleDelete={handleDelete}
+        selectedId={selectedId}
+        setSelectedId={setSelectedId}
         onReorder={handleReorder}
       />
 
       {loading && <p className={styles.loading}>Working...</p>}
-
-      {newCategory.parent === null && (
-        <div className={styles.inlineForm}>
-          <input
-            className={styles.input}
-            placeholder="New top-level category"
-            value={newCategory.title}
-            onChange={e => setNewCategory({ parent: null, title: e.target.value })}
-          />
-          <button onClick={() => handleCreate(null)}>Add</button>
-        </div>
-      )}
     </div>
   )
 }
