@@ -162,6 +162,7 @@ export default function Categories() {
   // ---------- Click outside & Escape ----------
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return
       if (treeRef.current && !treeRef.current.contains(event.target as Node)) {
         setSelectedId(null)
       }
