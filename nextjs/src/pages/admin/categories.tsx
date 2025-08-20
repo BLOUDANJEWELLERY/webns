@@ -5,9 +5,10 @@ type Category = {
   _id: string
   title: string
   parent?: { _id: string; title: string }
-  children?: Category[]
+  children: Category[] // always an array
 }
 
+// ---------- Helpers ----------
 function buildTree(categories: Category[], parentId: string | null = null): Category[] {
   return categories
     .filter((cat) => (parentId ? cat.parent?._id === parentId : !cat.parent))
@@ -17,6 +18,7 @@ function buildTree(categories: Category[], parentId: string | null = null): Cate
     }))
 }
 
+// ---------- Component ----------
 export default function Categories() {
   const [categories, setCategories] = useState<Category[]>([])
   const [newCategory, setNewCategory] = useState<{ parent: string | null; title: string }>({
@@ -26,11 +28,16 @@ export default function Categories() {
   const [editing, setEditing] = useState<{ id: string; title: string } | null>(null)
   const [loading, setLoading] = useState(false)
 
-  // Fetch categories
+  // Fetch all categories
   const fetchCategories = async () => {
-    const res = await fetch('/api/categories')
-    const data = await res.json()
-    setCategories(data)
+    try {
+      const res = await fetch('/api/categories')
+      if (!res.ok) throw new Error('Failed to fetch categories')
+      const data = await res.json()
+      setCategories(data)
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   useEffect(() => {
@@ -39,7 +46,7 @@ export default function Categories() {
 
   const tree = buildTree(categories)
 
-  // Create
+  // ---------- CRUD ----------
   const handleCreate = async (parent: string | null) => {
     if (!newCategory.title.trim()) return
     setLoading(true)
@@ -56,12 +63,11 @@ export default function Categories() {
     }
   }
 
-  // Update
   const handleUpdate = async (id: string, title: string) => {
     if (!title.trim()) return
     setLoading(true)
     try {
-      await fetch(`/api/categories/update`, {
+      await fetch('/api/categories/update', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, title }),
@@ -73,12 +79,11 @@ export default function Categories() {
     }
   }
 
-  // Delete
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this category?')) return
     setLoading(true)
     try {
-      await fetch(`/api/categories/delete`, {
+      await fetch('/api/categories/delete', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id }),
@@ -89,7 +94,7 @@ export default function Categories() {
     }
   }
 
-  // Recursive UI
+  // ---------- Recursive Renderer ----------
   const renderTree = (nodes: Category[], parent: string | null = null) => (
     <ul className={styles.tree}>
       {nodes.map((node) => (
@@ -115,6 +120,7 @@ export default function Categories() {
             </div>
           )}
 
+          {/* Inline subcategory form */}
           {newCategory.parent === node._id && (
             <div className={styles.inlineForm}>
               <input
@@ -128,10 +134,12 @@ export default function Categories() {
             </div>
           )}
 
-          {node.children?.length > 0 && renderTree(node.children, node._id)}
+          {/* Recursion */}
+          {node.children.length > 0 && renderTree(node.children, node._id)}
         </li>
       ))}
 
+      {/* Top-level create */}
       {parent === null && newCategory.parent === null && (
         <div className={styles.inlineForm}>
           <input
