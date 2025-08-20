@@ -2,22 +2,34 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { client } from '../../../lib/sanityClient'
 
+type ReorderItem = { id: string; order: number }
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') return res.status(405).end('Method Not Allowed')
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', ['POST'])
+    return res.status(405).json({ success: false, error: `Method ${req.method} Not Allowed` })
+  }
+
   try {
     const { order } = req.body
-    if (!Array.isArray(order)) throw new Error('Invalid order data')
 
-    const mutations = order.map((c: { id: string; order: number }) => ({
+    if (!Array.isArray(order) || !order.every((item: any) => item.id && typeof item.order === 'number')) {
+      return res.status(400).json({ success: false, error: 'Invalid order data' })
+    }
+
+    // Prepare Sanity patch mutations
+    const mutations = order.map((item: ReorderItem) => ({
       patch: {
-        id: c.id,
-        set: { order: c.order },
+        id: item.id,
+        set: { order: item.order },
       },
     }))
 
     await client.transaction(mutations).commit()
-    res.status(200).json({ success: true })
+
+    return res.status(200).json({ success: true })
   } catch (err: any) {
-    res.status(500).json({ success: false, error: err.message })
+    console.error('Reorder error:', err)
+    return res.status(500).json({ success: false, error: err.message || 'Internal Server Error' })
   }
 }
