@@ -13,14 +13,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { order, parentId } = req.body
 
-    if (!Array.isArray(order) || !order.every((item: any) => item.id && typeof item.order === 'number')) {
+    if (
+      !Array.isArray(order) ||
+      !order.every((item: any) => item.id && typeof item.order === 'number')
+    ) {
       return res.status(400).json({ success: false, error: 'Invalid order data' })
     }
 
     const mutations = order.map((item: ReorderItem) => ({
       patch: {
         id: item.id,
-        set: { order: item.order, parent: parentId || null },
+        set: {
+          order: item.order,
+          parent: parentId || null,
+        },
       },
     }))
 
