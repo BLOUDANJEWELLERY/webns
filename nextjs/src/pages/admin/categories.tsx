@@ -27,7 +27,7 @@ export default function Categories() {
   })
   const [editing, setEditing] = useState<{ id: string; title: string } | null>(null)
   const [loading, setLoading] = useState(false)
-  const [openNodes, setOpenNodes] = useState<Set<string>>(new Set()) // dropdown state
+  const [expanded, setExpanded] = useState<string[]>([]) // keep track of expanded nodes
 
   // Fetch all categories
   const fetchCategories = async () => {
@@ -52,12 +52,21 @@ export default function Categories() {
     if (!newCategory.title.trim()) return
     setLoading(true)
     try {
-      await fetch('/api/categories/create', {
+      const res = await fetch('/api/categories/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: newCategory.title, parent }),
       })
+      const created = await res.json()
+
       await fetchCategories()
+
+      // auto-expand the parent (so the new child is visible)
+      if (parent) {
+        setExpanded((prev) => [...new Set([...prev, parent])])
+      }
+      // also expand the new category itself in case it can have children later
+      setExpanded((prev) => [...new Set([...prev, created._id])])
     } finally {
       setLoading(false)
       setNewCategory({ parent: null, title: '' })
@@ -81,7 +90,7 @@ export default function Categories() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this category (and its subcategories)?')) return
+    if (!confirm('Delete this category and all its subcategories?')) return
     setLoading(true)
     try {
       await fetch('/api/categories/delete', {
@@ -90,29 +99,24 @@ export default function Categories() {
         body: JSON.stringify({ id }),
       })
       await fetchCategories()
+      // remove from expanded if deleted
+      setExpanded((prev) => prev.filter((eid) => eid !== id))
     } finally {
       setLoading(false)
     }
   }
 
-  // ---------- Dropdown Toggle ----------
-  const toggleNode = (id: string) => {
-    setOpenNodes((prev) => {
-      const newSet = new Set(prev)
-      if (newSet.has(id)) {
-        newSet.delete(id)
-      } else {
-        newSet.add(id)
-      }
-      return newSet
-    })
+  const toggleExpand = (id: string) => {
+    setExpanded((prev) =>
+      prev.includes(id) ? prev.filter((eid) => eid !== id) : [...prev, id]
+    )
   }
 
   // ---------- Recursive Renderer ----------
   const renderTree = (nodes: Category[], parent: string | null = null) => (
     <ul className={styles.tree}>
       {nodes.map((node) => {
-        const isOpen = openNodes.has(node._id)
+        const isExpanded = expanded.includes(node._id)
         return (
           <li key={node._id}>
             {editing?.id === node._id ? (
@@ -127,10 +131,9 @@ export default function Categories() {
               </div>
             ) : (
               <div className={styles.node}>
-                {/* Expand/Collapse toggle */}
                 {node.children.length > 0 && (
-                  <button className={styles.toggle} onClick={() => toggleNode(node._id)}>
-                    {isOpen ? '▼' : '▶'}
+                  <button className={styles.toggle} onClick={() => toggleExpand(node._id)}>
+                    {isExpanded ? '▼' : '▶'}
                   </button>
                 )}
                 <span>{node.title}</span>
@@ -156,8 +159,8 @@ export default function Categories() {
               </div>
             )}
 
-            {/* Recursion: only show children if open */}
-            {node.children.length > 0 && isOpen && renderTree(node.children, node._id)}
+            {/* Recursion */}
+            {node.children.length > 0 && isExpanded && renderTree(node.children, node._id)}
           </li>
         )
       })}
