@@ -143,6 +143,8 @@ export default function Categories() {
   const [inputTitle, setInputTitle] = useState('')
   const [loading, setLoading] = useState(false)
   const [expanded, setExpanded] = useState<string[]>([])
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
 
   const treeRef = useRef<HTMLDivElement>(null)
   const controlsRef = useRef<HTMLDivElement>(null)
@@ -228,8 +230,7 @@ export default function Categories() {
 
   const handleDelete = async () => {
     if (!selectedId) return
-    if (!confirm('Delete this category and all its subcategories?')) return
-    setLoading(true)
+    setIsProcessing(true)
     try {
       await fetch('/api/categories/delete', {
         method: 'DELETE',
@@ -238,8 +239,9 @@ export default function Categories() {
       })
       await fetchCategories()
       setSelectedId(null)
+      setShowDeleteModal(false)
     } finally {
-      setLoading(false)
+      setIsProcessing(false)
     }
   }
 
@@ -278,8 +280,8 @@ export default function Categories() {
           onChange={e => setInputTitle(e.target.value)}
         />
         <button onClick={handleCreate} disabled={!inputTitle.trim()}>Add</button>
+        <button onClick={() => setShowDeleteModal(true)} disabled={!selectedId}>Delete</button>
         <button onClick={handleUpdate} disabled={!selectedId || !inputTitle.trim()}>Update</button>
-        <button onClick={handleDelete} disabled={!selectedId}>Delete</button>
       </div>
 
       <div ref={treeRef}>
@@ -294,6 +296,29 @@ export default function Categories() {
       </div>
 
       {loading && <p className={styles.loading}>Working...</p>}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            {isProcessing ? (
+              <>
+                <h2>Deleting...</h2>
+                <div className={styles.spinner}></div>
+              </>
+            ) : (
+              <>
+                <h2>Confirm Deletion</h2>
+                <p>This action cannot be undone. Are you sure you want to delete this category?</p>
+                <div className={styles.modalButtons}>
+                  <button className={styles.cancelBtn} onClick={() => setShowDeleteModal(false)}>Cancel</button>
+                  <button className={styles.dangerBtn} onClick={handleDelete}>Delete</button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
