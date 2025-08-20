@@ -60,13 +60,18 @@ function SortableItem({
         ...style,
         backgroundColor: isSelected ? '#f0e68c' : 'transparent',
         cursor: 'pointer',
+        padding: '0.2rem 0.4rem',
+        borderRadius: '4px',
       }}
       {...attributes}
       onClick={() => setSelectedId(category._id)}
     >
       <div className={styles.node}>
         {category.children.length > 0 && (
-          <button className={styles.toggle} onClick={() => toggleExpand(category._id)}>
+          <button
+            className={styles.toggle}
+            onClick={e => { e.stopPropagation(); toggleExpand(category._id) }}
+          >
             {isExpanded ? '▼' : '▶'}
           </button>
         )}
@@ -157,9 +162,7 @@ export default function Categories() {
     }
   }
 
-  useEffect(() => {
-    fetchCategories()
-  }, [])
+  useEffect(() => { fetchCategories() }, [])
 
   const tree = buildTree(categories)
 
