@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import styles from '../../styles/admincat.module.css'
 import {
   DndContext,
@@ -144,6 +144,8 @@ export default function Categories() {
   const [loading, setLoading] = useState(false)
   const [expanded, setExpanded] = useState<string[]>([])
 
+  const treeRef = useRef<HTMLDivElement>(null)
+
   const fetchCategories = async () => {
     try {
       const res = await fetch('/api/categories')
@@ -156,6 +158,26 @@ export default function Categories() {
   }
 
   useEffect(() => { fetchCategories() }, [])
+
+  // ---------- Click outside & Escape ----------
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (treeRef.current && !treeRef.current.contains(event.target as Node)) {
+        setSelectedId(null)
+      }
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSelectedId(null)
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [])
 
   const tree = buildTree(categories)
 
@@ -253,14 +275,16 @@ export default function Categories() {
         <button onClick={handleDelete} disabled={!selectedId}>Delete</button>
       </div>
 
-      <SortableTree
-        nodes={tree}
-        expanded={expanded}
-        toggleExpand={toggleExpand}
-        selectedId={selectedId}
-        setSelectedId={setSelectedId}
-        onReorder={handleReorder}
-      />
+      <div ref={treeRef}>
+        <SortableTree
+          nodes={tree}
+          expanded={expanded}
+          toggleExpand={toggleExpand}
+          selectedId={selectedId}
+          setSelectedId={setSelectedId}
+          onReorder={handleReorder}
+        />
+      </div>
 
       {loading && <p className={styles.loading}>Working...</p>}
     </div>
