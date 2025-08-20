@@ -11,25 +11,32 @@ const client = createClient({
 })
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'PUT') return res.status(405).json({ success: false, error: 'Method not allowed' })
+  if (req.method !== 'PUT') {
+    return res.status(405).json({ success: false, error: 'Method not allowed' })
+  }
 
   try {
     const { id, title, parent } = req.body
 
-    const patch: any = {
-      title,
+    if (!id || !title) {
+      return res.status(400).json({ success: false, error: 'Missing id or title' })
     }
 
-    if (parent) {
-      patch.parent = { _type: 'reference', _ref: parent }
-    } else {
+    // Build patch only with the fields we want to update
+    const patch: Record<string, any> = { title }
+
+    // Only update `parent` if explicitly provided (null means detach, undefined means no change)
+    if (parent === null) {
       patch.parent = null
+    } else if (parent) {
+      patch.parent = { _type: 'reference', _ref: parent }
     }
 
     const result = await client.patch(id).set(patch).commit()
 
-    res.status(200).json({ success: true, category: result })
+    return res.status(200).json({ success: true, category: result })
   } catch (err: any) {
-    res.status(500).json({ success: false, error: err.message })
+    console.error('Update category failed:', err)
+    return res.status(500).json({ success: false, error: err.message })
   }
 }
