@@ -26,23 +26,30 @@ type Product = {
 export default function AdminPage({ products }: { products: Product[] }) {
   return (
     <div className={styles.mainContainer}>
-      <div className={styles.headingWrapper}>
-        <h1 className={styles.heading}>Admin Panel</h1>
-        {/* Settings Icon */}
-        <Link href="/admin/categories" passHref>
-          <button className={styles.settingsButton} title="Manage Categories">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              width="24"
-              height="24"
-            >
-              <path d="M12 8a4 4 0 100 8 4 4 0 000-8zm0-6a2 2 0 012 2v1.07a7.002 7.002 0 013.28 1.39l.76-.76a2 2 0 012.83 2.83l-.76.76a7.002 7.002 0 011.39 3.28H20a2 2 0 012 2v0a2 2 0 01-2 2h-1.07a7.002 7.002 0 01-1.39 3.28l.76.76a2 2 0 01-2.83 2.83l-.76-.76a7.002 7.002 0 01-3.28 1.39V20a2 2 0 01-2 2h0a2 2 0 01-2-2v-1.07a7.002 7.002 0 01-3.28-1.39l-.76.76a2 2 0 01-2.83-2.83l.76-.76a7.002 7.002 0 01-1.39-3.28H4a2 2 0 01-2-2v0a2 2 0 012-2h1.07a7.002 7.002 0 011.39-3.28l-.76-.76a2 2 0 012.83-2.83l.76.76A7.002 7.002 0 0110 4.07V4a2 2 0 012-2z"/>
-            </svg>
-          </button>
-        </Link>
-      </div>
+   // Inside your AdminPage component
+<div className={styles.headerWithSettings}>
+  <h1 className={styles.heading}>Admin Panel</h1>
+
+  <Link href="/admin/categories" passHref>
+    <button className={styles.settingsButton} title="Manage Categories">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        width="24"
+        height="24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 8c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm0-6v2m0 16v2m8-10h2M2 12h2m15.364-7.364l1.414 1.414M4.222 19.778l1.414-1.414M19.778 19.778l-1.414-1.414M4.222 4.222l1.414 1.414"
+        />
+      </svg>
+    </button>
+  </Link>
+</div>
 
       <div className={styles.createWrapper}>
         <Link href="/admin/create">
