@@ -145,6 +145,7 @@ export default function Categories() {
   const [expanded, setExpanded] = useState<string[]>([])
 
   const treeRef = useRef<HTMLDivElement>(null)
+  const controlsRef = useRef<HTMLDivElement>(null)
 
   const fetchCategories = async () => {
     try {
@@ -163,9 +164,14 @@ export default function Categories() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return
-      if (treeRef.current && !treeRef.current.contains(event.target as Node)) {
-        setSelectedId(null)
+      const target = event.target as Node
+      if (
+        (treeRef.current && treeRef.current.contains(target)) ||
+        (controlsRef.current && controlsRef.current.contains(target))
+      ) {
+        return
       }
+      setSelectedId(null)
     }
 
     const handleEscape = (event: KeyboardEvent) => {
@@ -264,7 +270,7 @@ export default function Categories() {
     <div className={styles.container}>
       <h1 className={styles.title}>Category Manager</h1>
 
-      <div className={styles.controls}>
+      <div ref={controlsRef} className={styles.controls}>
         <input
           className={styles.input}
           placeholder={selectedId ? 'Edit or add subcategory' : 'Add new top-level category'}
