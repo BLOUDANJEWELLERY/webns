@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react'
+// src/pages/admin/categories.tsx
+import { useState, useEffect, useRef, useMemo } from 'react'
 import styles from '../../styles/admincat.module.css'
 import {
   DndContext,
@@ -137,8 +138,8 @@ function SortableTree({
 }
 
 // ---------- Main Component ----------
-export default function Categories() {
-  const [categories, setCategories] = useState<Category[]>([])
+export default function Categories({ initialCategories }: { initialCategories: Category[] }) {
+  const [categories, setCategories] = useState<Category[]>(initialCategories)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const [inputTitle, setInputTitle] = useState('')
@@ -149,19 +150,6 @@ export default function Categories() {
 
   const treeRef = useRef<HTMLDivElement>(null)
   const controlsRef = useRef<HTMLDivElement>(null)
-
-  const fetchCategories = async () => {
-    try {
-      const res = await fetch('/api/categories')
-      if (!res.ok) throw new Error('Failed to fetch categories')
-      const data = await res.json()
-      setCategories(data)
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
-  useEffect(() => { fetchCategories() }, [])
 
   // ---------- Click outside & Escape ----------
   useEffect(() => {
@@ -187,7 +175,8 @@ export default function Categories() {
     }
   }, [])
 
-  const tree = buildTree(categories)
+  // ---------- Memoized tree ----------
+  const tree = useMemo(() => buildTree(categories), [categories])
 
   const toggleExpand = (id: string) => {
     setExpanded(prev => (prev.includes(id) ? prev.filter(eid => eid !== id) : [...prev, id]))
@@ -203,7 +192,9 @@ export default function Categories() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: inputTitle, parent: selectedId }),
       })
-      await fetchCategories()
+      const res = await fetch('/api/categories')
+      const data = await res.json()
+      setCategories(data)
       if (selectedId) setExpanded(prev => [...new Set([...prev, selectedId])])
     } finally {
       setLoading(false)
@@ -220,7 +211,9 @@ export default function Categories() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: selectedId, title: inputTitle }),
       })
-      await fetchCategories()
+      const res = await fetch('/api/categories')
+      const data = await res.json()
+      setCategories(data)
     } finally {
       setLoading(false)
       setInputTitle('')
@@ -237,7 +230,8 @@ export default function Categories() {
         body: JSON.stringify({ id: deleteTargetId }),
       })
       if (!res.ok) throw new Error('Failed to delete')
-      await fetchCategories()
+      const updated = await fetch('/api/categories').then(res => res.json())
+      setCategories(updated)
       if (selectedId === deleteTargetId) setSelectedId(null)
       setShowDeleteModal(false)
     } catch (err) {
@@ -309,7 +303,6 @@ export default function Categories() {
 
       {loading && <p className={styles.loading}>Working...</p>}
 
-      {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
@@ -344,4 +337,11 @@ export default function Categories() {
       )}
     </div>
   )
+}
+
+// ---------- Server-Side Fetch ----------
+export async function getServerSideProps() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/categories`)
+  const initialCategories: Category[] = await res.json()
+  return { props: { initialCategories } }
 }
