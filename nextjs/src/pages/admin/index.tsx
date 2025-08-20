@@ -26,26 +26,20 @@ type Product = {
 export default function AdminPage({ products }: { products: Product[] }) {
   return (
     <div className={styles.mainContainer}>
-      {/* Header with Settings */}
+      {/* Header with simple settings icon */}
       <div className={styles.headerWithSettings}>
         <h1 className={styles.heading}>Admin Panel</h1>
         <Link href="/admin/categories" passHref>
           <button className={styles.settingsButton} title="Manage Categories">
-            {/* Heroicons Gear */}
+            {/* Simple Cog Icon */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
               width="24"
               height="24"
+              fill="currentColor"
+              viewBox="0 0 24 24"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm0-6v2m0 16v2m8-10h2M2 12h2m15.364-7.364l1.414 1.414M4.222 19.778l1.414-1.414M19.778 19.778l-1.414-1.414M4.222 4.222l1.414 1.414"
-              />
+              <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm7.43-1.5a7.93 7.93 0 0 0 .07-1 7.93 7.93 0 0 0-.07-1l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.21l-2.49 1a7.84 7.84 0 0 0-1.73-1l-.38-2.65A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.5.44l-.38 2.65a7.84 7.84 0 0 0-1.73 1l-2.49-1a.5.5 0 0 0-.61.21l-2 3.46a.5.5 0 0 0 .12.64L4.57 12a7.93 7.93 0 0 0-.07 1 7.93 7.93 0 0 0 .07 1l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .61.21l2.49-1a7.84 7.84 0 0 0 1.73 1l.38 2.65a.5.5 0 0 0 .5.44h4a.5.5 0 0 0 .5-.44l.38-2.65a7.84 7.84 0 0 0 1.73-1l2.49 1a.5.5 0 0 0 .61-.21l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.65z"/>
             </svg>
           </button>
         </Link>
