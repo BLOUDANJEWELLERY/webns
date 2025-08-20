@@ -44,9 +44,9 @@ function SortableItem({
   handleCreate,
   handleUpdate,
   handleDelete,
+  onReorder,
 }: any) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: category._id })
-
   const style = { transform: CSS.Transform.toString(transform), transition }
   const isExpanded = expanded.includes(category._id)
 
@@ -103,6 +103,9 @@ function SortableItem({
           handleCreate={handleCreate}
           handleUpdate={handleUpdate}
           handleDelete={handleDelete}
+          onReorder={(nodes: Category[], oldIndex: number, newIndex: number) =>
+            onReorder(nodes, oldIndex, newIndex, category._id)
+          }
         />
       )}
     </li>
@@ -128,7 +131,6 @@ function SortableTree({
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
     if (!over || active.id === over.id) return
-
     const oldIndex = nodes.findIndex((n: Category) => n._id === active.id)
     const newIndex = nodes.findIndex((n: Category) => n._id === over.id)
     onReorder(nodes, oldIndex, newIndex)
@@ -151,6 +153,7 @@ function SortableTree({
               handleCreate={handleCreate}
               handleUpdate={handleUpdate}
               handleDelete={handleDelete}
+              onReorder={onReorder}
             />
           ))}
         </ul>
@@ -239,7 +242,7 @@ export default function Categories() {
   }
 
   // ---------- Reorder ----------
-  const handleReorder = async (nodes: Category[], oldIndex: number, newIndex: number) => {
+  const handleReorder = async (nodes: Category[], oldIndex: number, newIndex: number, parentId: string | null = null) => {
     const newOrder = arrayMove(nodes, oldIndex, newIndex)
 
     // Update state locally
@@ -252,12 +255,12 @@ export default function Categories() {
       return updated
     })
 
-    // Batch update backend
+    // Update backend
     await fetch('/api/categories/reorder', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        parent: nodes[0]?.parent?._id || null,
+        parent: parentId,
         order: newOrder.map((c, i) => ({ id: c._id, order: i })),
       }),
     })
