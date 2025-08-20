@@ -5,7 +5,7 @@ type Category = {
   _id: string
   title: string
   parent?: { _id: string; title: string }
-  children: Category[] // always an array
+  children: Category[]
 }
 
 // ---------- Helpers ----------
@@ -27,6 +27,7 @@ export default function Categories() {
   })
   const [editing, setEditing] = useState<{ id: string; title: string } | null>(null)
   const [loading, setLoading] = useState(false)
+  const [openNodes, setOpenNodes] = useState<Set<string>>(new Set()) // dropdown state
 
   // Fetch all categories
   const fetchCategories = async () => {
@@ -80,7 +81,7 @@ export default function Categories() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this category?')) return
+    if (!confirm('Delete this category (and its subcategories)?')) return
     setLoading(true)
     try {
       await fetch('/api/categories/delete', {
@@ -94,50 +95,72 @@ export default function Categories() {
     }
   }
 
+  // ---------- Dropdown Toggle ----------
+  const toggleNode = (id: string) => {
+    setOpenNodes((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(id)) {
+        newSet.delete(id)
+      } else {
+        newSet.add(id)
+      }
+      return newSet
+    })
+  }
+
   // ---------- Recursive Renderer ----------
   const renderTree = (nodes: Category[], parent: string | null = null) => (
     <ul className={styles.tree}>
-      {nodes.map((node) => (
-        <li key={node._id}>
-          {editing?.id === node._id ? (
-            <div className={styles.inlineForm}>
-              <input
-                className={styles.input}
-                value={editing.title}
-                onChange={(e) => setEditing({ ...editing, title: e.target.value })}
-              />
-              <button onClick={() => handleUpdate(node._id, editing.title)}>Save</button>
-              <button onClick={() => setEditing(null)}>Cancel</button>
-            </div>
-          ) : (
-            <div className={styles.node}>
-              <span>{node.title}</span>
-              <div className={styles.actions}>
-                <button onClick={() => setEditing({ id: node._id, title: node.title })}>✏️</button>
-                <button onClick={() => handleDelete(node._id)}>🗑</button>
-                <button onClick={() => setNewCategory({ parent: node._id, title: '' })}>➕</button>
+      {nodes.map((node) => {
+        const isOpen = openNodes.has(node._id)
+        return (
+          <li key={node._id}>
+            {editing?.id === node._id ? (
+              <div className={styles.inlineForm}>
+                <input
+                  className={styles.input}
+                  value={editing.title}
+                  onChange={(e) => setEditing({ ...editing, title: e.target.value })}
+                />
+                <button onClick={() => handleUpdate(node._id, editing.title)}>Save</button>
+                <button onClick={() => setEditing(null)}>Cancel</button>
               </div>
-            </div>
-          )}
+            ) : (
+              <div className={styles.node}>
+                {/* Expand/Collapse toggle */}
+                {node.children.length > 0 && (
+                  <button className={styles.toggle} onClick={() => toggleNode(node._id)}>
+                    {isOpen ? '▼' : '▶'}
+                  </button>
+                )}
+                <span>{node.title}</span>
+                <div className={styles.actions}>
+                  <button onClick={() => setEditing({ id: node._id, title: node.title })}>✏️</button>
+                  <button onClick={() => handleDelete(node._id)}>🗑</button>
+                  <button onClick={() => setNewCategory({ parent: node._id, title: '' })}>➕</button>
+                </div>
+              </div>
+            )}
 
-          {/* Inline subcategory form */}
-          {newCategory.parent === node._id && (
-            <div className={styles.inlineForm}>
-              <input
-                className={styles.input}
-                placeholder="New subcategory"
-                value={newCategory.title}
-                onChange={(e) => setNewCategory({ ...newCategory, title: e.target.value })}
-              />
-              <button onClick={() => handleCreate(node._id)}>Add</button>
-              <button onClick={() => setNewCategory({ parent: null, title: '' })}>Cancel</button>
-            </div>
-          )}
+            {/* Inline subcategory form */}
+            {newCategory.parent === node._id && (
+              <div className={styles.inlineForm}>
+                <input
+                  className={styles.input}
+                  placeholder="New subcategory"
+                  value={newCategory.title}
+                  onChange={(e) => setNewCategory({ ...newCategory, title: e.target.value })}
+                />
+                <button onClick={() => handleCreate(node._id)}>Add</button>
+                <button onClick={() => setNewCategory({ parent: null, title: '' })}>Cancel</button>
+              </div>
+            )}
 
-          {/* Recursion */}
-          {node.children.length > 0 && renderTree(node.children, node._id)}
-        </li>
-      ))}
+            {/* Recursion: only show children if open */}
+            {node.children.length > 0 && isOpen && renderTree(node.children, node._id)}
+          </li>
+        )
+      })}
 
       {/* Top-level create */}
       {parent === null && newCategory.parent === null && (
