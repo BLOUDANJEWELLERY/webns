@@ -1,23 +1,21 @@
+// /api/categories/reorder.ts
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { client } from '../../../lib/sanityClient'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'PUT') return res.status(405).json({ success: false, error: 'Method not allowed' })
-
+  if (req.method !== 'POST') return res.status(405).end('Method Not Allowed')
   try {
-    const { orderedIds } = req.body as { orderedIds: string[] }
+    const { order } = req.body
+    if (!Array.isArray(order)) throw new Error('Invalid order data')
 
-    // Prepare patches to update order field
-    const patches = orderedIds.map((id, index) => ({
-      id,
-      patch: { order: index },
+    const mutations = order.map((c: { id: string; order: number }) => ({
+      patch: {
+        id: c.id,
+        set: { order: c.order },
+      },
     }))
 
-    // Commit all patches in a single transaction
-    const transaction = client.transaction()
-    patches.forEach((p) => transaction.patch(p.id, { set: p.patch }))
-    await transaction.commit()
-
+    await client.transaction(mutations).commit()
     res.status(200).json({ success: true })
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message })
