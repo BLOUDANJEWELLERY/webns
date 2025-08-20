@@ -11,22 +11,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { order } = req.body
+    const { order, parentId } = req.body
 
     if (!Array.isArray(order) || !order.every((item: any) => item.id && typeof item.order === 'number')) {
       return res.status(400).json({ success: false, error: 'Invalid order data' })
     }
 
-    // Prepare Sanity patch mutations
     const mutations = order.map((item: ReorderItem) => ({
       patch: {
         id: item.id,
-        set: { order: item.order },
+        set: { order: item.order, parent: parentId || null },
       },
     }))
 
     await client.transaction(mutations).commit()
-
     return res.status(200).json({ success: true })
   } catch (err: any) {
     console.error('Reorder error:', err)
