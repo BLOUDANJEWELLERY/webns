@@ -170,9 +170,7 @@ export default function Categories() {
       if (
         (treeRef.current && treeRef.current.contains(target)) ||
         (controlsRef.current && controlsRef.current.contains(target))
-      ) {
-        return
-      }
+      ) return
       setSelectedId(null)
     }
 
@@ -232,14 +230,18 @@ export default function Categories() {
     if (!selectedId) return
     setIsProcessing(true)
     try {
-      await fetch('/api/categories/delete', {
+      const res = await fetch('/api/categories/delete', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: selectedId }),
       })
+      if (!res.ok) throw new Error('Failed to delete')
       await fetchCategories()
       setSelectedId(null)
       setShowDeleteModal(false)
+    } catch (err) {
+      console.error(err)
+      alert('Failed to delete category')
     } finally {
       setIsProcessing(false)
     }
@@ -248,7 +250,6 @@ export default function Categories() {
   // ---------- Reorder ----------
   const handleReorder = async (nodes: Category[], oldIndex: number, newIndex: number, parentId: string | null) => {
     const newOrder = arrayMove(nodes, oldIndex, newIndex)
-
     setCategories(prev => {
       const updated = [...prev]
       newOrder.forEach((cat, i) => {
@@ -312,7 +313,13 @@ export default function Categories() {
                 <p>This action cannot be undone. Are you sure you want to delete this category?</p>
                 <div className={styles.modalButtons}>
                   <button className={styles.cancelBtn} onClick={() => setShowDeleteModal(false)}>Cancel</button>
-                  <button className={styles.dangerBtn} onClick={handleDelete}>Delete</button>
+                  <button
+                    className={styles.dangerBtn}
+                    onClick={e => { e.stopPropagation(); handleDelete() }}
+                    disabled={isProcessing}
+                  >
+                    Delete
+                  </button>
                 </div>
               </>
             )}
