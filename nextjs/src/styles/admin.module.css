@@ -1,3 +1,22 @@
+.headingWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.settingsButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #555;
+  padding: 4px;
+  transition: color 0.2s;
+}
+
+.settingsButton:hover {
+  color: #000;
+}
+
 .mainContainer {
   padding: 2rem 1rem;
   max-width: 1200px;
