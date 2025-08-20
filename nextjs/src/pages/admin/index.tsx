@@ -26,31 +26,33 @@ type Product = {
 export default function AdminPage({ products }: { products: Product[] }) {
   return (
     <div className={styles.mainContainer}>
-      {/* Header with clean settings button */}
+      {/* Header with simple settings icon */}
       <div className={styles.headerWithSettings}>
         <h1 className={styles.heading}>Admin Panel</h1>
         <Link href="/admin/categories" passHref>
           <button className={styles.settingsButton} title="Manage Categories">
-            {/* Clean minimal cog */}
+            {/* Simple Cog Icon */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
+              width="24"
+              height="24"
               fill="currentColor"
-              viewBox="0 0 16 16"
+              viewBox="0 0 24 24"
             >
-              <path d="M9.405 1.05a.5.5 0 0 1 .49.408l.38 2.531a5.507 5.507 0 0 1 1.173.675l2.354-.382a.5.5 0 0 1 .575.574l-.382 2.354a5.507 5.507 0 0 1 .675 1.173l2.531.38a.5.5 0 0 1 .408.49v3.15a.5.5 0 0 1-.408.49l-2.531.38a5.507 5.507 0 0 1-.675 1.173l.382 2.354a.5.5 0 0 1-.575.574l-2.354-.382a5.507 5.507 0 0 1-1.173.675l-.38 2.531a.5.5 0 0 1-.49.408h-3.15a.5.5 0 0 1-.49-.408l-.38-2.531a5.507 5.507 0 0 1-1.173-.675l-2.354.382a.5.5 0 0 1-.575-.574l.382-2.354a5.507 5.507 0 0 1-.675-1.173l-2.531-.38a.5.5 0 0 1-.408-.49v-3.15a.5.5 0 0 1 .408-.49l2.531-.38a5.507 5.507 0 0 1 .675-1.173l-.382-2.354a.5.5 0 0 1 .575-.574l2.354.382a5.507 5.507 0 0 1 1.173-.675l.38-2.531a.5.5 0 0 1 .49-.408h3.15zM8 5a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>
+              <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm7.43-1.5a7.93 7.93 0 0 0 .07-1 7.93 7.93 0 0 0-.07-1l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.21l-2.49 1a7.84 7.84 0 0 0-1.73-1l-.38-2.65A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.5.44l-.38 2.65a7.84 7.84 0 0 0-1.73 1l-2.49-1a.5.5 0 0 0-.61.21l-2 3.46a.5.5 0 0 0 .12.64L4.57 12a7.93 7.93 0 0 0-.07 1 7.93 7.93 0 0 0 .07 1l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .61.21l2.49-1a7.84 7.84 0 0 0 1.73 1l.38 2.65a.5.5 0 0 0 .5.44h4a.5.5 0 0 0 .5-.44l.38-2.65a7.84 7.84 0 0 0 1.73-1l2.49 1a.5.5 0 0 0 .61-.21l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.65z"/>
             </svg>
           </button>
         </Link>
       </div>
 
+      {/* Actions */}
       <div className={styles.createWrapper}>
         <Link href="/admin/create">
           <button className={styles.actionButton}>Create Product</button>
         </Link>
       </div>
 
+      {/* Product List */}
       <h2 className={styles.subHeading}>All Products</h2>
 
       {products.length === 0 ? (
