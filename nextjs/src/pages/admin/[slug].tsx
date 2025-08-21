@@ -81,7 +81,7 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
 `)
 
   if (!product) return { notFound: true }
-  return { props: { product, categories}, revalidate: 60 }
+  return { props: { product, categories: categories || [] }, revalidate: 60 }
 }
 
 // Define the raw category type fetched from Sanity
@@ -136,7 +136,7 @@ product,
 
 
 // Build the category tree from flat array
-const buildCategoryTree = (cats: CategoryRaw[]): CategoryNode[] => {
+const buildCategoryTree = (cats: CategoryRaw[] = []): CategoryNode[] => {
   const map: Record<string, CategoryNode> = {};
   const roots: CategoryNode[] = [];
 
@@ -164,7 +164,7 @@ const buildCategoryTree = (cats: CategoryRaw[]): CategoryNode[] => {
 };
 
 // Usage: build tree from fetched categories
-const categoryTree = useMemo(() => buildCategoryTree(categories), [categories]);
+const categoryTree = useMemo(() => buildCategoryTree(categories || []), [categories]);
 const handleCategoryToggle = (id: string) => {
     setSelectedCategories(prev =>
       prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
