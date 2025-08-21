@@ -1,5 +1,7 @@
+This is my complete logic of admin edit page rewrite this fully:
+
 // src/pages/admin/[slug].tsx
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo} from 'react'
 import { useRouter } from 'next/router'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
@@ -79,8 +81,8 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
 
 const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
-export default function AdminEditPage({
-  product,
+export default function AdminEditPage({ 
+product,
   categories,
 }: {
   product: Product | null
@@ -92,7 +94,7 @@ export default function AdminEditPage({
   // Core product states
   const [title, setTitle] = useState(product?.title || '')
   const [price, setPrice] = useState(product?.price.toString() || '')
-  const [description, setDescription] = useState(product?.description || '')
+  const [description, setDescription] = useState(product?.description || "")
   const [defaultImageFile, setDefaultImageFile] = useState<File | null>(null)
   const [defaultImagePreview, setDefaultImagePreview] = useState(
     product?.defaultImage ? urlFor(product.defaultImage) : null
@@ -145,23 +147,49 @@ export default function AdminEditPage({
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [modalMessage, setModalMessage] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
+// For color & variant removal
+const [showRemoveColorModal, setShowRemoveColorModal] = useState(false)
+const [showRemoveVariantModal, setShowRemoveVariantModal] = useState(false)
+const [pendingRemoveColorIndex, setPendingRemoveColorIndex] = useState<number | null>(null)
+const [pendingRemoveVariant, setPendingRemoveVariant] = useState<{ ci: number, vi: number } | null>(null)
 
-  // Detect changes
-  const isProductChanged = useMemo(() => {
-    if (!product) return false
-    if (title !== product.title) return true
-    if (description !== (product.description || '')) return true
-    if (Number(price) !== product.price) return true
-    if (defaultImageFile) return true
-    if (colors.length !== (product.colorImages?.length || 0)) return true
-    if (
+// Detect changes
+const isProductChanged = useMemo(() => {
+  if (!product) return false
+  if (title !== product.title) return true
+  if (description !== (product.description || '')) return true // ✅ check description
+  if (Number(price) !== product.price) return true
+  if (defaultImageFile) return true
+  if (colors.length !== (product.colorImages?.length || 0)) return true
+  if (
       JSON.stringify(selectedCategories.sort()) !==
       JSON.stringify((product.categories || []).map(c => c._id).sort())
     )
-      return true
+    return true
 
-    return false
-  }, [title, description, price, defaultImageFile, colors, selectedCategories, product])
+
+
+  for (let i = 0; i < colors.length; i++) {
+    const color = colors[i]
+    const origColor = product.colorImages?.[i]
+
+    if (color.color !== origColor?.color) return true
+    if (color.imageFile) return true
+
+    const origVariants = product.variants?.filter(v => v.color === color.color) || []
+    if (color.variants.length !== origVariants.length) return true
+
+    for (let j = 0; j < color.variants.length; j++) {
+      const v = color.variants[j]
+      const ov = origVariants[j]
+      if (!ov) return true
+      if (v.size !== ov.size) return true
+      if (v.quantity !== ov.quantity) return true
+      if ((v.priceOverride || 0) !== (ov.priceOverride || 0)) return true
+    }
+  }
+  return false
+}, [title, description, price, defaultImageFile, colors, selectedCategories, product])
 
   // Default image preview
   useEffect(() => {
@@ -174,17 +202,10 @@ export default function AdminEditPage({
   if (router.isFallback) return <p>Loading product...</p>
   if (!product) return <p>Product not found</p>
 
-  // --- Handlers ---
+  // Handlers
   const handleDefaultImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null
     setDefaultImageFile(file)
-  }
-
-const handleColorImageChange = (index: number, file: File) => {
-    const updated = [...colors]
-    updated[index].imageFile = file
-    updated[index].imagePreview = URL.createObjectURL(file)
-    setColors(updated)
   }
 
   const handleCategoryToggle = (id: string) => {
@@ -193,128 +214,173 @@ const handleColorImageChange = (index: number, file: File) => {
     )
   }
 
-  // --- Update Handler ---
-  const handleSubmit = async () => {
-    if (!product?._id) {
-      setModalMessage('Missing product ID')
-      setShowUpdateModal(true)
-      return
+  const addColor = () => {
+    setColors([
+      ...colors,
+      {
+        color: '',
+        imageFile: null,
+        imagePreview: null,
+        variants: [],
+        _key: Math.random().toString(36).substr(2, 9),
+      },
+    ])
+    setOpenColors([...openColors, true])
+  }
+
+  const removeColor = (i: number) => {
+    setColors(colors.filter((_, idx) => idx !== i))
+    setOpenColors(openColors.filter((_, idx) => idx !== i))
+  }
+
+  const handleColorImageChange = (index: number, file: File) => {
+    const updated = [...colors]
+    updated[index].imageFile = file
+    updated[index].imagePreview = URL.createObjectURL(file)
+    setColors(updated)
+  }
+
+  const addVariant = (colorIndex: number) => {
+    const updated = [...colors]
+    updated[colorIndex].variants.push({
+      size: '',
+      quantity: 1,
+      color: colors[colorIndex].color,
+      _key: Math.random().toString(36).substr(2, 9),
+      showPriceOverride: false,
+    })
+    setColors(updated)
+  }
+
+  const removeVariant = (colorIndex: number, variantIndex: number) => {
+    const updated = [...colors]
+    updated[colorIndex].variants.splice(variantIndex, 1)
+    setColors(updated)
+  }
+
+// --- Update Handler ---
+const handleSubmit = async () => {
+  if (!product?._id) {
+    setModalMessage('Missing product ID');
+    setShowUpdateModal(true);
+    return;
+  }
+
+  setIsProcessing(true);   // show processing in modal
+  setLoading(true);
+
+  try {
+    let defaultAssetId = defaultImageId;
+
+    // Upload default image if changed
+    if (defaultImageFile) {
+      const formData = new FormData();
+      formData.append('file', defaultImageFile);
+      formData.append('type', 'image');
+      const res = await fetch('/api/products/uploadImage', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      defaultAssetId = data.assetId;
     }
 
-    setIsProcessing(true)
-    setLoading(true)
-
-    try {
-      let defaultAssetId = defaultImageId
-
-      // Upload default image if changed
-      if (defaultImageFile) {
-        const formData = new FormData()
-        formData.append('file', defaultImageFile)
-        formData.append('type', 'image')
-        const res = await fetch('/api/products/uploadImage', { method: 'POST', body: formData })
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error)
-        defaultAssetId = data.assetId
+    // Upload color images
+    const colorImages: any[] = [];
+    for (const color of colors) {
+      let assetId = color.existingImageId;
+      if (color.imageFile) {
+        const formData = new FormData();
+        formData.append('file', color.imageFile);
+        formData.append('type', 'image');
+        const res = await fetch('/api/products/uploadImage', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        assetId = data.assetId;
       }
+      colorImages.push({
+        _key: color._key,
+        color: color.color,
+        image: assetId ? { _type: 'image', asset: { _type: 'reference', _ref: assetId } } : undefined,
+      });
+    }
 
-      // Upload color images
-      const colorImages: any[] = []
-      for (const color of colors) {
-        let assetId = color.existingImageId
-        if (color.imageFile) {
-          const formData = new FormData()
-          formData.append('file', color.imageFile)
-          formData.append('type', 'image')
-          const res = await fetch('/api/products/uploadImage', { method: 'POST', body: formData })
-          const data = await res.json()
-          if (!res.ok) throw new Error(data.error)
-          assetId = data.assetId
-        }
-        colorImages.push({
-          _key: color._key,
-          color: color.color,
-          image: assetId ? { _type: 'image', asset: { _type: 'reference', _ref: assetId } } : undefined,
+    // Build variants array
+    const variants: any[] = [];
+    colors.forEach(c =>
+      c.variants.forEach(v =>
+        variants.push({
+          _key: v._key,
+          size: v.size,
+          quantity: Number(v.quantity),
+          color: c.color,
+          priceOverride: v.priceOverride ? Number(v.priceOverride) : undefined,
+          sku: v.sku || `${c.color}-${v.size}-${Math.floor(Math.random() * 1000000)}`,
         })
-      }
-
-      // Build variants
-      const variants: any[] = []
-      colors.forEach(c =>
-        c.variants.forEach(v =>
-          variants.push({
-            _key: v._key,
-            size: v.size,
-            quantity: Number(v.quantity),
-            color: c.color,
-            priceOverride: v.priceOverride ? Number(v.priceOverride) : undefined,
-            sku: v.sku || `${c.color}-${v.size}-${Math.floor(Math.random() * 1000000)}`,
-          })
-        )
       )
+    );
 
-      // Update product API call
-      const res = await fetch('/api/products/update', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: product._id,
-          title,
-          price: Number(price),
-          description,
-          defaultImage: defaultAssetId
-            ? { _type: 'image', asset: { _type: 'reference', _ref: defaultAssetId } }
-            : undefined,
-          colorImages,
-          variants,
-          categories: selectedCategories.map(id => ({
+    // Update product API call
+    const res = await fetch('/api/products/update', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: product._id,
+        title,
+        price: Number(price),
+        description,
+        defaultImage: defaultAssetId
+          ? { _type: 'image', asset: { _type: 'reference', _ref: defaultAssetId } }
+          : undefined,
+        colorImages,
+        variants,
+        categories: selectedCategories.map(id => ({
             _type: 'reference',
             _ref: id,
           })),
-        }),
-      })
-      const result = await res.json()
-      if (!res.ok) throw new Error(result.error || 'Failed to update product')
+      }),
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'Failed to update product');
 
-      setModalMessage('Product updated successfully.')
-      setTimeout(() => router.push('/admin'), 500)
-    } catch (err: any) {
-      setModalMessage(err.message)
-      setIsProcessing(false)
-    } finally {
-      setLoading(false)
-    }
+    setModalMessage('Product updated successfully.');
+    // Keep modal open showing processing
+    setTimeout(() => router.push('/admin'), 500); // slight delay before redirect
+  } catch (err: any) {
+    setModalMessage(err.message);
+    setIsProcessing(false); // show modal with buttons again
+  } finally {
+    setLoading(false);
+  }
+};
+
+// --- Delete Handler ---
+const handleDelete = async () => {
+  if (!product?._id) {
+    setModalMessage('Missing product ID');
+    setShowDeleteModal(true);
+    return;
   }
 
-  // --- Delete Handler ---
-  const handleDelete = async () => {
-    if (!product?._id) {
-      setModalMessage('Missing product ID')
-      setShowDeleteModal(true)
-      return
-    }
+  setIsProcessing(true); // show processing in modal
+  setLoading(true);
 
-    setIsProcessing(true)
-    setLoading(true)
+  try {
+    const res = await fetch('/api/products/delete', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: product._id }),
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'Failed to delete product');
 
-    try {
-      const res = await fetch('/api/products/delete', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: product._id }),
-      })
-      const result = await res.json()
-      if (!res.ok) throw new Error(result.error || 'Failed to delete product')
-
-      setModalMessage('Product deleted successfully.')
-      setTimeout(() => router.push('/admin'), 500)
-    } catch (err: any) {
-      setModalMessage(err.message)
-      setIsProcessing(false)
-    } finally {
-      setLoading(false)
-    }
+    setModalMessage('Product deleted successfully.');
+    setTimeout(() => router.push('/admin'), 500); // redirect after brief delay
+  } catch (err: any) {
+    setModalMessage(err.message);
+    setIsProcessing(false); // show modal with buttons again
+  } finally {
+    setLoading(false);
   }
+};
 
   return (
 <>
