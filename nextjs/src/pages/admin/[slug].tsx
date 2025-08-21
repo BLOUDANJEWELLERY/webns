@@ -180,6 +180,13 @@ export default function AdminEditPage({
     setDefaultImageFile(file)
   }
 
+const handleColorImageChange = (index: number, file: File) => {
+    const updated = [...colors]
+    updated[index].imageFile = file
+    updated[index].imagePreview = URL.createObjectURL(file)
+    setColors(updated)
+  }
+
   const handleCategoryToggle = (id: string) => {
     setSelectedCategories(prev =>
       prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
