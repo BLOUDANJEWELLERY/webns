@@ -112,7 +112,7 @@ product,
   categories,
 }: {
   product: Product | null
-  categories: { _id: string; title: string }[]
+  categories: CategoryRaw[]
 }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -164,8 +164,12 @@ const buildCategoryTree = (cats: CategoryRaw[]): CategoryNode[] => {
 };
 
 // Usage: build tree from fetched categories
-const categoryTree = buildCategoryTree(categories);
-
+const categoryTree = useMemo(() => buildCategoryTree(categories), [categories]);
+const handleCategoryToggle = (id: string) => {
+    setSelectedCategories(prev =>
+      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+    )
+  }
 // Recursive JSX render function
 const renderCategoryTree = (nodes: CategoryNode[]) => {
   return nodes.map(node => (
@@ -286,12 +290,6 @@ const isProductChanged = useMemo(() => {
   const handleDefaultImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null
     setDefaultImageFile(file)
-  }
-
-  const handleCategoryToggle = (id: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
-    )
   }
 
   const addColor = () => {
