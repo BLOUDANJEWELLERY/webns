@@ -76,7 +76,7 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
   const categories = await client.fetch(`*[_type=="category"]{_id, title}`)
 
   if (!product) return { notFound: true }
-  return { props: { product, categories }, revalidate: 60 }
+  return { props: { product, categories}, revalidate: 60 }
 }
 
 const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
