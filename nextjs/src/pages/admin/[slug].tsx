@@ -260,13 +260,13 @@ const isProductChanged = useMemo(() => {
 
 // --- Update Handler ---
 const handleSubmit = async () => {
-  if (!product?._id) {
+  if (!product || !product._id) {
     setModalMessage('Missing product ID');
     setShowUpdateModal(true);
     return;
   }
 
-  setIsProcessing(true);   // show processing in modal
+  setIsProcessing(true); // show processing in modal
   setLoading(true);
 
   try {
@@ -333,20 +333,19 @@ const handleSubmit = async () => {
         colorImages,
         variants,
         categories: selectedCategories.map(id => ({
-            _type: 'reference',
-            _ref: id,
-          })),
+          _type: 'reference',
+          _ref: id,
+        })),
       }),
     });
     const result = await res.json();
     if (!res.ok) throw new Error(result.error || 'Failed to update product');
 
     setModalMessage('Product updated successfully.');
-    // Keep modal open showing processing
-    setTimeout(() => router.push('/admin'), 500); // slight delay before redirect
+    setTimeout(() => router.push('/admin'), 500);
   } catch (err: any) {
     setModalMessage(err.message);
-    setIsProcessing(false); // show modal with buttons again
+    setIsProcessing(false);
   } finally {
     setLoading(false);
   }
