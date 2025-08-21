@@ -5,6 +5,8 @@ import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import Image from 'next/image'
 import styles from '../../styles/adminEdit.module.css'
+import { v4 as uuidv4 } from 'uuid'
+
 
 const client = createClient({
   projectId: '3jc8hsku',
@@ -411,9 +413,10 @@ const handleSubmit = async () => {
         colorImages,
         variants,
         categories: selectedCategories.map(id => ({
-            _type: 'reference',
-            _ref: id,
-          })),
+  _key: uuidv4(),  // generate a unique key for each item
+  _type: 'reference',
+  _ref: id,
+})),
       }),
     });
     const result = await res.json();
