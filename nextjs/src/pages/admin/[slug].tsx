@@ -1,5 +1,3 @@
-This is my complete logic of admin edit page rewrite this fully:
-
 // src/pages/admin/[slug].tsx
 import { useState, useEffect, useMemo} from 'react'
 import { useRouter } from 'next/router'
