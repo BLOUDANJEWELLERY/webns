@@ -88,6 +88,15 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
 
 
 
+// Define the raw category type fetched from Sanity
+interface CategoryRaw {
+  _id: string;
+  title: string;
+  parent?: { _id: string; title: string };
+  order?: number;
+}
+
+// Define the tree node structure
 interface CategoryNode {
   _id: string;
   title: string;
@@ -96,7 +105,8 @@ interface CategoryNode {
   children: CategoryNode[];
 }
 
-const buildCategoryTree = (cats: typeof categories): CategoryNode[] => {
+// Build the category tree from flat array
+const buildCategoryTree = (cats: CategoryRaw[]): CategoryNode[] => {
   const map: Record<string, CategoryNode> = {};
   const roots: CategoryNode[] = [];
 
@@ -112,7 +122,7 @@ const buildCategoryTree = (cats: typeof categories): CategoryNode[] => {
     }
   });
 
-  // Optional: sort children by order
+  // Sort children recursively by order
   const sortTree = (nodes: CategoryNode[]) => {
     nodes.sort((a, b) => (a.order || 0) - (b.order || 0));
     nodes.forEach(n => sortTree(n.children));
@@ -123,8 +133,10 @@ const buildCategoryTree = (cats: typeof categories): CategoryNode[] => {
   return roots;
 };
 
+// Usage: build tree from fetched categories
 const categoryTree = buildCategoryTree(categories);
-// After building categoryTree
+
+// Recursive JSX render function
 const renderCategoryTree = (nodes: CategoryNode[]) => {
   return nodes.map(node => (
     <div key={node._id} style={{ marginLeft: node.parent ? 20 : 0 }}>
