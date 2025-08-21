@@ -71,11 +71,77 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
   }`
   const product: Product | null = await client.fetch(query, { slug: params.slug })
 
-  const categories = await client.fetch(`*[_type=="category"]{_id, title}`)
+  const categories = await client.fetch(`
+  *[_type=="category"]{
+    _id,
+    title,
+    parent->{_id, title},
+    order
+  } | order(order asc)
+`)
 
   if (!product) return { notFound: true }
   return { props: { product, categories}, revalidate: 60 }
 }
+
+
+
+
+
+interface CategoryNode {
+  _id: string;
+  title: string;
+  parent?: { _id: string; title: string };
+  order?: number;
+  children: CategoryNode[];
+}
+
+const buildCategoryTree = (cats: typeof categories): CategoryNode[] => {
+  const map: Record<string, CategoryNode> = {};
+  const roots: CategoryNode[] = [];
+
+  cats.forEach(cat => {
+    map[cat._id] = { ...cat, children: [] };
+  });
+
+  cats.forEach(cat => {
+    if (cat.parent?._id) {
+      map[cat.parent._id].children.push(map[cat._id]);
+    } else {
+      roots.push(map[cat._id]);
+    }
+  });
+
+  // Optional: sort children by order
+  const sortTree = (nodes: CategoryNode[]) => {
+    nodes.sort((a, b) => (a.order || 0) - (b.order || 0));
+    nodes.forEach(n => sortTree(n.children));
+  };
+
+  sortTree(roots);
+
+  return roots;
+};
+
+const categoryTree = buildCategoryTree(categories);
+// After building categoryTree
+const renderCategoryTree = (nodes: CategoryNode[]) => {
+  return nodes.map(node => (
+    <div key={node._id} style={{ marginLeft: node.parent ? 20 : 0 }}>
+      <label>
+        <input
+          type="checkbox"
+          checked={selectedCategories.includes(node._id)}
+          onChange={() => handleCategoryToggle(node._id)}
+        />
+        {node.title}
+      </label>
+      {node.children.length > 0 && renderCategoryTree(node.children)}
+    </div>
+  ));
+};
+
+
 
 const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
@@ -440,19 +506,10 @@ const handleDelete = async () => {
   )}
 </div>
 
-      <label className={styles.label}>Categories</label>
-      <div className={styles.checkboxGroup}>
-        {categories.map(cat => (
-          <label key={cat._id} className={styles.checkboxLabel}>
-            <input
-              type="checkbox"
-              checked={selectedCategories.includes(cat._id)}
-              onChange={() => handleCategoryToggle(cat._id)}
-            />
-            {cat.title}
-          </label>
-        ))}
-      </div>
+     <label className={styles.label}>Categories</label>
+<div className={styles.checkboxGroup}>
+  {renderCategoryTree(categoryTree)}
+</div>
 
 
 {/* Description */}
