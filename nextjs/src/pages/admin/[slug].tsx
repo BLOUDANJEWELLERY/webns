@@ -84,10 +84,6 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
   return { props: { product, categories}, revalidate: 60 }
 }
 
-
-
-
-
 // Define the raw category type fetched from Sanity
 interface CategoryRaw {
   _id: string;
@@ -104,6 +100,40 @@ interface CategoryNode {
   order?: number;
   children: CategoryNode[];
 }
+
+
+
+
+
+const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+
+export default function AdminEditPage({ 
+product,
+  categories,
+}: {
+  product: Product | null
+  categories: { _id: string; title: string }[]
+}) {
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+
+  // Core product states
+  const [title, setTitle] = useState(product?.title || '')
+  const [price, setPrice] = useState(product?.price.toString() || '')
+  const [description, setDescription] = useState(product?.description || "")
+  const [defaultImageFile, setDefaultImageFile] = useState<File | null>(null)
+  const [defaultImagePreview, setDefaultImagePreview] = useState(
+    product?.defaultImage ? urlFor(product.defaultImage) : null
+  )
+  const [defaultImageId] = useState(product?.defaultImage?.asset?._ref)
+
+  // Categories (tags)
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    product?.categories?.map(c => c._id) || []
+  )
+
+
+
 
 // Build the category tree from flat array
 const buildCategoryTree = (cats: CategoryRaw[]): CategoryNode[] => {
@@ -155,32 +185,6 @@ const renderCategoryTree = (nodes: CategoryNode[]) => {
 
 
 
-const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
-
-export default function AdminEditPage({ 
-product,
-  categories,
-}: {
-  product: Product | null
-  categories: { _id: string; title: string }[]
-}) {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
-
-  // Core product states
-  const [title, setTitle] = useState(product?.title || '')
-  const [price, setPrice] = useState(product?.price.toString() || '')
-  const [description, setDescription] = useState(product?.description || "")
-  const [defaultImageFile, setDefaultImageFile] = useState<File | null>(null)
-  const [defaultImagePreview, setDefaultImagePreview] = useState(
-    product?.defaultImage ? urlFor(product.defaultImage) : null
-  )
-  const [defaultImageId] = useState(product?.defaultImage?.asset?._ref)
-
-  // Categories (tags)
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    product?.categories?.map(c => c._id) || []
-  )
 
   // Colors & Variants
   const [colors, setColors] = useState<ColorOption[]>(() => {
