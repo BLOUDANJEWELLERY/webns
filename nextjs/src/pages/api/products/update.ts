@@ -4,10 +4,21 @@ import { client } from '../../../lib/sanityClient'
 import { v4 as uuidv4 } from 'uuid'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'PUT') return res.status(405).json({ error: 'Method not allowed' })
+  if (req.method !== 'PUT') {
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
 
   try {
-    const { id, title, price, description, defaultImage, colorImages, variants } = req.body
+    const {
+      id,
+      title,
+      price,
+      description,
+      defaultImage,
+      colorImages,
+      variants,
+      categories, // NEW
+    } = req.body
 
     if (!id) return res.status(400).json({ error: 'Missing product ID' })
     if (!title) return res.status(400).json({ error: 'Missing title' })
@@ -40,8 +51,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         size: v.size,
         color: v.color,
         quantity: Number(v.quantity),
-        priceOverride: v.priceOverride !== undefined ? Number(v.priceOverride) : undefined,
+        priceOverride:
+          v.priceOverride !== undefined ? Number(v.priceOverride) : undefined,
         sku: v.sku,
+      }))
+    }
+
+    // Categories (multiple references)
+    if (Array.isArray(categories)) {
+      patchData.categories = categories.map((catId: string) => ({
+        _key: uuidv4(),
+        _ref: catId,
+        _type: 'reference',
       }))
     }
 
