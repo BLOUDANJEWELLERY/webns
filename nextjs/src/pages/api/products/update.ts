@@ -58,13 +58,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Categories (multiple references)
-    if (Array.isArray(categories)) {
-      patchData.categories = categories.map((catId: string) => ({
-        _key: uuidv4(),
-        _ref: catId,
-        _type: 'reference',
-      }))
-    }
+    // Replace the old categories patch with this
+if (Array.isArray(categories)) {
+  patchData.categories = categories.map((cat: any) => ({
+    _type: 'reference',
+    _ref: typeof cat === 'string' ? cat : cat._ref,
+  }))
+}
 
     const updatedDoc = await client.patch(id).set(patchData).commit()
     res.status(200).json({ success: true, doc: updatedDoc })
