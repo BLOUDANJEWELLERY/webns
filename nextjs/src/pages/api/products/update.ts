@@ -61,7 +61,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Replace the old categories patch with this
 if (Array.isArray(categories)) {
   patchData.categories = categories.map((cat: any) => ({
-    _type: 'reference',
+    _key: cat._key,
+_type: 'reference',
     _ref: typeof cat === 'string' ? cat : cat._ref,
   }))
 }
