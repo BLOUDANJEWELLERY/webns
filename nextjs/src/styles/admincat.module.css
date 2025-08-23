@@ -166,6 +166,7 @@
 }
 
 /* ---------------- Mobile Media Queries ---------------- */
+/* ---------------- Mobile Media Queries ---------------- */
 @media (max-width: 768px) {
   .controls {
     flex-direction: column;
@@ -174,10 +175,15 @@
 
   .controls input {
     width: 100%;
+    padding: 0.45rem 0.6rem; /* smaller padding */
+    font-size: 0.9rem;       /* slightly smaller font */
+    border-radius: 6px;      /* slightly smaller radius */
   }
 
   .controls button {
     width: 100%;
+    padding: 0.45rem 0.8rem; /* slightly smaller buttons */
+    font-size: 0.85rem;
   }
 
   .treeWrapper {
@@ -195,15 +201,15 @@
   }
 
   .item {
-    padding: 0.6rem 0.7rem;
+    padding: 0.5rem 0.6rem;
   }
 
   .title {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .toggleBtn {
-    font-size: 12px;
+    font-size: 11px;
   }
 
   .dragHandle {
