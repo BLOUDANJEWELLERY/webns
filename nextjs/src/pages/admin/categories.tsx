@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import styles from '../../styles/admincat.module.css'
 import {
   DndContext,
@@ -167,90 +167,123 @@ const renderTree = (
 }
 
 // -------------------- Categories page --------------------
-export default function CategoriesPage({ initialData }: { initialData: CategoryRaw[] }) {
-  const [catList, setCatList] = useState<CategoryRaw[]>(initialData)
+export default function CategoriesPage() {
+  const [catList, setCatList] = useState<CategoryRaw[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [inputTitle, setInputTitle] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
-
-  const tree = useMemo(() => buildTree(catList), [catList])
   const sensors = useSensors(useSensor(PointerSensor))
 
-  const toggleExpand = (id: string) => setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
+  const toggleExpand = (id: string) => {
+    setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
+  }
 
+  // ------------------ Initial fetch ------------------
+  useEffect(() => {
+    setIsProcessing(true)
+    fetch('/api/categories')
+      .then(r => r.json())
+      .then(data => setCatList(data))
+      .finally(() => setIsProcessing(false))
+  }, [])
+
+  const tree = useMemo(() => buildTree(catList), [catList])
+
+  // ------------------ CRUD ------------------
   const fetchLatest = async () => {
-    const res = await fetch('/api/categories')
-    const data = await res.json()
+    setIsProcessing(true)
+    const data = await fetch('/api/categories').then(r => r.json())
     setCatList(data)
+    setIsProcessing(false)
   }
 
   const handleCreate = async () => {
     if (!inputTitle.trim()) return
     setIsProcessing(true)
-    try {
-      await fetch('/api/categories/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: inputTitle, parent: selectedId }),
-      })
-      await fetchLatest()
-      setInputTitle('')
-    } finally { setIsProcessing(false) }
+    const tempId = 'temp-' + Date.now()
+    const newCat: CategoryRaw = {
+      _id: tempId,
+      title: inputTitle,
+      parent: selectedId ? { _id: selectedId, title: '' } : undefined,
+    }
+    setCatList(prev => [...prev, newCat])
+    setInputTitle('')
+
+    await fetch('/api/categories/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: newCat.title, parent: newCat.parent?._id }),
+    })
+
+    await fetchLatest()
   }
 
   const handleUpdate = async () => {
     if (!selectedId || !inputTitle.trim()) return
-    // Instant local update
-    setCatList(catList.map(c => c._id === selectedId ? { ...c, title: inputTitle } : c))
+    setCatList(prev =>
+      prev.map(c => (c._id === selectedId ? { ...c, title: inputTitle } : c))
+    )
     setInputTitle('')
-    try {
-      await fetch('/api/categories/update', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: selectedId, title: inputTitle }),
-      })
-      await fetchLatest()
-    } catch (err) { console.error(err) }
+
+    await fetch('/api/categories/update', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: selectedId, title: inputTitle }),
+    })
+
+    await fetchLatest()
   }
 
   const handleDelete = async () => {
     if (!selectedId) return
-    setIsProcessing(true)
-    try {
-      await fetch('/api/categories/delete', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: selectedId }),
-      })
-      await fetchLatest()
-      setSelectedId(null)
-    } finally { setIsProcessing(false) }
+    setCatList(prev => prev.filter(c => c._id !== selectedId))
+    setSelectedId(null)
+
+    await fetch('/api/categories/delete', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: selectedId }),
+    })
+
+    await fetchLatest()
   }
 
+  // ------------------ Drag-and-drop (siblings only) ------------------
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
     if (!over || active.id === over.id) return
 
-    const oldIndex = catList.findIndex(c => c._id === active.id)
-    const newIndex = catList.findIndex(c => c._id === over.id)
-    const newList = arrayMove(catList, oldIndex, newIndex)
-    setCatList(newList) // Instant local update
+    const parentId = catList.find(c => c._id === active.id)?.parent?._id || null
+    const siblings = catList.filter(c => (c.parent?._id || null) === parentId)
+    const oldIndex = siblings.findIndex(c => c._id === active.id)
+    const newIndex = siblings.findIndex(c => c._id === over.id)
+    const newSiblings = arrayMove(siblings, oldIndex, newIndex)
 
-    try {
-      await fetch('/api/categories/reorder', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ parent: null, order: newList.map((c, i) => ({ id: c._id, order: i })) }),
-      })
-      await fetchLatest()
-    } catch (err) { console.error(err) }
+    const newList = catList.map(c =>
+      (c.parent?._id || null) === parentId
+        ? newSiblings.find(s => s._id === c._id)!
+        : c
+    )
+
+    setCatList(newList) // optimistic update
+
+    await fetch('/api/categories/reorder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        parent: parentId,
+        order: newSiblings.map((c, i) => ({ id: c._id, order: i })),
+      }),
+    })
+
+    await fetchLatest()
   }
 
   return (
     <div className={styles.container}>
       <h1>Category Manager</h1>
-      {isProcessing && <div className={styles.processing}>Processing...</div>}
+      {isProcessing && <div>Processing...</div>}
 
       <div className={styles.controls}>
         <input
@@ -258,9 +291,15 @@ export default function CategoriesPage({ initialData }: { initialData: CategoryR
           value={inputTitle}
           onChange={e => setInputTitle(e.target.value)}
         />
-        <button onClick={handleCreate} disabled={isProcessing || !inputTitle.trim()}>Add</button>
-        <button onClick={handleUpdate} disabled={!selectedId || !inputTitle.trim()}>Update</button>
-        <button onClick={handleDelete} disabled={!selectedId}>Delete</button>
+        <button onClick={handleCreate} disabled={isProcessing || !inputTitle.trim()}>
+          Add
+        </button>
+        <button onClick={handleUpdate} disabled={isProcessing || !selectedId || !inputTitle.trim()}>
+          Update
+        </button>
+        <button onClick={handleDelete} disabled={isProcessing || !selectedId}>
+          Delete
+        </button>
       </div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -270,11 +309,4 @@ export default function CategoriesPage({ initialData }: { initialData: CategoryR
       </DndContext>
     </div>
   )
-}
-
-// -------------------- getStaticProps --------------------
-export async function getStaticProps() {
-  const res = await fetch('http://localhost:3000/api/categories') // adjust URL for production
-  const initialData = await res.json()
-  return { props: { initialData } }
 }
