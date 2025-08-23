@@ -175,6 +175,7 @@ interface CategoriesPageProps {
   categories: CategoryRaw[]
 }
 
+// -------------------- Categories page --------------------
 export default function CategoriesPage({ categories: initialCategories }: CategoriesPageProps) {
   const [catList, setCatList] = useState<CategoryRaw[]>(initialCategories || [])
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -189,20 +190,25 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
     setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
   }
 
-  // ---------- CRUD ----------
+  // ---------- CRUD (instant state update) ----------
   const handleCreate = async () => {
     if (!inputTitle.trim()) return
     setIsProcessing(true)
     try {
+      // Optimistically update UI
+      const tempId = 'temp-' + Date.now()
+      const newCat: CategoryRaw = { _id: tempId, title: inputTitle, parent: selectedId }
+      setCatList(prev => [...prev, newCat])
+      setInputTitle('')
+
+      // Persist to backend
       const res = await fetch('/api/categories/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: inputTitle, parent: selectedId }),
       })
-      if (!res.ok) throw new Error('Failed to create category')
-      const newCat = await res.json()
-      setCatList(prev => [...prev, newCat])
-      setInputTitle('')
+      const savedCat = await res.json()
+      setCatList(prev => prev.map(c => (c._id === tempId ? savedCat : c)))
     } finally {
       setIsProcessing(false)
     }
@@ -212,13 +218,16 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
     if (!selectedId || !inputTitle.trim()) return
     setIsProcessing(true)
     try {
+      // Optimistic update
+      setCatList(prev => prev.map(c => (c._id === selectedId ? { ...c, title: inputTitle } : c)))
+      setInputTitle('')
+
+      // Persist to backend
       await fetch('/api/categories/update', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: selectedId, title: inputTitle }),
       })
-      setCatList(prev => prev.map(c => (c._id === selectedId ? { ...c, title: inputTitle } : c)))
-      setInputTitle('')
     } finally {
       setIsProcessing(false)
     }
@@ -228,20 +237,22 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
     if (!selectedId) return
     setIsProcessing(true)
     try {
-      const res = await fetch('/api/categories/delete', {
+      // Optimistic removal
+      setCatList(prev => prev.filter(c => c._id !== selectedId))
+      setSelectedId(null)
+
+      // Persist deletion
+      await fetch('/api/categories/delete', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: selectedId }),
       })
-      if (!res.ok) throw new Error('Failed to delete category')
-      setCatList(prev => prev.filter(c => c._id !== selectedId))
-      setSelectedId(null)
     } finally {
       setIsProcessing(false)
     }
   }
 
-  // ---------- Drag & Drop ----------
+  // ---------- Drag & Drop (instant reordering) ----------
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
     if (!over || active.id === over.id) return
@@ -249,9 +260,11 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
     const oldIndex = catList.findIndex(c => c._id === active.id)
     const newIndex = catList.findIndex(c => c._id === over.id)
     const newList = arrayMove(catList, oldIndex, newIndex)
+
+    // Optimistic update
     setCatList(newList)
 
-    // Persist order update
+    // Persist backend reordering
     await fetch('/api/categories/reorder', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -272,15 +285,9 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
           value={inputTitle}
           onChange={e => setInputTitle(e.target.value)}
         />
-        <button onClick={handleCreate} disabled={isProcessing || !inputTitle.trim()}>
-          Add
-        </button>
-        <button onClick={handleUpdate} disabled={isProcessing || !selectedId || !inputTitle.trim()}>
-          Update
-        </button>
-        <button onClick={handleDelete} disabled={isProcessing || !selectedId}>
-          Delete
-        </button>
+        <button onClick={handleCreate} disabled={isProcessing || !inputTitle.trim()}>Add</button>
+        <button onClick={handleUpdate} disabled={isProcessing || !selectedId || !inputTitle.trim()}>Update</button>
+        <button onClick={handleDelete} disabled={isProcessing || !selectedId}>Delete</button>
       </div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
