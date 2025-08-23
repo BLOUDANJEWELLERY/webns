@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import styles from '../../styles/admincat.module.css'
-import { client } from '../../lib/sanity'
+import { client } from '../../lib/sanityClient'
 import {
   DndContext,
   closestCenter,
