@@ -1,20 +1,22 @@
+/* ---------------- Mobile-First Styles ---------------- */
+
 /* Page container */
 .container {
-  padding: 1.5rem 1rem;
+  padding: 1rem;
   max-width: 100%;
   margin: 0 auto;
   background: #fffdfb;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(78, 42, 15, 0.15);
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(78, 42, 15, 0.12);
   font-family: 'Segoe UI', sans-serif;
 }
 
 /* Heading */
 .pageTitle {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   text-align: center;
-  margin-bottom: 1.8rem;
+  margin-bottom: 1.2rem;
   color: #4E2A0F;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.08);
 }
@@ -22,18 +24,18 @@
 /* Controls */
 .controls {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  margin-bottom: 1.5rem;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
   justify-content: center;
 }
 
 .controls input {
-  flex: 1 1 200px;
-  padding: 0.5rem 0.8rem;
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
   border: 2px solid #D6BCA6;
-  border-radius: 8px;
-  font-size: 0.95rem;
+  border-radius: 6px;
   outline: none;
   transition: all 0.2s ease;
 }
@@ -44,21 +46,22 @@
 }
 
 .controls button {
-  padding: 0.5rem 1.2rem;
-  font-size: 0.9rem;
+  width: 100%;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.85rem;
   background: linear-gradient(135deg, #C89B3C, #b3842f);
   color: #fff;
   font-weight: 600;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.25s ease;
 }
 
 .controls button:hover:not(:disabled) {
   background: linear-gradient(135deg, #b3842f, #a07225);
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
 }
 
 .controls button:disabled {
@@ -68,41 +71,41 @@
 
 /* Tree wrapper */
 .treeWrapper {
-  padding: 0.8rem;
+  padding: 0.5rem;
   background: #fffaf5;
-  border-radius: 10px;
+  border-radius: 8px;
   border: 2px solid #D6BCA6;
   overflow-x: auto;
 }
 
 /* Tree structure */
 .treeLineWrapper {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
 }
 
 .childBranch {
-  margin-left: 1rem;
-  border-left: 2px dashed #D6BCA6;
-  padding-left: 0.8rem;
+  margin-left: 0.6rem;
+  border-left: 1.5px dashed #D6BCA6;
+  padding-left: 0.5rem;
 }
 
 /* Sortable item */
 .item {
   background: #fffaf5;
   border: 2px solid #D6BCA6;
-  border-radius: 10px;
-  padding: 0.7rem 0.8rem;
-  margin-bottom: 0.4rem;
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+  margin-bottom: 0.3rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  transition: all 0.25s ease;
+  transition: all 0.2s ease;
   cursor: grab;
-  box-shadow: 0 2px 6px rgba(78, 42, 15, 0.08);
+  box-shadow: 0 1px 5px rgba(78, 42, 15, 0.08);
 }
 
 .item:hover {
-  box-shadow: 0 4px 10px rgba(123, 63, 0, 0.15);
+  box-shadow: 0 3px 8px rgba(123, 63, 0, 0.12);
   transform: translateY(-1px);
 }
 
@@ -121,16 +124,16 @@
 .itemContent {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.2rem;
 }
 
 .toggleBtn {
   background: none;
   border: none;
   color: #C89B3C;
-  font-size: 13px;
+  font-size: 11px;
   cursor: pointer;
-  margin-right: 0.3rem;
+  margin-right: 0.2rem;
   transition: transform 0.2s ease;
 }
 
@@ -140,7 +143,7 @@
 }
 
 .title {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
   color: #4E2A0F;
   cursor: pointer;
@@ -151,12 +154,11 @@
   color: #C89B3C;
 }
 
-/* Drag handle */
 .dragHandle {
   color: #C89B3C;
-  font-size: 16px;
+  font-size: 14px;
   cursor: grab;
-  padding-left: 0.4rem;
+  padding-left: 0.3rem;
   user-select: none;
   transition: color 0.2s ease;
 }
@@ -165,54 +167,55 @@
   color: #b3842f;
 }
 
-/* ---------------- Mobile Media Queries ---------------- */
-/* ---------------- Mobile Media Queries ---------------- */
-@media (max-width: 768px) {
+/* ---------------- Larger Screens ---------------- */
+@media (min-width: 769px) {
+  .pageTitle {
+    font-size: 24px;
+    margin-bottom: 1.8rem;
+  }
+
   .controls {
-    flex-direction: column;
-    gap: 0.5rem;
+    flex-direction: row;
+    gap: 0.6rem;
   }
 
   .controls input {
-    width: 100%;
-    padding: 0.45rem 0.6rem; /* smaller padding */
-    font-size: 0.9rem;       /* slightly smaller font */
-    border-radius: 6px;      /* slightly smaller radius */
+    flex: 1 1 250px;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.95rem;
+    border-radius: 8px;
   }
 
   .controls button {
-    width: 100%;
-    padding: 0.45rem 0.8rem; /* slightly smaller buttons */
-    font-size: 0.85rem;
+    width: auto;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.9rem;
+    border-radius: 8px;
   }
 
   .treeWrapper {
-    padding: 0.6rem;
+    padding: 0.8rem;
   }
 
   .childBranch {
-    margin-left: 0.8rem;
-    padding-left: 0.6rem;
-    border-left-width: 1.5px;
-  }
-
-  .itemContent {
-    gap: 0.2rem;
+    margin-left: 1rem;
+    padding-left: 0.8rem;
+    border-left-width: 2px;
   }
 
   .item {
-    padding: 0.5rem 0.6rem;
+    padding: 0.7rem 0.8rem;
   }
 
   .title {
-    font-size: 13px;
+    font-size: 15px;
   }
 
   .toggleBtn {
-    font-size: 11px;
+    font-size: 13px;
   }
 
   .dragHandle {
-    font-size: 14px;
+    font-size: 16px;
   }
 }
