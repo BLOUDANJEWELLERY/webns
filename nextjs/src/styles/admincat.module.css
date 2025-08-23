@@ -1,5 +1,5 @@
-/* Main container */
-.categoriesContainer {
+/* Page container */
+.container {
   padding: 2rem 1rem;
   max-width: 900px;
   margin: 0 auto;
@@ -10,7 +10,7 @@
 }
 
 /* Heading */
-.categoriesHeading {
+.pageTitle {
   font-size: 28px;
   font-weight: 700;
   text-align: center;
@@ -19,15 +19,15 @@
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.08);
 }
 
-/* Create form wrapper */
-.createCategory {
+/* Controls */
+.controls {
   display: flex;
   gap: 0.75rem;
   margin-bottom: 1.8rem;
   justify-content: center;
 }
 
-.createInput {
+.controls input {
   flex: 1;
   padding: 0.6rem 1rem;
   border: 2px solid #D6BCA6;
@@ -37,13 +37,12 @@
   transition: all 0.2s ease;
 }
 
-.createInput:focus {
+.controls input:focus {
   border-color: #C89B3C;
   box-shadow: 0 0 0 2px rgba(200, 155, 60, 0.2);
 }
 
-/* Buttons */
-.button {
+.controls button {
   padding: 0.6rem 1.4rem;
   background: linear-gradient(135deg, #C89B3C, #b3842f);
   color: #fff;
@@ -54,34 +53,43 @@
   transition: all 0.25s ease;
 }
 
-.button:hover {
+.controls button:hover:not(:disabled) {
   background: linear-gradient(135deg, #b3842f, #a07225);
   transform: translateY(-2px) scale(1.03);
   box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
-.deleteButton {
-  background: #e74c3c;
+.controls button:disabled {
+  background: #e0d6c9;
+  cursor: not-allowed;
 }
 
-.deleteButton:hover {
-  background: #c0392b;
-  transform: scale(1.05);
+/* Tree wrapper */
+.treeWrapper {
+  padding: 1rem;
+  background: #fffaf5;
+  border-radius: 10px;
+  border: 2px solid #D6BCA6;
 }
 
-/* Category list */
-.categoryList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+/* Tree structure */
+.treeLineWrapper {
+  margin-bottom: 0.6rem;
 }
 
-.categoryItem {
+.childBranch {
+  margin-left: 1.5rem;
+  border-left: 2px dashed #D6BCA6;
+  padding-left: 1rem;
+}
+
+/* Sortable item */
+.item {
   background: #fffaf5;
   border: 2px solid #D6BCA6;
   border-radius: 10px;
   padding: 0.9rem 1rem;
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -90,35 +98,66 @@
   box-shadow: 0 2px 6px rgba(78, 42, 15, 0.08);
 }
 
-.categoryItem:hover {
+.item:hover {
   box-shadow: 0 6px 14px rgba(123, 63, 0, 0.18);
   transform: translateY(-2px);
 }
 
-.categoryItem:active {
+.item:active {
   cursor: grabbing;
   transform: scale(1.02);
 }
 
-/* Category title */
-.categoryTitle {
+.selected {
+  border-color: #C89B3C;
+  background: #fdf7ef;
+  box-shadow: 0 0 0 2px rgba(200, 155, 60, 0.25);
+}
+
+/* Item content */
+.itemContent {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.toggleBtn {
+  background: none;
+  border: none;
+  color: #C89B3C;
+  font-size: 14px;
+  cursor: pointer;
+  margin-right: 0.4rem;
+  transition: transform 0.2s ease;
+}
+
+.toggleBtn:hover {
+  transform: scale(1.2);
+  color: #b3842f;
+}
+
+.title {
   font-size: 16px;
   font-weight: 600;
   color: #4E2A0F;
-  flex: 1;
+  cursor: pointer;
+  transition: color 0.2s ease;
 }
 
-/* Actions inside item */
-.categoryActions {
-  display: flex;
-  gap: 0.6rem;
+.title:hover {
+  color: #C89B3C;
 }
 
-.editButton {
-  background: #f1c40f;
-  color: #fff;
+/* Drag handle */
+.dragHandle {
+  color: #C89B3C;
+  font-size: 18px;
+  cursor: grab;
+  padding-left: 0.6rem;
+  user-select: none;
+  transition: color 0.2s ease;
 }
 
-.editButton:hover {
-  background: #d4ac0d;
+.dragHandle:hover {
+  color: #b3842f;
 }
