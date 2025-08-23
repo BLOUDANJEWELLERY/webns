@@ -1,6 +1,7 @@
 // src/pages/admin/categories.tsx
 import { useState, useMemo } from 'react'
 import styles from '../../styles/admincat.module.css'
+import { client } from '../../lib/sanity' // adjust to your sanity client import
 
 interface CategoryRaw {
   _id: string
@@ -17,7 +18,7 @@ interface CategoryNode {
   children: CategoryNode[]
 }
 
-// ---------- Native array move ----------
+// ---------- Array move ----------
 function arrayMove<T>(arr: T[], from: number, to: number): T[] {
   const newArr = [...arr]
   const item = newArr.splice(from, 1)[0]
@@ -26,7 +27,7 @@ function arrayMove<T>(arr: T[], from: number, to: number): T[] {
 }
 
 // ---------- Build tree ----------
-const buildTree = (cats: CategoryRaw[]): CategoryNode[] => {
+const buildTree = (cats: CategoryRaw[] = []): CategoryNode[] => {
   const map: Record<string, CategoryNode> = {}
   const roots: CategoryNode[] = []
 
@@ -35,7 +36,7 @@ const buildTree = (cats: CategoryRaw[]): CategoryNode[] => {
   })
 
   cats.forEach(cat => {
-    if (cat.parent?._id) {
+    if (cat.parent?._id && map[cat.parent._id]) {
       map[cat.parent._id].children.push(map[cat._id])
     } else {
       roots.push(map[cat._id])
@@ -51,7 +52,7 @@ const buildTree = (cats: CategoryRaw[]): CategoryNode[] => {
   return roots
 }
 
-// ---------- Recursive Tree Render ----------
+// ---------- Recursive Tree Node ----------
 type CategoryNodeItemProps = {
   node: CategoryNode
   expanded: string[]
@@ -110,7 +111,7 @@ const CategoryNodeItem: React.FC<CategoryNodeItemProps> = ({
 
 // ---------- Main Component ----------
 export default function CategoriesPage({ categories }: { categories: CategoryRaw[] }) {
-  const [catList, setCatList] = useState<CategoryRaw[]>(categories)
+  const [catList, setCatList] = useState<CategoryRaw[]>(categories || [])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [expanded, setExpanded] = useState<string[]>([])
   const [inputTitle, setInputTitle] = useState('')
@@ -189,21 +190,6 @@ export default function CategoriesPage({ categories }: { categories: CategoryRaw
     }
   }
 
-  // ---------- Reorder ----------
-  const handleReorder = (nodes: CategoryNode[], oldIndex: number, newIndex: number, parentId: string | null) => {
-    const newOrder = arrayMove(nodes, oldIndex, newIndex)
-
-    // Flatten back to catList and update orders
-    setCatList(prev => {
-      const updated = [...prev]
-      newOrder.forEach((cat, i) => {
-        const idx = updated.findIndex(c => c._id === cat._id)
-        if (idx > -1) updated[idx].order = i
-      })
-      return updated
-    })
-  }
-
   return (
     <div className={styles.container}>
       <h1>Category Manager</h1>
@@ -233,4 +219,23 @@ export default function CategoriesPage({ categories }: { categories: CategoryRaw
       </div>
     </div>
   )
+}
+
+// ---------- getStaticProps ----------
+export async function getStaticProps() {
+  const categories: CategoryRaw[] = await client.fetch(`
+    *[_type=="category"]{
+      _id,
+      title,
+      parent->{_id, title},
+      order
+    } | order(order asc)
+  `)
+
+  return {
+    props: {
+      categories: categories || [],
+    },
+    revalidate: 60,
+  }
 }
