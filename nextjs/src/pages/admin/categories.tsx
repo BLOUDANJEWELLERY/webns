@@ -14,10 +14,12 @@ import {
   verticalListSortingStrategy,
   useSortable,
 } from '@dnd-kit/sortable'
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
 import { CSS } from '@dnd-kit/utilities'
 import React from 'react'
 import { client } from '../../lib/sanityClient'
 
+// ---------------- Types ----------------
 export interface CategoryRaw {
   _id: string
   title: string
@@ -74,7 +76,8 @@ const SortableItem: React.FC<SortableItemProps> = ({
       className={`${styles.item} ${selected ? styles.selected : ''}`}
       style={{
         transform: CSS.Transform.toString(transform),
-        transition,
+        transition: transition || 'transform 150ms ease', // smoother feel
+        userSelect: 'none',
       }}
     >
       <div className={styles.itemContent} style={{ marginLeft: level * 20 }}>
@@ -90,8 +93,18 @@ const SortableItem: React.FC<SortableItemProps> = ({
         <span onClick={onSelect} className={styles.title}>{title}</span>
       </div>
 
-      {/* Drag handle */}
-      <div {...attributes} {...listeners} className={styles.dragHandle}>⋮⋮</div>
+      {/* Drag handle - responsive & selectable */}
+      <div
+        {...attributes}
+        {...listeners}
+        className={styles.dragHandle}
+        style={{
+          touchAction: 'none', // ensures immediate drag on touch devices
+          cursor: 'grab',
+        }}
+      >
+        ⋮⋮
+      </div>
     </div>
   )
 }
@@ -150,7 +163,15 @@ export default function CategoriesPage({ categories }: Props) {
   const [inputTitle, setInputTitle] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
-  const sensors = useSensors(useSensor(PointerSensor))
+
+  // Smoother drag handling
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 2, // drag starts almost immediately
+      },
+    })
+  )
 
   const containerRef = useRef<HTMLDivElement>(null)
   const controlsRef = useRef<HTMLDivElement>(null)
@@ -159,6 +180,7 @@ export default function CategoriesPage({ categories }: Props) {
   const toggleExpand = (id: string) =>
     setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
 
+  // Deselect when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
@@ -169,11 +191,11 @@ export default function CategoriesPage({ categories }: Props) {
         setSelectedId(null)
       }
     }
-
     document.addEventListener('click', handleClickOutside)
     return () => document.removeEventListener('click', handleClickOutside)
   }, [])
 
+  // ---------------- Data Refresh ----------------
   const fetchLatest = async () => {
     setIsProcessing(true)
     const data = await fetch('/api/categories').then(r => r.json())
@@ -273,7 +295,12 @@ export default function CategoriesPage({ categories }: Props) {
         <button onClick={handleDelete} disabled={isProcessing || !selectedId}>Delete</button>
       </div>
 
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+        modifiers={[restrictToVerticalAxis]} // only vertical movement
+      >
         <div className={styles.treeWrapper} ref={treeRef}>
           {renderTree(tree, selectedId, setSelectedId, expanded, toggleExpand)}
         </div>
