@@ -1,5 +1,19 @@
 /* ---------------- Mobile-First Styles ---------------- */
+/* Prevent text selection for drag items */
+.item,
+.toggleBtn,
+.title,
+.dragHandle {
+  user-select: none; /* disables text selection */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
 
+/* Optional: prevent selection on the entire tree wrapper while dragging */
+.treeWrapper.dragging * {
+  user-select: none !important;
+}
 /* Page container */
 .container {
   padding: 1rem;
