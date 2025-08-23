@@ -173,20 +173,79 @@ const handleCategoryToggle = (id: string) => {
     )
   }
 // Recursive JSX render function
-const renderCategoryTree = (nodes: CategoryNode[]) => {
-  return nodes.map(node => (
-    <div key={node._id} style={{ marginLeft: node.parent ? 20 : 0 }}>
-      <label>
-        <input
-          type="checkbox"
-          checked={selectedCategories.includes(node._id)}
-          onChange={() => handleCategoryToggle(node._id)}
-        />
-        {node.title}
-      </label>
-      {node.children.length > 0 && renderCategoryTree(node.children)}
-    </div>
+const renderCategoryTree = (
+  nodes: CategoryNode[],
+  selectedCategories: string[],
+  handleCategoryToggle: (id: string) => void
+): JSX.Element[] => {
+  return nodes.map((node) => (
+    <CategoryNodeItem
+      key={node._id}
+      node={node}
+      selectedCategories={selectedCategories}
+      handleCategoryToggle={handleCategoryToggle}
+    />
   ));
+};
+
+type CategoryNodeItemProps = {
+  node: CategoryNode;
+  selectedCategories: string[];
+  handleCategoryToggle: (id: string) => void;
+};
+
+const CategoryNodeItem: React.FC<CategoryNodeItemProps> = ({
+  node,
+  selectedCategories,
+  handleCategoryToggle,
+}) => {
+  // auto-expand if this node or any descendant is selected
+  const hasSelectedDescendant = (n: CategoryNode): boolean => {
+    if (selectedCategories.includes(n._id)) return true;
+    return n.children.some((child) => hasSelectedDescendant(child));
+  };
+
+  const [expanded, setExpanded] = useState<boolean>(
+    hasSelectedDescendant(node) // open on load if selected
+  );
+
+  return (
+    <div>
+      <div className={styles.categoryRow}>
+        {node.children.length > 0 && (
+          <button
+            type="button"
+            className={styles.toggleBtn}
+            onClick={() => setExpanded((prev) => !prev)}
+          >
+            {expanded ? "▾" : "▸"}
+          </button>
+        )}
+
+        <label>
+          <input
+            type="checkbox"
+            checked={selectedCategories.includes(node._id)}
+            onChange={() => handleCategoryToggle(node._id)}
+          />
+          {node.title}
+        </label>
+      </div>
+
+      {expanded && node.children.length > 0 && (
+        <div className={styles.nested}>
+          {node.children.map((child) => (
+            <CategoryNodeItem
+              key={child._id}
+              node={child}
+              selectedCategories={selectedCategories}
+              handleCategoryToggle={handleCategoryToggle}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 };
 
 
