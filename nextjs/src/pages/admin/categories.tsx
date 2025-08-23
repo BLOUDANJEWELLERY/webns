@@ -36,8 +36,11 @@ const buildTree = (cats: CategoryRaw[]): CategoryNode[] => {
 
   cats.forEach(cat => (map[cat._id] = { ...cat, children: [] }))
   cats.forEach(cat => {
-    if (cat.parent?._id && map[cat.parent._id]) map[cat.parent._id].children.push(map[cat._id])
-    else roots.push(map[cat._id])
+    if (cat.parent?._id && map[cat.parent._id]) {
+      map[cat.parent._id].children.push(map[cat._id])
+    } else {
+      roots.push(map[cat._id])
+    }
   })
 
   const sortTree = (nodes: CategoryNode[]) => {
@@ -66,7 +69,7 @@ const SortableItem: React.FC<{
     borderRadius: 4,
     cursor: 'grab',
     background: selected ? '#fff7e6' : '#fff',
-    marginLeft: level * 20, // Indent for hierarchy
+    marginLeft: level * 20, // Indentation for hierarchy
     userSelect: 'none',
   }
   return (
@@ -82,7 +85,7 @@ const renderTree = (
   selectedId: string | null,
   onSelect: (id: string) => void,
   level = 0
-) => {
+): JSX.Element[] => {
   return nodes.flatMap(node => [
     <SortableItem
       key={node._id}
@@ -208,7 +211,7 @@ export default function CategoriesPage({ categories: initialCategories }: { cate
   )
 }
 
-// ---------- getStaticProps ----------
+// -------------------- getStaticProps --------------------
 export async function getStaticProps() {
   const categories: CategoryRaw[] = await client.fetch(`
     *[_type=="category"]{
