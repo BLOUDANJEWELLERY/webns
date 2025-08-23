@@ -21,7 +21,7 @@ import { CSS } from '@dnd-kit/utilities'
 interface CategoryRaw {
   _id: string
   title: string
-  parent?: { _id: string; title }
+  parent?: { _id: string; title: string } 
   order?: number
 }
 
