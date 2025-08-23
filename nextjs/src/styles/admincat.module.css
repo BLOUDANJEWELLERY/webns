@@ -5,11 +5,44 @@
   color: #333;
 }
 
-h1 {
+.title {
   font-size: 1.8rem;
   margin-bottom: 1rem;
-  text-align: center;
-  color: #444;
+}
+
+/* If you really want to style global h1 */
+:global(h1) {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+.categoryItem {
+  position: relative;
+}
+
+.categoryRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+
+.toggleIcon {
+  cursor: pointer;
+  width: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.togglePlaceholder {
+  width: 16px;
+}
+
+.childLine {
+  border-left: 1px solid #ccc; /* vertical line */
+  margin-left: 12px;
+  padding-left: 8px;
 }
 
 .controls {
