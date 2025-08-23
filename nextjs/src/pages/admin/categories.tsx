@@ -1,7 +1,7 @@
 // src/pages/admin/categories.tsx
 import { useState, useMemo } from 'react'
 import styles from '../../styles/admincat.module.css'
-import { client } from '../../lib/sanity' // adjust to your sanity client import
+import { client } from '../../lib/sanityClient' //  adjust to your sanity client import
 
 interface CategoryRaw {
   _id: string
