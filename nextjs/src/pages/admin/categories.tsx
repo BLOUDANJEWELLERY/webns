@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
+import useSWR from 'swr'
 import styles from '../../styles/admincat.module.css'
-import { client } from '../../lib/sanityClient'
 import {
   DndContext,
   closestCenter,
@@ -18,7 +18,6 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import React from 'react'
 
-// -------------------- Types --------------------
 interface CategoryRaw {
   _id: string
   title: string
@@ -168,18 +167,18 @@ const renderTree = (
   })
 }
 
-// -------------------- Categories page --------------------
-interface CategoriesPageProps {
-  categories: CategoryRaw[]
-}
+// -------------------- SWR fetcher --------------------
+const fetcher = (url: string) => fetch(url).then(res => res.json())
 
-export default function CategoriesPage({ categories: initialCategories }: CategoriesPageProps) {
-  const [catList, setCatList] = useState<CategoryRaw[]>(initialCategories || [])
+// -------------------- Categories page --------------------
+export default function CategoriesPage() {
+  const { data, mutate } = useSWR<CategoryRaw[]>('/api/categories', fetcher)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [inputTitle, setInputTitle] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
 
+  const catList = data || []
   const tree = useMemo(() => buildTree(catList), [catList])
   const sensors = useSensors(useSensor(PointerSensor))
 
@@ -187,19 +186,19 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
     setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
   }
 
-  // ------------------ CRUD with Optimistic UI ------------------
+  // ------------------ CRUD with optimistic updates ------------------
   const handleCreate = async () => {
     if (!inputTitle.trim()) return
     setIsProcessing(true)
 
-    // Optimistic state update
     const tempId = 'temp-' + Date.now()
     const newCat: CategoryRaw = {
       _id: tempId,
       title: inputTitle,
       parent: selectedId ? { _id: selectedId, title: '' } : undefined,
     }
-    setCatList(prev => [...prev, newCat])
+
+    mutate([...catList, newCat], false)
     setInputTitle('')
 
     try {
@@ -209,7 +208,7 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
         body: JSON.stringify({ title: newCat.title, parent: newCat.parent?._id }),
       })
       const savedCat = await res.json()
-      setCatList(prev => prev.map(c => (c._id === tempId ? savedCat : c)))
+      mutate(catList.map(c => (c._id === tempId ? savedCat : c)))
     } finally {
       setIsProcessing(false)
     }
@@ -218,7 +217,7 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
   const handleUpdate = async () => {
     if (!selectedId || !inputTitle.trim()) return
     setIsProcessing(true)
-    setCatList(prev => prev.map(c => (c._id === selectedId ? { ...c, title: inputTitle } : c)))
+    mutate(catList.map(c => (c._id === selectedId ? { ...c, title: inputTitle } : c)), false)
     setInputTitle('')
 
     try {
@@ -227,6 +226,7 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: selectedId, title: inputTitle }),
       })
+      mutate()
     } finally {
       setIsProcessing(false)
     }
@@ -235,7 +235,7 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
   const handleDelete = async () => {
     if (!selectedId) return
     setIsProcessing(true)
-    setCatList(prev => prev.filter(c => c._id !== selectedId))
+    mutate(catList.filter(c => c._id !== selectedId), false)
     setSelectedId(null)
 
     try {
@@ -244,6 +244,7 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: selectedId }),
       })
+      mutate()
     } finally {
       setIsProcessing(false)
     }
@@ -257,7 +258,7 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
     const newIndex = catList.findIndex(c => c._id === over.id)
     const newList = arrayMove(catList, oldIndex, newIndex)
 
-    setCatList(newList)
+    mutate(newList, false)
 
     try {
       await fetch('/api/categories/reorder', {
@@ -268,6 +269,7 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
           order: newList.map((c, i) => ({ id: c._id, order: i })),
         }),
       })
+      mutate()
     } catch (err) {
       console.error('Failed to persist order:', err)
     }
@@ -295,18 +297,4 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
       </DndContext>
     </div>
   )
-}
-
-// -------------------- Fetch categories --------------------
-export async function getStaticProps() {
-  const categories: CategoryRaw[] = await client.fetch(`
-    *[_type=="category"]{
-      _id,
-      title,
-      parent->{_id, title},
-      order
-    } | order(order asc)
-  `)
-
-  return { props: { categories: categories || [] } }
 }
