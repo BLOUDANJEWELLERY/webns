@@ -1,4 +1,48 @@
 /* src/styles/adminEdit.module.css */
+
+.label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #4a3f35; /* deep brown tone */
+  margin-bottom: 8px;
+  display: block;
+}
+
+.checkboxGroup {
+  border: 1px solid #d6c6b2; /* soft brown border */
+  border-radius: 6px;
+  padding: 10px 14px;
+  background-color: #fdfaf6; /* light warm background */
+  max-height: 250px; /* keep it scrollable if too many */
+  overflow-y: auto;
+  font-size: 14px;
+}
+
+.checkboxGroup label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: background 0.2s ease;
+}
+
+.checkboxGroup label:hover {
+  background: #f7f1e8; /* light hover effect */
+}
+
+.checkboxGroup input[type="checkbox"] {
+  accent-color: #b8860b; /* golden accent for checkboxes */
+  width: 16px;
+  height: 16px;
+}
+
+.checkboxGroup .nested {
+  margin-left: 18px; /* indent child categories */
+  border-left: 1px dashed #d6c6b2;
+  padding-left: 10px;
+}
+
 /* Spinner animation */
 .spinner {
   width: 40px;
