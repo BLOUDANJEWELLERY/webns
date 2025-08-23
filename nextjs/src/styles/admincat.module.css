@@ -1,7 +1,5 @@
 /* ---------------- Base Reset ---------------- */
-* {
-  -webkit-tap-highlight-color: transparent; /* remove tap highlight on mobile */
-}
+
 
 body {
   margin: 0;
@@ -22,23 +20,64 @@ body {
 /* ---------------- Drag Handle ---------------- */
 .dragHandle {
   cursor: grab;
-  -webkit-user-drag: none; /* prevents ghost image dragging */
-  touch-action: none;       /* important for dnd-kit on mobile */
-  user-select: none;        /* avoid accidental text highlight */
-  pointer-events: auto;     /* make sure drag is possible */
+  -webkit-user-drag: none;
+  touch-action: none;
+  user-select: none;
+  pointer-events: auto;
   color: #C89B3C;
   font-size: 14px;
   padding-left: 0.3rem;
-  transition: color 0.2s ease;
+  transition: color 0.2s ease, transform 0.2s ease;
 }
 
 .dragHandle:hover {
   color: #b3842f;
+  transform: scale(1.15);
 }
 
 .item:active .dragHandle {
   cursor: grabbing;
+  color: #a07225;
+  transform: scale(1.2);
 }
+
+/* ---------------- Item ---------------- */
+.item {
+  background: #fffaf5;
+  border: 2px solid #D6BCA6;
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+  margin-bottom: 0.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 1px 5px rgba(78, 42, 15, 0.08);
+}
+
+/* While actively dragging, stop transitions to prevent vibration */
+.item.dragging {
+  transition: none !important;
+  box-shadow: none !important;
+  opacity: 0.6; /* faint ghost of original */
+}
+
+/* ---------------- Drag Overlay (floating element) ---------------- */
+.dragOverlay {
+  background: #fffefb;
+  border: 2px solid #C89B3C;
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+  box-shadow: 0 6px 16px rgba(78, 42, 15, 0.25);
+  transform: scale(1.05);
+  opacity: 0.95;
+  font-weight: 600;
+  z-index: 9999;
+}
+
+
+
+
 
 /* ---------------- Page Container ---------------- */
 .container {
