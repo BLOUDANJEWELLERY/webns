@@ -80,6 +80,8 @@ const SortableItem: React.FC<SortableItemProps> = ({
   return (
     <div
       ref={setNodeRef}
+      {...attributes}
+      {...listeners}
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
@@ -95,13 +97,12 @@ const SortableItem: React.FC<SortableItemProps> = ({
         alignItems: 'center',
         justifyContent: 'space-between',
       }}
-      {...attributes}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         {hasChildren && (
           <button
             type="button"
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation()
               toggleExpand()
             }}
@@ -118,8 +119,7 @@ const SortableItem: React.FC<SortableItemProps> = ({
         )}
         <span
           onClick={onSelect}
-          {...listeners} // only make the text draggable
-          style={{ flex: 1, cursor: 'pointer' }}
+          style={{ flex: 1, cursor: 'pointer', userSelect: 'none' }}
         >
           {title}
         </span>
