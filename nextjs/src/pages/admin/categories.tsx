@@ -49,7 +49,6 @@ const buildTree = (categories: CategoryRaw[]): CategoryNode[] => {
     nodes.forEach(n => sortTree(n.children))
   }
   sortTree(roots)
-
   return roots
 }
 
@@ -80,8 +79,6 @@ const SortableItem: React.FC<SortableItemProps> = ({
   return (
     <div
       ref={setNodeRef}
-      {...attributes}
-      {...listeners}
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
@@ -89,16 +86,29 @@ const SortableItem: React.FC<SortableItemProps> = ({
         border: selected ? '2px solid #b88b4a' : '1px solid #ccc',
         marginBottom: 4,
         borderRadius: 4,
-        cursor: 'grab',
         background: selected ? '#fff7e6' : '#fff',
-        marginLeft: level * 20,
-        userSelect: 'none',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        userSelect: 'none',
+        marginLeft: level * 20,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      {/* Drag handle */}
+      <div
+        {...attributes}
+        {...listeners}
+        style={{
+          cursor: 'grab',
+          padding: '0 6px',
+          fontWeight: 'bold',
+          userSelect: 'none',
+        }}
+      >
+        ::
+      </div>
+
+      {/* Title & expand button */}
+      <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: 6 }}>
         {hasChildren && (
           <button
             type="button"
@@ -110,8 +120,8 @@ const SortableItem: React.FC<SortableItemProps> = ({
               border: 'none',
               background: 'transparent',
               cursor: 'pointer',
-              fontWeight: 'bold',
               width: 20,
+              fontWeight: 'bold',
             }}
           >
             {isExpanded ? '-' : '+'}
@@ -119,7 +129,7 @@ const SortableItem: React.FC<SortableItemProps> = ({
         )}
         <span
           onClick={onSelect}
-          style={{ flex: 1, cursor: 'pointer', userSelect: 'none' }}
+          style={{ cursor: 'pointer', flex: 1, userSelect: 'none' }}
         >
           {title}
         </span>
