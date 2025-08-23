@@ -1,7 +1,7 @@
-// src/pages/admin/categories.tsx
 import { useState, useMemo } from 'react'
 import styles from '../../styles/admincat.module.css'
-import { client } from '../../lib/sanityClient' //  adjust to your sanity client import
+import { client } from '../../lib/sanity'
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd'
 
 interface CategoryRaw {
   _id: string
@@ -18,112 +18,32 @@ interface CategoryNode {
   children: CategoryNode[]
 }
 
-// ---------- Array move ----------
-function arrayMove<T>(arr: T[], from: number, to: number): T[] {
-  const newArr = [...arr]
-  const item = newArr.splice(from, 1)[0]
-  newArr.splice(to, 0, item)
-  return newArr
-}
-
-// ---------- Build tree ----------
+// Build tree
 const buildTree = (cats: CategoryRaw[] = []): CategoryNode[] => {
   const map: Record<string, CategoryNode> = {}
   const roots: CategoryNode[] = []
 
+  cats.forEach(cat => (map[cat._id] = { ...cat, children: [] }))
   cats.forEach(cat => {
-    map[cat._id] = { ...cat, children: [] }
-  })
-
-  cats.forEach(cat => {
-    if (cat.parent?._id && map[cat.parent._id]) {
-      map[cat.parent._id].children.push(map[cat._id])
-    } else {
-      roots.push(map[cat._id])
-    }
+    if (cat.parent?._id && map[cat.parent._id]) map[cat.parent._id].children.push(map[cat._id])
+    else roots.push(map[cat._id])
   })
 
   const sortTree = (nodes: CategoryNode[]) => {
     nodes.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
     nodes.forEach(n => sortTree(n.children))
   }
-
   sortTree(roots)
   return roots
 }
 
-// ---------- Recursive Tree Node ----------
-type CategoryNodeItemProps = {
-  node: CategoryNode
-  expanded: string[]
-  toggleExpand: (id: string) => void
-  selectedId: string | null
-  setSelectedId: (id: string) => void
-}
-
-const CategoryNodeItem: React.FC<CategoryNodeItemProps> = ({
-  node,
-  expanded,
-  toggleExpand,
-  selectedId,
-  setSelectedId,
-}) => {
-  const isExpanded = expanded.includes(node._id)
-  const isSelected = selectedId === node._id
-
-  return (
-    <div className={styles.nodeWrapper}>
-      <div
-        className={`${styles.node} ${isSelected ? styles.nodeSelected : ''}`}
-        onClick={() => setSelectedId(node._id)}
-      >
-        {node.children.length > 0 && (
-          <button
-            className={styles.toggleBtn}
-            onClick={e => {
-              e.stopPropagation()
-              toggleExpand(node._id)
-            }}
-          >
-            {isExpanded ? '▾' : '▸'}
-          </button>
-        )}
-        <span>{node.title}</span>
-      </div>
-
-      {isExpanded && node.children.length > 0 && (
-        <div className={styles.nested}>
-          {node.children.map(child => (
-            <CategoryNodeItem
-              key={child._id}
-              node={child}
-              expanded={expanded}
-              toggleExpand={toggleExpand}
-              selectedId={selectedId}
-              setSelectedId={setSelectedId}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ---------- Main Component ----------
-export default function CategoriesPage({ categories }: { categories: CategoryRaw[] }) {
-  const [catList, setCatList] = useState<CategoryRaw[]>(categories || [])
+export default function CategoriesPage({ categories: initialCategories }: { categories: CategoryRaw[] }) {
+  const [catList, setCatList] = useState<CategoryRaw[]>(initialCategories || [])
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [expanded, setExpanded] = useState<string[]>([])
   const [inputTitle, setInputTitle] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
 
   const tree = useMemo(() => buildTree(catList), [catList])
-
-  const toggleExpand = (id: string) => {
-    setExpanded(prev =>
-      prev.includes(id) ? prev.filter(eid => eid !== id) : [...prev, id]
-    )
-  }
 
   // ---------- CRUD ----------
   const handleCreate = async () => {
@@ -138,7 +58,6 @@ export default function CategoriesPage({ categories }: { categories: CategoryRaw
       if (!res.ok) throw new Error('Failed to create')
       const newCat = await res.json()
       setCatList(prev => [...prev, newCat])
-      if (selectedId) setExpanded(prev => [...new Set([...prev, selectedId])])
     } catch (err) {
       console.error(err)
       alert('Failed to create category')
@@ -158,9 +77,7 @@ export default function CategoriesPage({ categories }: { categories: CategoryRaw
         body: JSON.stringify({ id: selectedId, title: inputTitle }),
       })
       if (!res.ok) throw new Error('Failed to update')
-      setCatList(prev =>
-        prev.map(c => (c._id === selectedId ? { ...c, title: inputTitle } : c))
-      )
+      setCatList(prev => prev.map(c => (c._id === selectedId ? { ...c, title: inputTitle } : c)))
     } catch (err) {
       console.error(err)
       alert('Failed to update category')
@@ -190,6 +107,32 @@ export default function CategoriesPage({ categories }: { categories: CategoryRaw
     }
   }
 
+  // ---------- Drag & Drop ----------
+  const onDragEnd = async (result: DropResult) => {
+    if (!result.destination) return
+    const newList = [...catList]
+    const [moved] = newList.splice(result.source.index, 1)
+    newList.splice(result.destination.index, 0, moved)
+
+    // Update local state immediately
+    setCatList(newList)
+
+    // Persist new order to backend
+    try {
+      await fetch('/api/categories/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          parent: moved.parent?._id ?? null,
+          order: newList.map((c, i) => ({ id: c._id, order: i })),
+        }),
+      })
+    } catch (err) {
+      console.error('Failed to reorder', err)
+      alert('Failed to save new order')
+    }
+  }
+
   return (
     <div className={styles.container}>
       <h1>Category Manager</h1>
@@ -205,18 +148,30 @@ export default function CategoriesPage({ categories }: { categories: CategoryRaw
         <button onClick={handleDelete} disabled={isProcessing || !selectedId}>Delete</button>
       </div>
 
-      <div>
-        {tree.map(node => (
-          <CategoryNodeItem
-            key={node._id}
-            node={node}
-            expanded={expanded}
-            toggleExpand={toggleExpand}
-            selectedId={selectedId}
-            setSelectedId={setSelectedId}
-          />
-        ))}
-      </div>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Droppable droppableId="categories">
+          {provided => (
+            <div {...provided.droppableProps} ref={provided.innerRef}>
+              {catList.map((cat, index) => (
+                <Draggable key={cat._id} draggableId={cat._id} index={index}>
+                  {providedDraggable => (
+                    <div
+                      ref={providedDraggable.innerRef}
+                      {...providedDraggable.draggableProps}
+                      {...providedDraggable.dragHandleProps}
+                      className={selectedId === cat._id ? styles.nodeSelected : styles.node}
+                      onClick={() => setSelectedId(cat._id)}
+                    >
+                      {cat.title}
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
     </div>
   )
 }
@@ -231,11 +186,7 @@ export async function getStaticProps() {
       order
     } | order(order asc)
   `)
-
   return {
-    props: {
-      categories: categories || [],
-    },
-    revalidate: 60,
+    props: { categories: categories || [] },
   }
 }
