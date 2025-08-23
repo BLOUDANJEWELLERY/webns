@@ -1,4 +1,3 @@
-// src/pages/admin/categories.tsx
 import { useState, useMemo } from 'react'
 import styles from '../../styles/admincat.module.css'
 import {
@@ -30,7 +29,7 @@ interface CategoryNode extends CategoryRaw {
   children: CategoryNode[]
 }
 
-// Build hierarchical tree
+// ---------------- Build hierarchical tree ----------------
 const buildTree = (categories: CategoryRaw[]): CategoryNode[] => {
   const map: Record<string, CategoryNode> = {}
   const roots: CategoryNode[] = []
@@ -52,7 +51,7 @@ const buildTree = (categories: CategoryRaw[]): CategoryNode[] => {
   return roots
 }
 
-// Sortable item
+// ---------------- Sortable Item ----------------
 interface SortableItemProps {
   id: string
   title: string
@@ -68,6 +67,7 @@ const SortableItem: React.FC<SortableItemProps> = ({
   id, title, selected, onSelect, level, hasChildren, isExpanded, toggleExpand,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id })
+
   return (
     <div
       ref={setNodeRef}
@@ -75,35 +75,28 @@ const SortableItem: React.FC<SortableItemProps> = ({
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
-        marginLeft: level * 20,
       }}
     >
-      <div className={styles.content}>
+      <div className={styles.itemContent} style={{ marginLeft: level * 20 }}>
         {hasChildren && (
           <button
             type="button"
             onClick={e => { e.stopPropagation(); toggleExpand() }}
             className={styles.toggleBtn}
           >
-            {isExpanded ? '-' : '+'}
+            {isExpanded ? '▼' : '►'}
           </button>
         )}
         <span onClick={onSelect} className={styles.title}>{title}</span>
       </div>
 
-      {/* Drag handle on the RIGHT */}
-      <div
-        {...attributes}
-        {...listeners}
-        className={styles.dragHandle}
-      >
-        ::
-      </div>
+      {/* Drag handle */}
+      <div {...attributes} {...listeners} className={styles.dragHandle}>⋮⋮</div>
     </div>
   )
 }
 
-// Recursive tree renderer
+// ---------------- Recursive Tree Renderer ----------------
 const renderTree = (
   nodes: CategoryNode[],
   selectedId: string | null,
@@ -115,27 +108,30 @@ const renderTree = (
   if (!nodes.length) return null
 
   return (
-    <SortableContext
-      items={nodes.map(n => n._id)}
-      strategy={verticalListSortingStrategy}
-    >
+    <SortableContext items={nodes.map(n => n._id)} strategy={verticalListSortingStrategy}>
       {nodes.map(node => {
         const isExpanded = !!expanded[node._id]
         const hasChildren = node.children.length > 0
 
         return (
           <React.Fragment key={node._id}>
-            <SortableItem
-              id={node._id}
-              title={node.title}
-              selected={selectedId === node._id}
-              onSelect={() => onSelect(node._id)}
-              level={level}
-              hasChildren={hasChildren}
-              isExpanded={isExpanded}
-              toggleExpand={() => toggleExpand(node._id)}
-            />
-            {hasChildren && isExpanded && renderTree(node.children, selectedId, onSelect, expanded, toggleExpand, level + 1)}
+            <div className={styles.treeLineWrapper}>
+              <SortableItem
+                id={node._id}
+                title={node.title}
+                selected={selectedId === node._id}
+                onSelect={() => onSelect(node._id)}
+                level={level}
+                hasChildren={hasChildren}
+                isExpanded={isExpanded}
+                toggleExpand={() => toggleExpand(node._id)}
+              />
+              {hasChildren && isExpanded && (
+                <div className={styles.childBranch}>
+                  {renderTree(node.children, selectedId, onSelect, expanded, toggleExpand, level + 1)}
+                </div>
+              )}
+            </div>
           </React.Fragment>
         )
       })}
@@ -143,6 +139,7 @@ const renderTree = (
   )
 }
 
+// ---------------- Main Component ----------------
 interface Props {
   categories: CategoryRaw[]
 }
@@ -155,7 +152,8 @@ export default function CategoriesPage({ categories }: Props) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const sensors = useSensors(useSensor(PointerSensor))
 
-  const toggleExpand = (id: string) => setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
+  const toggleExpand = (id: string) =>
+    setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
 
   const fetchLatest = async () => {
     setIsProcessing(true)
@@ -202,55 +200,48 @@ export default function CategoriesPage({ categories }: Props) {
     await fetchLatest()
   }
 
-  // Drag & Drop (siblings only, optimistic update)
-  // Drag & Drop (siblings only, optimistic update)
-const handleDragEnd = async (event: DragEndEvent) => {
-  const { active, over } = event
-  if (!over || active.id === over.id) return
+  // ---------------- Drag & Drop ----------------
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
 
-  const parentId = catList.find(c => c._id === active.id)?.parent?._id || null
-  const siblings = catList.filter(c => (c.parent?._id || null) === parentId)
-  const oldIndex = siblings.findIndex(c => c._id === active.id)
-  const newIndex = siblings.findIndex(c => c._id === over.id)
+    const parentId = catList.find(c => c._id === active.id)?.parent?._id || null
+    const siblings = catList.filter(c => (c.parent?._id || null) === parentId)
+    const oldIndex = siblings.findIndex(c => c._id === active.id)
+    const newIndex = siblings.findIndex(c => c._id === over.id)
 
-  // Reorder locally (optimistic update)
-  const reordered = arrayMove(siblings, oldIndex, newIndex)
+    const reordered = arrayMove(siblings, oldIndex, newIndex)
 
-  // Apply reordered siblings into the full list
-  const newList = catList.map(c => {
-    if ((c.parent?._id || null) === parentId) {
-      const updated = reordered.find(s => s._id === c._id)
-      return { ...c, order: reordered.findIndex(s => s._id === c._id) }
-    }
-    return c
-  })
-
-  // ✅ Commit immediately so UI doesn’t snap back
-  setCatList(newList)
-
-  // Background sync
-  try {
-    await fetch('/api/categories/reorder', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        parent: parentId,
-        order: reordered.map((c, i) => ({ id: c._id, order: i })),
-      }),
+    const newList = catList.map(c => {
+      if ((c.parent?._id || null) === parentId) {
+        return { ...c, order: reordered.findIndex(s => s._id === c._id) }
+      }
+      return c
     })
-    // Silent refresh (to ensure server and client match)
-    fetchLatest()
-  } catch (err) {
-    console.error('Reorder failed:', err)
-    fetchLatest() // fallback
+
+    setCatList(newList)
+
+    try {
+      await fetch('/api/categories/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          parent: parentId,
+          order: reordered.map((c, i) => ({ id: c._id, order: i })),
+        }),
+      })
+      fetchLatest()
+    } catch (err) {
+      console.error('Reorder failed:', err)
+      fetchLatest()
+    }
   }
-}
 
   const tree = useMemo(() => buildTree(catList), [catList])
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Categories</h1>
+      <h1 className={styles.pageTitle}>Categories</h1>
       {isProcessing && <div>Processing...</div>}
       <div className={styles.controls}>
         <input
@@ -264,13 +255,15 @@ const handleDragEnd = async (event: DragEndEvent) => {
       </div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-  {renderTree(tree, selectedId, setSelectedId, expanded, toggleExpand)}
-</DndContext>
+        <div className={styles.treeWrapper}>
+          {renderTree(tree, selectedId, setSelectedId, expanded, toggleExpand)}
+        </div>
+      </DndContext>
     </div>
   )
 }
 
-// ------------------- getStaticProps -------------------
+// ---------------- getStaticProps ----------------
 export async function getStaticProps() {
   const categories: CategoryRaw[] = await client.fetch(`
     *[_type=="category"]{
@@ -280,6 +273,5 @@ export async function getStaticProps() {
       order
     } | order(order asc)
   `)
-
   return { props: { categories: categories || [] } }
 }
