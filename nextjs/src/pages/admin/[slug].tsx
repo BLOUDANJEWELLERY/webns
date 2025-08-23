@@ -17,7 +17,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import React from 'react'
-import { client } from '../../sanity/client'
+import { client } from '../../sanityClient'
 
 export interface CategoryRaw {
   _id: string
