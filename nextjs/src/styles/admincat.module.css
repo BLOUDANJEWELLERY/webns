@@ -1,5 +1,15 @@
-/* ---------------- Mobile-First Styles ---------------- */
-/* Prevent text selection everywhere except drag handles */
+/* ---------------- Base Reset ---------------- */
+* {
+  -webkit-tap-highlight-color: transparent; /* remove tap highlight on mobile */
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* ---------------- Prevent Selection ---------------- */
 .item,
 .toggleBtn,
 .title {
@@ -9,12 +19,13 @@
   -ms-user-select: none;
 }
 
-/* Drag Handle - allow dragging */
+/* ---------------- Drag Handle ---------------- */
 .dragHandle {
   cursor: grab;
-  -webkit-user-drag: none; /* prevent image dragging */
-  touch-action: none;       /* important for mobile DnD */
-  user-select: none;        /* prevent text selection but keep pointer events */
+  -webkit-user-drag: none; /* prevents ghost image dragging */
+  touch-action: none;       /* important for dnd-kit on mobile */
+  user-select: none;        /* avoid accidental text highlight */
+  pointer-events: auto;     /* make sure drag is possible */
   color: #C89B3C;
   font-size: 14px;
   padding-left: 0.3rem;
@@ -29,7 +40,7 @@
   cursor: grabbing;
 }
 
-/* Page container */
+/* ---------------- Page Container ---------------- */
 .container {
   padding: 1rem;
   max-width: 100%;
@@ -37,10 +48,9 @@
   background: #fffdfb;
   border-radius: 10px;
   box-shadow: 0 3px 10px rgba(78, 42, 15, 0.12);
-  font-family: 'Segoe UI', sans-serif;
 }
 
-/* Heading */
+/* ---------------- Heading ---------------- */
 .pageTitle {
   font-size: 20px;
   font-weight: 700;
@@ -50,20 +60,18 @@
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.08);
 }
 
-/* Controls - mobile stacked */
+/* ---------------- Controls (Mobile-First) ---------------- */
 .controls {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   margin-bottom: 1rem;
-  justify-content: center;
-  align-items: stretch;
 }
 
 .controls input {
   width: 100%;
-  padding: 0.4rem 0.6rem;
-  font-size: 0.9rem;
+  padding: 0.5rem 0.7rem;
+  font-size: 1rem;
   border: 2px solid #D6BCA6;
   border-radius: 6px;
   outline: none;
@@ -78,8 +86,8 @@
 
 .controls button {
   width: 100%;
-  padding: 0.45rem 0.8rem;
-  font-size: 0.85rem;
+  padding: 0.55rem 0.8rem;
+  font-size: 0.9rem;
   background: linear-gradient(135deg, #C89B3C, #b3842f);
   color: #fff;
   font-weight: 600;
@@ -100,7 +108,7 @@
   cursor: not-allowed;
 }
 
-/* Tree wrapper */
+/* ---------------- Tree Wrapper ---------------- */
 .treeWrapper {
   padding: 0.5rem;
   background: #fffaf5;
@@ -109,7 +117,6 @@
   overflow-x: auto;
 }
 
-/* Tree structure */
 .treeLineWrapper {
   margin-bottom: 0.4rem;
 }
@@ -120,7 +127,7 @@
   padding-left: 0.5rem;
 }
 
-/* Sortable item */
+/* ---------------- Sortable Item ---------------- */
 .item {
   background: #fffaf5;
   border: 2px solid #D6BCA6;
@@ -131,7 +138,6 @@
   align-items: center;
   justify-content: space-between;
   transition: all 0.2s ease;
-  cursor: grab;
   box-shadow: 0 1px 5px rgba(78, 42, 15, 0.08);
 }
 
@@ -141,7 +147,6 @@
 }
 
 .item:active {
-  cursor: grabbing;
   transform: scale(1.01);
 }
 
@@ -151,7 +156,7 @@
   box-shadow: 0 0 0 2px rgba(200, 155, 60, 0.25);
 }
 
-/* Item content */
+/* ---------------- Item Content ---------------- */
 .itemContent {
   display: flex;
   align-items: center;
@@ -185,18 +190,6 @@
   color: #C89B3C;
 }
 
-.dragHandle {
-  color: #C89B3C;
-  font-size: 14px;
-  cursor: grab;
-  padding-left: 0.3rem;
-  transition: color 0.2s ease;
-}
-
-.dragHandle:hover {
-  color: #b3842f;
-}
-
 /* ---------------- Larger Screens ---------------- */
 @media (min-width: 769px) {
   .pageTitle {
@@ -204,26 +197,22 @@
     margin-bottom: 1.5rem;
   }
 
-  /* Controls horizontal for larger screens */
   .controls {
     flex-direction: row;
     gap: 0.5rem;
-    justify-content: flex-start;
     align-items: center;
   }
 
   .controls input {
     flex: 1 1 220px;
-    padding: 0.5rem 0.7rem;
     font-size: 0.95rem;
     border-radius: 8px;
   }
 
   .controls button {
     width: auto;
-    padding: 0.5rem 1rem;
+    padding: 0.6rem 1rem;
     font-size: 0.9rem;
-    border-radius: 8px;
   }
 
   .treeWrapper {
