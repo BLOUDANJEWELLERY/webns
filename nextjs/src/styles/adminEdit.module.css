@@ -1,11 +1,26 @@
 /* src/styles/adminEdit.module.css */
 
-.label {
+.categoryRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0;
+}
+
+.toggleBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
   font-size: 14px;
-  font-weight: 600;
-  color: #4a3f35; /* deep brown tone */
-  margin-bottom: 8px;
-  display: block;
+  line-height: 1;
+  padding: 0;
+  color: #7a5a2e; /* brown/gold accent */
+}
+
+.nested {
+  margin-left: 20px;
+  padding-left: 10px;
+  border-left: 1px solid #ddd;
 }
 
 .checkboxGroup {
