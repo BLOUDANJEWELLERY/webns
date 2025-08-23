@@ -250,7 +250,7 @@ const handleDragEnd = async (event: DragEndEvent) => {
 
   return (
     <div className={styles.container}>
-      <h1>Category Manager</h1>
+      <h1 className={styles.title}>Categories</h1>
       {isProcessing && <div>Processing...</div>}
       <div className={styles.controls}>
         <input
