@@ -193,34 +193,48 @@ export default function CategoriesPage({ categories }: Props) {
   }
 
   // Drag & Drop (siblings only, optimistic update)
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event
-    if (!over || active.id === over.id) return
+  // Drag & Drop (siblings only, optimistic update)
+const handleDragEnd = async (event: DragEndEvent) => {
+  const { active, over } = event
+  if (!over || active.id === over.id) return
 
-    const parentId = catList.find(c => c._id === active.id)?.parent?._id || null
-    const siblings = catList.filter(c => (c.parent?._id || null) === parentId)
-    const oldIndex = siblings.findIndex(c => c._id === active.id)
-    const newIndex = siblings.findIndex(c => c._id === over.id)
-    const newSiblings = arrayMove(siblings, oldIndex, newIndex)
+  const parentId = catList.find(c => c._id === active.id)?.parent?._id || null
+  const siblings = catList.filter(c => (c.parent?._id || null) === parentId)
+  const oldIndex = siblings.findIndex(c => c._id === active.id)
+  const newIndex = siblings.findIndex(c => c._id === over.id)
 
-    const newList = catList.map(c => (c.parent?._id || null) === parentId ? newSiblings.find(s => s._id === c._id)! : c)
-    setCatList(newList)
+  // Reorder locally (optimistic update)
+  const reordered = arrayMove(siblings, oldIndex, newIndex)
 
-    try {
-      await fetch('/api/categories/reorder', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          parent: parentId,
-          order: newSiblings.map((c, i) => ({ id: c._id, order: i })),
-        }),
-      })
-      await fetchLatest()
-    } catch (err) {
-      console.error(err)
-      await fetchLatest()
+  // Apply reordered siblings into the full list
+  const newList = catList.map(c => {
+    if ((c.parent?._id || null) === parentId) {
+      const updated = reordered.find(s => s._id === c._id)
+      return { ...c, order: reordered.findIndex(s => s._id === c._id) }
     }
+    return c
+  })
+
+  // ✅ Commit immediately so UI doesn’t snap back
+  setCatList(newList)
+
+  // Background sync
+  try {
+    await fetch('/api/categories/reorder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        parent: parentId,
+        order: reordered.map((c, i) => ({ id: c._id, order: i })),
+      }),
+    })
+    // Silent refresh (to ensure server and client match)
+    fetchLatest()
+  } catch (err) {
+    console.error('Reorder failed:', err)
+    fetchLatest() // fallback
   }
+}
 
   const tree = useMemo(() => buildTree(catList), [catList])
 
