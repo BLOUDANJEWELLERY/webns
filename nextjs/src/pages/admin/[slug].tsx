@@ -6,6 +6,7 @@ import imageUrlBuilder from '@sanity/image-url'
 import Image from 'next/image'
 import styles from '../../styles/adminEdit.module.css'
 import { v4 as uuidv4 } from 'uuid'
+import React from "react"
 
 
 const client = createClient({
@@ -177,7 +178,7 @@ const renderCategoryTree = (
   nodes: CategoryNode[],
   selectedCategories: string[],
   handleCategoryToggle: (id: string) => void
-): JSX.Element[] => {
+): React.ReactElement[] => {
   return nodes.map((node) => (
     <CategoryNodeItem
       key={node._id}
