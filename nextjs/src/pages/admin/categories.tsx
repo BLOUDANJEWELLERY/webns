@@ -1,6 +1,4 @@
-
 import { useState, useMemo } from 'react'
-import useSWR from 'swr'
 import styles from '../../styles/admincat.module.css'
 import {
   DndContext,
@@ -168,87 +166,66 @@ const renderTree = (
   })
 }
 
-// -------------------- SWR fetcher --------------------
-const fetcher = (url: string) => fetch(url).then(res => res.json())
-
 // -------------------- Categories page --------------------
-export default function CategoriesPage() {
-  const { data, mutate } = useSWR<CategoryRaw[]>('/api/categories', fetcher)
+export default function CategoriesPage({ initialData }: { initialData: CategoryRaw[] }) {
+  const [catList, setCatList] = useState<CategoryRaw[]>(initialData)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [inputTitle, setInputTitle] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
 
-  const catList = data || []
   const tree = useMemo(() => buildTree(catList), [catList])
   const sensors = useSensors(useSensor(PointerSensor))
 
-  const toggleExpand = (id: string) => {
-    setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
+  const toggleExpand = (id: string) => setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
+
+  const fetchLatest = async () => {
+    const res = await fetch('/api/categories')
+    const data = await res.json()
+    setCatList(data)
   }
 
-  // ------------------ CRUD with optimistic updates ------------------
   const handleCreate = async () => {
     if (!inputTitle.trim()) return
     setIsProcessing(true)
-
-    const tempId = 'temp-' + Date.now()
-    const newCat: CategoryRaw = {
-      _id: tempId,
-      title: inputTitle,
-      parent: selectedId ? { _id: selectedId, title: '' } : undefined,
-    }
-
-    mutate([...catList, newCat], false)
-    setInputTitle('')
-
     try {
-      const res = await fetch('/api/categories/create', {
+      await fetch('/api/categories/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newCat.title, parent: newCat.parent?._id }),
+        body: JSON.stringify({ title: inputTitle, parent: selectedId }),
       })
-      const savedCat = await res.json()
-      mutate(catList.map(c => (c._id === tempId ? savedCat : c)))
-    } finally {
-      setIsProcessing(false)
-    }
+      await fetchLatest()
+      setInputTitle('')
+    } finally { setIsProcessing(false) }
   }
 
   const handleUpdate = async () => {
     if (!selectedId || !inputTitle.trim()) return
-    setIsProcessing(true)
-    mutate(catList.map(c => (c._id === selectedId ? { ...c, title: inputTitle } : c)), false)
+    // Instant local update
+    setCatList(catList.map(c => c._id === selectedId ? { ...c, title: inputTitle } : c))
     setInputTitle('')
-
     try {
       await fetch('/api/categories/update', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: selectedId, title: inputTitle }),
       })
-      mutate()
-    } finally {
-      setIsProcessing(false)
-    }
+      await fetchLatest()
+    } catch (err) { console.error(err) }
   }
 
   const handleDelete = async () => {
     if (!selectedId) return
     setIsProcessing(true)
-    mutate(catList.filter(c => c._id !== selectedId), false)
-    setSelectedId(null)
-
     try {
       await fetch('/api/categories/delete', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: selectedId }),
       })
-      mutate()
-    } finally {
-      setIsProcessing(false)
-    }
+      await fetchLatest()
+      setSelectedId(null)
+    } finally { setIsProcessing(false) }
   }
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -258,27 +235,22 @@ export default function CategoriesPage() {
     const oldIndex = catList.findIndex(c => c._id === active.id)
     const newIndex = catList.findIndex(c => c._id === over.id)
     const newList = arrayMove(catList, oldIndex, newIndex)
-
-    mutate(newList, false)
+    setCatList(newList) // Instant local update
 
     try {
       await fetch('/api/categories/reorder', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          parent: null,
-          order: newList.map((c, i) => ({ id: c._id, order: i })),
-        }),
+        body: JSON.stringify({ parent: null, order: newList.map((c, i) => ({ id: c._id, order: i })) }),
       })
-      mutate()
-    } catch (err) {
-      console.error('Failed to persist order:', err)
-    }
+      await fetchLatest()
+    } catch (err) { console.error(err) }
   }
 
   return (
     <div className={styles.container}>
       <h1>Category Manager</h1>
+      {isProcessing && <div className={styles.processing}>Processing...</div>}
 
       <div className={styles.controls}>
         <input
@@ -287,8 +259,8 @@ export default function CategoriesPage() {
           onChange={e => setInputTitle(e.target.value)}
         />
         <button onClick={handleCreate} disabled={isProcessing || !inputTitle.trim()}>Add</button>
-        <button onClick={handleUpdate} disabled={isProcessing || !selectedId || !inputTitle.trim()}>Update</button>
-        <button onClick={handleDelete} disabled={isProcessing || !selectedId}>Delete</button>
+        <button onClick={handleUpdate} disabled={!selectedId || !inputTitle.trim()}>Update</button>
+        <button onClick={handleDelete} disabled={!selectedId}>Delete</button>
       </div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -298,4 +270,11 @@ export default function CategoriesPage() {
       </DndContext>
     </div>
   )
+}
+
+// -------------------- getStaticProps --------------------
+export async function getStaticProps() {
+  const res = await fetch('http://localhost:3000/api/categories') // adjust URL for production
+  const initialData = await res.json()
+  return { props: { initialData } }
 }
