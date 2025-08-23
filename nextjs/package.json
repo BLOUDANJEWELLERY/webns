@@ -31,7 +31,8 @@
     "react-medium-image-zoom": "^5.3.0",
     "react-select": "^5.10.2",
     "sanity": "^4.2.0",
-    "styled-components": "^6.1.19"
+    "styled-components": "^6.1.19",
+    "swr": "^2.3.6"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
