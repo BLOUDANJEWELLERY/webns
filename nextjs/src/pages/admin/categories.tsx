@@ -21,7 +21,7 @@ import { CSS } from '@dnd-kit/utilities'
 interface CategoryRaw {
   _id: string
   title: string
-  parent?: { _id: string; title: string } 
+  parent?: { _id: string; title: string }
   order?: number
 }
 
@@ -54,7 +54,8 @@ const SortableItem: React.FC<{
   title: string
   selected: boolean
   onClick: () => void
-}> = ({ id, title, selected, onClick }) => {
+  level: number
+}> = ({ id, title, selected, onClick, level }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id })
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -65,6 +66,7 @@ const SortableItem: React.FC<{
     borderRadius: 4,
     cursor: 'grab',
     background: selected ? '#fff7e6' : '#fff',
+    marginLeft: level * 20, // Indent for hierarchy
     userSelect: 'none',
   }
   return (
@@ -72,6 +74,26 @@ const SortableItem: React.FC<{
       {title}
     </div>
   )
+}
+
+// -------------------- Recursive category renderer --------------------
+const renderTree = (
+  nodes: CategoryNode[],
+  selectedId: string | null,
+  onSelect: (id: string) => void,
+  level = 0
+) => {
+  return nodes.flatMap(node => [
+    <SortableItem
+      key={node._id}
+      id={node._id}
+      title={node.title}
+      selected={selectedId === node._id}
+      onClick={() => onSelect(node._id)}
+      level={level}
+    />,
+    ...renderTree(node.children, selectedId, onSelect, level + 1),
+  ])
 }
 
 // -------------------- Page --------------------
@@ -179,15 +201,7 @@ export default function CategoriesPage({ categories: initialCategories }: { cate
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={catList.map(c => c._id)} strategy={verticalListSortingStrategy}>
-          {catList.map(cat => (
-            <SortableItem
-              key={cat._id}
-              id={cat._id}
-              title={cat.title}
-              selected={selectedId === cat._id}
-              onClick={() => setSelectedId(cat._id)}
-            />
-          ))}
+          {renderTree(tree, selectedId, setSelectedId)}
         </SortableContext>
       </DndContext>
     </div>
