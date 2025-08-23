@@ -1,13 +1,32 @@
 /* ---------------- Mobile-First Styles ---------------- */
-/* Prevent text selection for drag items */
+/* Prevent text selection everywhere except drag handles */
 .item,
 .toggleBtn,
-.title,
-.dragHandle {
-  user-select: none; /* disables text selection */
+.title {
+  user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+}
+
+/* Drag Handle - allow dragging */
+.dragHandle {
+  cursor: grab;
+  -webkit-user-drag: none; /* prevent image dragging */
+  touch-action: none;       /* important for mobile DnD */
+  user-select: none;        /* prevent text selection but keep pointer events */
+  color: #C89B3C;
+  font-size: 14px;
+  padding-left: 0.3rem;
+  transition: color 0.2s ease;
+}
+
+.dragHandle:hover {
+  color: #b3842f;
+}
+
+.item:active .dragHandle {
+  cursor: grabbing;
 }
 
 /* Page container */
