@@ -71,32 +71,33 @@ const SortableItem: React.FC<SortableItemProps> = ({
   return (
     <div
       ref={setNodeRef}
+      className={`${styles.item} ${selected ? styles.selected : ''}`}
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
-        padding: '6px 12px',
-        border: selected ? '2px solid #b88b4a' : '1px solid #ccc',
-        marginBottom: 4,
-        borderRadius: 4,
-        background: selected ? '#fff7e6' : '#fff',
-        display: 'flex',
-        alignItems: 'center',
-        userSelect: 'none',
         marginLeft: level * 20,
       }}
     >
-      <div {...attributes} {...listeners} style={{ cursor: 'grab', padding: '0 6px', fontWeight: 'bold' }}>::</div>
-      <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: 6 }}>
+      <div className={styles.content}>
         {hasChildren && (
           <button
             type="button"
             onClick={e => { e.stopPropagation(); toggleExpand() }}
-            style={{ border: 'none', background: 'transparent', cursor: 'pointer', width: 20, fontWeight: 'bold' }}
+            className={styles.toggleBtn}
           >
             {isExpanded ? '-' : '+'}
           </button>
         )}
-        <span onClick={onSelect} style={{ cursor: 'pointer', flex: 1, userSelect: 'none' }}>{title}</span>
+        <span onClick={onSelect} className={styles.title}>{title}</span>
+      </div>
+
+      {/* Drag handle on the RIGHT */}
+      <div
+        {...attributes}
+        {...listeners}
+        className={styles.dragHandle}
+      >
+        ::
       </div>
     </div>
   )
