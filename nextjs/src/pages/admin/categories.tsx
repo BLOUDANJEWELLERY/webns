@@ -93,7 +93,6 @@ const SortableItem: React.FC<SortableItemProps> = ({
         marginLeft: level * 20,
       }}
     >
-      {/* Drag handle */}
       <div
         {...attributes}
         {...listeners}
@@ -107,7 +106,6 @@ const SortableItem: React.FC<SortableItemProps> = ({
         ::
       </div>
 
-      {/* Title & expand button */}
       <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: 6 }}>
         {hasChildren && (
           <button
@@ -189,13 +187,18 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
     setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
   }
 
-  // ------------------ CRUD + Optimistic UI ------------------
+  // ------------------ CRUD with Optimistic UI ------------------
   const handleCreate = async () => {
     if (!inputTitle.trim()) return
     setIsProcessing(true)
 
+    // Optimistic state update
     const tempId = 'temp-' + Date.now()
-    const newCat: CategoryRaw = { _id: tempId, title: inputTitle, parent: selectedId }
+    const newCat: CategoryRaw = {
+      _id: tempId,
+      title: inputTitle,
+      parent: selectedId ? { _id: selectedId, title: '' } : undefined,
+    }
     setCatList(prev => [...prev, newCat])
     setInputTitle('')
 
@@ -203,7 +206,7 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
       const res = await fetch('/api/categories/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newCat.title, parent: newCat.parent }),
+        body: JSON.stringify({ title: newCat.title, parent: newCat.parent?._id }),
       })
       const savedCat = await res.json()
       setCatList(prev => prev.map(c => (c._id === tempId ? savedCat : c)))
