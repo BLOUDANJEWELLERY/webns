@@ -175,7 +175,6 @@ interface CategoriesPageProps {
   categories: CategoryRaw[]
 }
 
-// -------------------- Categories page --------------------
 export default function CategoriesPage({ categories: initialCategories }: CategoriesPageProps) {
   const [catList, setCatList] = useState<CategoryRaw[]>(initialCategories || [])
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -190,22 +189,21 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
     setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
   }
 
-  // ---------- CRUD (instant state update) ----------
+  // ------------------ CRUD + Optimistic UI ------------------
   const handleCreate = async () => {
     if (!inputTitle.trim()) return
     setIsProcessing(true)
-    try {
-      // Optimistically update UI
-      const tempId = 'temp-' + Date.now()
-      const newCat: CategoryRaw = { _id: tempId, title: inputTitle, parent: selectedId }
-      setCatList(prev => [...prev, newCat])
-      setInputTitle('')
 
-      // Persist to backend
+    const tempId = 'temp-' + Date.now()
+    const newCat: CategoryRaw = { _id: tempId, title: inputTitle, parent: selectedId }
+    setCatList(prev => [...prev, newCat])
+    setInputTitle('')
+
+    try {
       const res = await fetch('/api/categories/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: inputTitle, parent: selectedId }),
+        body: JSON.stringify({ title: newCat.title, parent: newCat.parent }),
       })
       const savedCat = await res.json()
       setCatList(prev => prev.map(c => (c._id === tempId ? savedCat : c)))
@@ -217,12 +215,10 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
   const handleUpdate = async () => {
     if (!selectedId || !inputTitle.trim()) return
     setIsProcessing(true)
-    try {
-      // Optimistic update
-      setCatList(prev => prev.map(c => (c._id === selectedId ? { ...c, title: inputTitle } : c)))
-      setInputTitle('')
+    setCatList(prev => prev.map(c => (c._id === selectedId ? { ...c, title: inputTitle } : c)))
+    setInputTitle('')
 
-      // Persist to backend
+    try {
       await fetch('/api/categories/update', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -236,12 +232,10 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
   const handleDelete = async () => {
     if (!selectedId) return
     setIsProcessing(true)
-    try {
-      // Optimistic removal
-      setCatList(prev => prev.filter(c => c._id !== selectedId))
-      setSelectedId(null)
+    setCatList(prev => prev.filter(c => c._id !== selectedId))
+    setSelectedId(null)
 
-      // Persist deletion
+    try {
       await fetch('/api/categories/delete', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
@@ -252,7 +246,6 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
     }
   }
 
-  // ---------- Drag & Drop (instant reordering) ----------
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
     if (!over || active.id === over.id) return
@@ -261,18 +254,20 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
     const newIndex = catList.findIndex(c => c._id === over.id)
     const newList = arrayMove(catList, oldIndex, newIndex)
 
-    // Optimistic update
     setCatList(newList)
 
-    // Persist backend reordering
-    await fetch('/api/categories/reorder', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        parent: null,
-        order: newList.map((c, i) => ({ id: c._id, order: i })),
-      }),
-    })
+    try {
+      await fetch('/api/categories/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          parent: null,
+          order: newList.map((c, i) => ({ id: c._id, order: i })),
+        }),
+      })
+    } catch (err) {
+      console.error('Failed to persist order:', err)
+    }
   }
 
   return (
