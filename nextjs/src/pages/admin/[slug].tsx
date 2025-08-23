@@ -585,7 +585,7 @@ const handleDelete = async () => {
 
      <label className={styles.label}>Categories</label>
 <div className={styles.checkboxGroup}>
-  {renderCategoryTree(categoryTree)}
+  {renderCategoryTree(categoryTree, selectedCategories, handleCategoryToggle)}
 </div>
 
 
