@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import styles from '../../styles/admincat.module.css'
 import {
   DndContext,
@@ -152,8 +152,27 @@ export default function CategoriesPage({ categories }: Props) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const sensors = useSensors(useSensor(PointerSensor))
 
+  const containerRef = useRef<HTMLDivElement>(null)
+  const controlsRef = useRef<HTMLDivElement>(null)
+  const treeRef = useRef<HTMLDivElement>(null)
+
   const toggleExpand = (id: string) =>
     setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !controlsRef.current?.contains(e.target as Node) &&
+        !treeRef.current?.contains(e.target as Node)
+      ) {
+        setSelectedId(null)
+      }
+    }
+
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [])
 
   const fetchLatest = async () => {
     setIsProcessing(true)
@@ -240,10 +259,10 @@ export default function CategoriesPage({ categories }: Props) {
   const tree = useMemo(() => buildTree(catList), [catList])
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} ref={containerRef}>
       <h1 className={styles.pageTitle}>Categories</h1>
       {isProcessing && <div>Processing...</div>}
-      <div className={styles.controls}>
+      <div className={styles.controls} ref={controlsRef}>
         <input
           placeholder={selectedId ? 'Edit or add subcategory' : 'Add new top-level category'}
           value={inputTitle}
@@ -255,7 +274,7 @@ export default function CategoriesPage({ categories }: Props) {
       </div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <div className={styles.treeWrapper}>
+        <div className={styles.treeWrapper} ref={treeRef}>
           {renderTree(tree, selectedId, setSelectedId, expanded, toggleExpand)}
         </div>
       </DndContext>
