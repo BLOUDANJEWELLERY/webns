@@ -49,6 +49,7 @@ const buildTree = (categories: CategoryRaw[]): CategoryNode[] => {
     nodes.forEach(n => sortTree(n.children))
   }
   sortTree(roots)
+
   return roots
 }
 
@@ -57,7 +58,7 @@ interface SortableItemProps {
   id: string
   title: string
   selected: boolean
-  onClick: () => void
+  onSelect: () => void
   level: number
   hasChildren: boolean
   isExpanded: boolean
@@ -68,7 +69,7 @@ const SortableItem: React.FC<SortableItemProps> = ({
   id,
   title,
   selected,
-  onClick,
+  onSelect,
   level,
   hasChildren,
   isExpanded,
@@ -76,46 +77,58 @@ const SortableItem: React.FC<SortableItemProps> = ({
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id })
 
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    padding: '6px 12px',
-    border: selected ? '2px solid #b88b4a' : '1px solid #ccc',
-    marginBottom: 4,
-    borderRadius: 4,
-    cursor: 'grab',
-    background: selected ? '#fff7e6' : '#fff',
-    marginLeft: level * 20,
-    userSelect: 'none',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  }
-
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        padding: '6px 12px',
+        border: selected ? '2px solid #b88b4a' : '1px solid #ccc',
+        marginBottom: 4,
+        borderRadius: 4,
+        cursor: 'grab',
+        background: selected ? '#fff7e6' : '#fff',
+        marginLeft: level * 20,
+        userSelect: 'none',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}
+      {...attributes}
+    >
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         {hasChildren && (
           <button
             type="button"
-            onClick={toggleExpand}
+            onClick={(e) => {
+              e.stopPropagation()
+              toggleExpand()
+            }}
             style={{
               border: 'none',
               background: 'transparent',
               cursor: 'pointer',
               fontWeight: 'bold',
+              width: 20,
             }}
           >
             {isExpanded ? '-' : '+'}
           </button>
         )}
-        <span onClick={onClick}>{title}</span>
+        <span
+          onClick={onSelect}
+          {...listeners} // only make the text draggable
+          style={{ flex: 1, cursor: 'pointer' }}
+        >
+          {title}
+        </span>
       </div>
     </div>
   )
 }
 
-// -------------------- Recursive category renderer --------------------
+// -------------------- Recursive tree renderer --------------------
 const renderTree = (
   nodes: CategoryNode[],
   selectedId: string | null,
@@ -134,7 +147,7 @@ const renderTree = (
         id={node._id}
         title={node.title}
         selected={selectedId === node._id}
-        onClick={() => onSelect(node._id)}
+        onSelect={() => onSelect(node._id)}
         level={level}
         hasChildren={hasChildren}
         isExpanded={isExpanded}
@@ -166,7 +179,7 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
     setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
   }
 
-  // ---------- CRUD operations ----------
+  // ---------- CRUD ----------
   const handleCreate = async () => {
     if (!inputTitle.trim()) return
     setIsProcessing(true)
