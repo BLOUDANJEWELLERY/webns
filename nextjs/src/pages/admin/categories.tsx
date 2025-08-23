@@ -1,7 +1,21 @@
 import { useState, useMemo } from 'react'
 import styles from '../../styles/admincat.module.css'
-import { client } from '../../lib/sanityClient'
-import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd'
+import { client } from '../../lib/sanity'
+import {
+  DndContext,
+  closestCenter,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  DragEndEvent
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  arrayMove,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { SortableItem } from '../../components/SortableItem' // we'll define this
 
 interface CategoryRaw {
   _id: string
@@ -10,16 +24,11 @@ interface CategoryRaw {
   order?: number
 }
 
-interface CategoryNode {
-  _id: string
-  title: string
-  parent?: { _id: string; title: string }
-  order?: number
+interface CategoryNode extends CategoryRaw {
   children: CategoryNode[]
 }
 
-// Build tree
-const buildTree = (cats: CategoryRaw[] = []): CategoryNode[] => {
+const buildTree = (cats: CategoryRaw[]): CategoryNode[] => {
   const map: Record<string, CategoryNode> = {}
   const roots: CategoryNode[] = []
 
@@ -44,6 +53,7 @@ export default function CategoriesPage({ categories: initialCategories }: { cate
   const [isProcessing, setIsProcessing] = useState(false)
 
   const tree = useMemo(() => buildTree(catList), [catList])
+  const sensors = useSensors(useSensor(PointerSensor))
 
   // ---------- CRUD ----------
   const handleCreate = async () => {
@@ -58,9 +68,6 @@ export default function CategoriesPage({ categories: initialCategories }: { cate
       if (!res.ok) throw new Error('Failed to create')
       const newCat = await res.json()
       setCatList(prev => [...prev, newCat])
-    } catch (err) {
-      console.error(err)
-      alert('Failed to create category')
     } finally {
       setIsProcessing(false)
       setInputTitle('')
@@ -71,16 +78,12 @@ export default function CategoriesPage({ categories: initialCategories }: { cate
     if (!selectedId || !inputTitle.trim()) return
     setIsProcessing(true)
     try {
-      const res = await fetch('/api/categories/update', {
+      await fetch('/api/categories/update', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: selectedId, title: inputTitle }),
       })
-      if (!res.ok) throw new Error('Failed to update')
       setCatList(prev => prev.map(c => (c._id === selectedId ? { ...c, title: inputTitle } : c)))
-    } catch (err) {
-      console.error(err)
-      alert('Failed to update category')
     } finally {
       setIsProcessing(false)
       setInputTitle('')
@@ -99,44 +102,36 @@ export default function CategoriesPage({ categories: initialCategories }: { cate
       if (!res.ok) throw new Error('Failed to delete')
       setCatList(prev => prev.filter(c => c._id !== selectedId))
       setSelectedId(null)
-    } catch (err) {
-      console.error(err)
-      alert('Failed to delete category')
     } finally {
       setIsProcessing(false)
     }
   }
 
   // ---------- Drag & Drop ----------
-  const onDragEnd = async (result: DropResult) => {
-    if (!result.destination) return
-    const newList = [...catList]
-    const [moved] = newList.splice(result.source.index, 1)
-    newList.splice(result.destination.index, 0, moved)
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
 
-    // Update local state immediately
+    const oldIndex = catList.findIndex(c => c._id === active.id)
+    const newIndex = catList.findIndex(c => c._id === over.id)
+
+    const newList = arrayMove(catList, oldIndex, newIndex)
     setCatList(newList)
 
-    // Persist new order to backend
-    try {
-      await fetch('/api/categories/reorder', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          parent: moved.parent?._id ?? null,
-          order: newList.map((c, i) => ({ id: c._id, order: i })),
-        }),
-      })
-    } catch (err) {
-      console.error('Failed to reorder', err)
-      alert('Failed to save new order')
-    }
+    // Persist reorder
+    await fetch('/api/categories/reorder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        parent: null,
+        order: newList.map((c, i) => ({ id: c._id, order: i })),
+      }),
+    })
   }
 
   return (
     <div className={styles.container}>
       <h1>Category Manager</h1>
-
       <div className={styles.controls}>
         <input
           placeholder={selectedId ? 'Edit or add subcategory' : 'Add new top-level category'}
@@ -148,30 +143,13 @@ export default function CategoriesPage({ categories: initialCategories }: { cate
         <button onClick={handleDelete} disabled={isProcessing || !selectedId}>Delete</button>
       </div>
 
-      <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="categories">
-          {provided => (
-            <div {...provided.droppableProps} ref={provided.innerRef}>
-              {catList.map((cat, index) => (
-                <Draggable key={cat._id} draggableId={cat._id} index={index}>
-                  {providedDraggable => (
-                    <div
-                      ref={providedDraggable.innerRef}
-                      {...providedDraggable.draggableProps}
-                      {...providedDraggable.dragHandleProps}
-                      className={selectedId === cat._id ? styles.nodeSelected : styles.node}
-                      onClick={() => setSelectedId(cat._id)}
-                    >
-                      {cat.title}
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={catList.map(c => c._id)} strategy={verticalListSortingStrategy}>
+          {catList.map(cat => (
+            <SortableItem key={cat._id} id={cat._id} title={cat.title} selected={selectedId === cat._id} onClick={() => setSelectedId(cat._id)} />
+          ))}
+        </SortableContext>
+      </DndContext>
     </div>
   )
 }
@@ -186,7 +164,5 @@ export async function getStaticProps() {
       order
     } | order(order asc)
   `)
-  return {
-    props: { categories: categories || [] },
-  }
+  return { props: { categories: categories || [] } }
 }
