@@ -110,27 +110,36 @@ const renderTree = (
   expanded: Record<string, boolean>,
   toggleExpand: (id: string) => void,
   level = 0
-): React.ReactNode[] => {
-  return nodes.flatMap(node => {
-    const isExpanded = !!expanded[node._id]
-    const hasChildren = node.children.length > 0
-    return [
-      <SortableItem
-        key={node._id}
-        id={node._id}
-        title={node.title}
-        selected={selectedId === node._id}
-        onSelect={() => onSelect(node._id)}
-        level={level}
-        hasChildren={hasChildren}
-        isExpanded={isExpanded}
-        toggleExpand={() => toggleExpand(node._id)}
-      />,
-      hasChildren && isExpanded
-        ? renderTree(node.children, selectedId, onSelect, expanded, toggleExpand, level + 1)
-        : [],
-    ]
-  })
+): React.ReactNode => {
+  if (!nodes.length) return null
+
+  return (
+    <SortableContext
+      items={nodes.map(n => n._id)}
+      strategy={verticalListSortingStrategy}
+    >
+      {nodes.map(node => {
+        const isExpanded = !!expanded[node._id]
+        const hasChildren = node.children.length > 0
+
+        return (
+          <React.Fragment key={node._id}>
+            <SortableItem
+              id={node._id}
+              title={node.title}
+              selected={selectedId === node._id}
+              onSelect={() => onSelect(node._id)}
+              level={level}
+              hasChildren={hasChildren}
+              isExpanded={isExpanded}
+              toggleExpand={() => toggleExpand(node._id)}
+            />
+            {hasChildren && isExpanded && renderTree(node.children, selectedId, onSelect, expanded, toggleExpand, level + 1)}
+          </React.Fragment>
+        )
+      })}
+    </SortableContext>
+  )
 }
 
 interface Props {
@@ -254,10 +263,8 @@ const handleDragEnd = async (event: DragEndEvent) => {
       </div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={catList.map(c => c._id)} strategy={verticalListSortingStrategy}>
-          {renderTree(tree, selectedId, setSelectedId, expanded, toggleExpand)}
-        </SortableContext>
-      </DndContext>
+  {renderTree(tree, selectedId, setSelectedId, expanded, toggleExpand)}
+</DndContext>
     </div>
   )
 }
