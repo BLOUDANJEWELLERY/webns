@@ -1,230 +1,182 @@
-import { useState, useEffect } from 'react'
-import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-} from '@dnd-kit/core'
-import {
-  SortableContext,
-  useSortable,
-  arrayMove,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
+import { useState, useMemo } from 'react'
 import styles from '../../styles/admincat.module.css'
+import { arrayMove } from '@dnd-kit/sortable'
 
-type Category = {
+interface CategoryRaw {
   _id: string
   title: string
-  parent?: { _id: string; title: string }
-  children: Category[]
+  parent?: { _id: string; title }
   order?: number
 }
 
-// ---------- Build Tree ----------
-function buildTree(categories: Category[], parentId: string | null = null): Category[] {
-  return categories
-    .filter(c => (parentId ? c.parent?._id === parentId : !c.parent))
-    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-    .map(c => ({ ...c, children: buildTree(categories, c._id) }))
+interface CategoryNode {
+  _id: string
+  title: string
+  parent?: { _id: string; title }
+  order?: number
+  children: CategoryNode[]
 }
 
-// ---------- Sortable Item ----------
-function SortableItem({
-  category,
-  expanded,
-  toggleExpand,
-  selectedId,
-  setSelectedId,
-}: {
-  category: Category
-  expanded: string[]
-  toggleExpand: (id: string) => void
-  selectedId: string | null
-  setSelectedId: (id: string) => void
-}) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: category._id })
-  const style = { transform: CSS.Transform.toString(transform), transition }
-  const isExpanded = expanded.includes(category._id)
-  const isSelected = selectedId === category._id
-
-  return (
-    <li ref={setNodeRef} style={style} {...attributes}>
-      <div
-        className={`${styles.node} ${isSelected ? styles.nodeSelected : ''}`}
-        {...listeners}
-        onClick={() => setSelectedId(category._id)}
-      >
-        {category.children.length > 0 && (
-          <button
-            className={styles.toggle}
-            onClick={e => { e.stopPropagation(); toggleExpand(category._id) }}
-          >
-            {isExpanded ? '▾' : '▸'}
-          </button>
-        )}
-        <span>{category.title}</span>
-      </div>
-
-      {category.children.length > 0 && isExpanded && (
-        <SortableTree
-          nodes={category.children}
-          expanded={expanded}
-          toggleExpand={toggleExpand}
-          selectedId={selectedId}
-          setSelectedId={setSelectedId}
-        />
-      )}
-    </li>
-  )
-}
-
-// ---------- Sortable Tree ----------
-function SortableTree({
-  nodes,
-  expanded,
-  toggleExpand,
-  selectedId,
-  setSelectedId,
-}: {
-  nodes: Category[]
-  expanded: string[]
-  toggleExpand: (id: string) => void
-  selectedId: string | null
-  setSelectedId: (id: string) => void
-}) {
-  const sensors = useSensors(useSensor(PointerSensor))
-
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event
-    if (!over || active.id === over.id) return
-    const oldIndex = nodes.findIndex(n => n._id === active.id)
-    const newIndex = nodes.findIndex(n => n._id === over.id)
-    if (oldIndex === -1 || newIndex === -1) return
-
-    const newOrder = arrayMove(nodes, oldIndex, newIndex)
-    
-    // Save new order to backend
-    await fetch('/api/categories/reorder', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        parent: nodes[0]?.parent?._id || null,
-        order: newOrder.map((c, i) => ({ id: c._id, order: i })),
-      }),
-    })
-  }
-
-  return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <SortableContext items={nodes.map(n => n._id)} strategy={verticalListSortingStrategy}>
-        <ul className={styles.tree}>
-          {nodes.map(node => (
-            <SortableItem
-              key={node._id}
-              category={node}
-              expanded={expanded}
-              toggleExpand={toggleExpand}
-              selectedId={selectedId}
-              setSelectedId={setSelectedId}
-            />
-          ))}
-        </ul>
-      </SortableContext>
-    </DndContext>
-  )
-}
-
-// ---------- Main Page ----------
-export default function CategoryManager() {
-  const [categories, setCategories] = useState<Category[]>([])
+export default function CategoryManager({ categories }: { categories: CategoryRaw[] }) {
+  const [catList, setCatList] = useState<CategoryRaw[]>(categories)
   const [expanded, setExpanded] = useState<string[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [inputTitle, setInputTitle] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // Fetch categories
-  const fetchCategories = async () => {
-    const res = await fetch('/api/categories')
-    const data = await res.json()
-    setCategories(data)
+  // Build tree
+  const buildTree = (cats: CategoryRaw[], parentId: string | null = null): CategoryNode[] => {
+    const map: Record<string, CategoryNode> = {}
+    const roots: CategoryNode[] = []
+
+    cats.forEach(c => (map[c._id] = { ...c, children: [] }))
+
+    cats.forEach(c => {
+      if (c.parent?._id) map[c.parent._id].children.push(map[c._id])
+      else roots.push(map[c._id])
+    })
+
+    const sortTree = (nodes: CategoryNode[]) => {
+      nodes.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      nodes.forEach(n => sortTree(n.children))
+    }
+
+    sortTree(roots)
+    return roots
   }
 
-  useEffect(() => { fetchCategories() }, [])
+  const tree = useMemo(() => buildTree(catList), [catList])
 
-  const toggleExpand = (id: string) => {
+  const toggleExpand = (id: string) =>
     setExpanded(prev => (prev.includes(id) ? prev.filter(e => e !== id) : [...prev, id]))
-  }
 
   // ---------- CRUD ----------
   const handleCreate = async () => {
     if (!inputTitle.trim()) return
     setLoading(true)
-    await fetch('/api/categories/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: inputTitle, parent: selectedId }),
-    })
-    setInputTitle('')
-    setLoading(false)
-    await fetchCategories()
+    try {
+      const parentId = selectedId
+      await fetch('/api/categories/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: inputTitle, parent: parentId }),
+      })
+      setInputTitle('')
+      // Re-fetch static props or use incremental update
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleUpdate = async () => {
     if (!selectedId || !inputTitle.trim()) return
     setLoading(true)
-    await fetch('/api/categories/update', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: selectedId, title: inputTitle }),
-    })
-    setInputTitle('')
-    setLoading(false)
-    await fetchCategories()
+    try {
+      await fetch('/api/categories/update', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: selectedId, title: inputTitle }),
+      })
+      setInputTitle('')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleDelete = async () => {
     if (!selectedId) return
     setLoading(true)
-    await fetch('/api/categories/delete', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: selectedId }),
-    })
-    setSelectedId(null)
-    setLoading(false)
-    await fetchCategories()
+    try {
+      await fetch('/api/categories/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: selectedId }),
+      })
+      setSelectedId(null)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const tree = buildTree(categories)
+  const handleReorder = async (nodes: CategoryNode[], oldIndex: number, newIndex: number, parentId: string | null) => {
+    const newOrder = arrayMove(nodes, oldIndex, newIndex)
+    // Update state locally
+    // Then call API
+  }
 
   return (
     <div className={styles.container}>
-      <h1>Category Manager</h1>
-
       <div className={styles.controls}>
         <input
-          placeholder="Category name"
           value={inputTitle}
           onChange={e => setInputTitle(e.target.value)}
+          placeholder={selectedId ? 'Edit or add subcategory' : 'Add new top-level category'}
         />
-        <button onClick={handleCreate}>Create</button>
+        <button onClick={handleCreate}>Add</button>
         <button onClick={handleUpdate} disabled={!selectedId}>Update</button>
         <button onClick={handleDelete} disabled={!selectedId}>Delete</button>
       </div>
 
-      <SortableTree
+      <CategoryTree
         nodes={tree}
         expanded={expanded}
         toggleExpand={toggleExpand}
         selectedId={selectedId}
         setSelectedId={setSelectedId}
       />
-
-      {loading && <p>Processing...</p>}
     </div>
+  )
+}
+
+type TreeProps = {
+  nodes: CategoryNode[]
+  expanded: string[]
+  toggleExpand: (id: string) => void
+  selectedId: string | null
+  setSelectedId: (id: string) => void
+}
+
+const CategoryTree: React.FC<TreeProps> = ({ nodes, expanded, toggleExpand, selectedId, setSelectedId }) => {
+  return (
+    <ul className={styles.tree}>
+      {nodes.map(n => (
+        <CategoryNodeItem
+          key={n._id}
+          node={n}
+          expanded={expanded}
+          toggleExpand={toggleExpand}
+          selectedId={selectedId}
+          setSelectedId={setSelectedId}
+        />
+      ))}
+    </ul>
+  )
+}
+
+type NodeProps = {
+  node: CategoryNode
+  expanded: string[]
+  toggleExpand: (id: string) => void
+  selectedId: string | null
+  setSelectedId: (id: string) => void
+}
+
+const CategoryNodeItem: React.FC<NodeProps> = ({ node, expanded, toggleExpand, selectedId, setSelectedId }) => {
+  const isExpanded = expanded.includes(node._id)
+  const isSelected = selectedId === node._id
+  return (
+    <li>
+      <div className={`${styles.node} ${isSelected ? styles.selected : ''}`} onClick={() => setSelectedId(node._id)}>
+        {node.children.length > 0 && (
+          <button className={styles.toggleBtn} onClick={e => { e.stopPropagation(); toggleExpand(node._id) }}>
+            {isExpanded ? '▾' : '▸'}
+          </button>
+        )}
+        <span>{node.title}</span>
+      </div>
+      {isExpanded && node.children.length > 0 && (
+        <CategoryTree nodes={node.children} expanded={expanded} toggleExpand={toggleExpand} selectedId={selectedId} setSelectedId={setSelectedId} />
+      )}
+    </li>
   )
 }
