@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from 'react'
+// src/pages/admin/categories.tsx
+import { useState, useMemo } from 'react'
 import styles from '../../styles/admincat.module.css'
 import {
   DndContext,
@@ -17,7 +18,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import React from 'react'
 
-interface CategoryRaw {
+export interface CategoryRaw {
   _id: string
   title: string
   parent?: { _id: string; title: string }
@@ -28,7 +29,6 @@ interface CategoryNode extends CategoryRaw {
   children: CategoryNode[]
 }
 
-// -------------------- Build hierarchical tree --------------------
 const buildTree = (categories: CategoryRaw[]): CategoryNode[] => {
   const map: Record<string, CategoryNode> = {}
   const roots: CategoryNode[] = []
@@ -50,7 +50,6 @@ const buildTree = (categories: CategoryRaw[]): CategoryNode[] => {
   return roots
 }
 
-// -------------------- Sortable item --------------------
 interface SortableItemProps {
   id: string
   title: string
@@ -63,17 +62,9 @@ interface SortableItemProps {
 }
 
 const SortableItem: React.FC<SortableItemProps> = ({
-  id,
-  title,
-  selected,
-  onSelect,
-  level,
-  hasChildren,
-  isExpanded,
-  toggleExpand,
+  id, title, selected, onSelect, level, hasChildren, isExpanded, toggleExpand,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id })
-
   return (
     <div
       ref={setNodeRef}
@@ -91,50 +82,23 @@ const SortableItem: React.FC<SortableItemProps> = ({
         marginLeft: level * 20,
       }}
     >
-      <div
-        {...attributes}
-        {...listeners}
-        style={{
-          cursor: 'grab',
-          padding: '0 6px',
-          fontWeight: 'bold',
-          userSelect: 'none',
-        }}
-      >
-        ::
-      </div>
-
+      <div {...attributes} {...listeners} style={{ cursor: 'grab', padding: '0 6px', fontWeight: 'bold' }}>::</div>
       <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: 6 }}>
         {hasChildren && (
           <button
             type="button"
-            onClick={e => {
-              e.stopPropagation()
-              toggleExpand()
-            }}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              cursor: 'pointer',
-              width: 20,
-              fontWeight: 'bold',
-            }}
+            onClick={e => { e.stopPropagation(); toggleExpand() }}
+            style={{ border: 'none', background: 'transparent', cursor: 'pointer', width: 20, fontWeight: 'bold' }}
           >
             {isExpanded ? '-' : '+'}
           </button>
         )}
-        <span
-          onClick={onSelect}
-          style={{ cursor: 'pointer', flex: 1, userSelect: 'none' }}
-        >
-          {title}
-        </span>
+        <span onClick={onSelect} style={{ cursor: 'pointer', flex: 1, userSelect: 'none' }}>{title}</span>
       </div>
     </div>
   )
 }
 
-// -------------------- Recursive tree renderer --------------------
 const renderTree = (
   nodes: CategoryNode[],
   selectedId: string | null,
@@ -146,7 +110,6 @@ const renderTree = (
   return nodes.flatMap(node => {
     const isExpanded = !!expanded[node._id]
     const hasChildren = node.children.length > 0
-
     return [
       <SortableItem
         key={node._id}
@@ -166,31 +129,20 @@ const renderTree = (
   })
 }
 
-// -------------------- Categories page --------------------
-export default function CategoriesPage() {
-  const [catList, setCatList] = useState<CategoryRaw[]>([])
+interface Props {
+  initialCategories: CategoryRaw[]
+}
+
+export default function CategoriesPage({ initialCategories }: Props) {
+  const [catList, setCatList] = useState<CategoryRaw[]>(initialCategories)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [inputTitle, setInputTitle] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const sensors = useSensors(useSensor(PointerSensor))
 
-  const toggleExpand = (id: string) => {
-    setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
-  }
+  const toggleExpand = (id: string) => setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
 
-  // ------------------ Initial fetch ------------------
-  useEffect(() => {
-    setIsProcessing(true)
-    fetch('/api/categories')
-      .then(r => r.json())
-      .then(data => setCatList(data))
-      .finally(() => setIsProcessing(false))
-  }, [])
-
-  const tree = useMemo(() => buildTree(catList), [catList])
-
-  // ------------------ CRUD ------------------
   const fetchLatest = async () => {
     setIsProcessing(true)
     const data = await fetch('/api/categories').then(r => r.json())
@@ -198,40 +150,29 @@ export default function CategoriesPage() {
     setIsProcessing(false)
   }
 
+  // ---------------- CRUD ----------------
   const handleCreate = async () => {
     if (!inputTitle.trim()) return
     setIsProcessing(true)
-    const tempId = 'temp-' + Date.now()
-    const newCat: CategoryRaw = {
-      _id: tempId,
-      title: inputTitle,
-      parent: selectedId ? { _id: selectedId, title: '' } : undefined,
-    }
-    setCatList(prev => [...prev, newCat])
-    setInputTitle('')
-
+    const parentId = selectedId || null
     await fetch('/api/categories/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: newCat.title, parent: newCat.parent?._id }),
+      body: JSON.stringify({ title: inputTitle, parent: parentId }),
     })
-
+    setInputTitle('')
     await fetchLatest()
   }
 
   const handleUpdate = async () => {
     if (!selectedId || !inputTitle.trim()) return
-    setCatList(prev =>
-      prev.map(c => (c._id === selectedId ? { ...c, title: inputTitle } : c))
-    )
+    setCatList(prev => prev.map(c => c._id === selectedId ? { ...c, title: inputTitle } : c))
     setInputTitle('')
-
     await fetch('/api/categories/update', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: selectedId, title: inputTitle }),
     })
-
     await fetchLatest()
   }
 
@@ -239,17 +180,15 @@ export default function CategoriesPage() {
     if (!selectedId) return
     setCatList(prev => prev.filter(c => c._id !== selectedId))
     setSelectedId(null)
-
     await fetch('/api/categories/delete', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: selectedId }),
     })
-
     await fetchLatest()
   }
 
-  // ------------------ Drag-and-drop (siblings only) ------------------
+  // ---------------- Drag & Drop (siblings only, optimistic update) ----------------
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
     if (!over || active.id === over.id) return
@@ -260,46 +199,42 @@ export default function CategoriesPage() {
     const newIndex = siblings.findIndex(c => c._id === over.id)
     const newSiblings = arrayMove(siblings, oldIndex, newIndex)
 
-    const newList = catList.map(c =>
-      (c.parent?._id || null) === parentId
-        ? newSiblings.find(s => s._id === c._id)!
-        : c
-    )
+    // Optimistic local update
+    const newList = catList.map(c => (c.parent?._id || null) === parentId ? newSiblings.find(s => s._id === c._id)! : c)
+    setCatList(newList)
 
-    setCatList(newList) // optimistic update
-
-    await fetch('/api/categories/reorder', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        parent: parentId,
-        order: newSiblings.map((c, i) => ({ id: c._id, order: i })),
-      }),
-    })
-
-    await fetchLatest()
+    try {
+      await fetch('/api/categories/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          parent: parentId,
+          order: newSiblings.map((c, i) => ({ id: c._id, order: i })),
+        }),
+      })
+      // Only fetch after API returns to avoid snap-back
+      await fetchLatest()
+    } catch (err) {
+      console.error(err)
+      await fetchLatest()
+    }
   }
+
+  const tree = useMemo(() => buildTree(catList), [catList])
 
   return (
     <div className={styles.container}>
       <h1>Category Manager</h1>
       {isProcessing && <div>Processing...</div>}
-
       <div className={styles.controls}>
         <input
           placeholder={selectedId ? 'Edit or add subcategory' : 'Add new top-level category'}
           value={inputTitle}
           onChange={e => setInputTitle(e.target.value)}
         />
-        <button onClick={handleCreate} disabled={isProcessing || !inputTitle.trim()}>
-          Add
-        </button>
-        <button onClick={handleUpdate} disabled={isProcessing || !selectedId || !inputTitle.trim()}>
-          Update
-        </button>
-        <button onClick={handleDelete} disabled={isProcessing || !selectedId}>
-          Delete
-        </button>
+        <button onClick={handleCreate} disabled={isProcessing || !inputTitle.trim()}>Add</button>
+        <button onClick={handleUpdate} disabled={isProcessing || !selectedId || !inputTitle.trim()}>Update</button>
+        <button onClick={handleDelete} disabled={isProcessing || !selectedId}>Delete</button>
       </div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -309,4 +244,11 @@ export default function CategoriesPage() {
       </DndContext>
     </div>
   )
+}
+
+// ------------------- getStaticProps -------------------
+export async function getStaticProps() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/categories`)
+  const initialCategories: CategoryRaw[] = await res.json()
+  return { props: { initialCategories }, revalidate: 10 }
 }
