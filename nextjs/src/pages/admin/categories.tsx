@@ -36,7 +36,6 @@ const buildTree = (categories: CategoryRaw[]): CategoryNode[] => {
   const roots: CategoryNode[] = []
 
   categories.forEach(cat => (map[cat._id] = { ...cat, children: [] }))
-
   categories.forEach(cat => {
     if (cat.parent?._id && map[cat.parent._id]) {
       map[cat.parent._id].children.push(map[cat._id])
@@ -50,26 +49,37 @@ const buildTree = (categories: CategoryRaw[]): CategoryNode[] => {
     nodes.forEach(n => sortTree(n.children))
   }
   sortTree(roots)
-
   return roots
 }
 
-// -------------------- Sortable category item --------------------
+// -------------------- Sortable item --------------------
 interface SortableItemProps {
   id: string
   title: string
   selected: boolean
   onClick: () => void
   level: number
+  hasChildren: boolean
+  isExpanded: boolean
+  toggleExpand: () => void
 }
 
-const SortableItem: React.FC<SortableItemProps> = ({ id, title, selected, onClick, level }) => {
+const SortableItem: React.FC<SortableItemProps> = ({
+  id,
+  title,
+  selected,
+  onClick,
+  level,
+  hasChildren,
+  isExpanded,
+  toggleExpand,
+}) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id })
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-    padding: '8px 12px',
+    padding: '6px 12px',
     border: selected ? '2px solid #b88b4a' : '1px solid #ccc',
     marginBottom: 4,
     borderRadius: 4,
@@ -77,33 +87,64 @@ const SortableItem: React.FC<SortableItemProps> = ({ id, title, selected, onClic
     background: selected ? '#fff7e6' : '#fff',
     marginLeft: level * 20,
     userSelect: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   }
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners} onClick={onClick}>
-      {title}
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        {hasChildren && (
+          <button
+            type="button"
+            onClick={toggleExpand}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+            }}
+          >
+            {isExpanded ? '-' : '+'}
+          </button>
+        )}
+        <span onClick={onClick}>{title}</span>
+      </div>
     </div>
   )
 }
 
-// -------------------- Recursive category tree renderer --------------------
+// -------------------- Recursive category renderer --------------------
 const renderTree = (
   nodes: CategoryNode[],
   selectedId: string | null,
   onSelect: (id: string) => void,
+  expanded: Record<string, boolean>,
+  toggleExpand: (id: string) => void,
   level = 0
 ): React.ReactNode[] => {
-  return nodes.flatMap(node => [
-    <SortableItem
-      key={node._id}
-      id={node._id}
-      title={node.title}
-      selected={selectedId === node._id}
-      onClick={() => onSelect(node._id)}
-      level={level}
-    />,
-    ...renderTree(node.children, selectedId, onSelect, level + 1),
-  ])
+  return nodes.flatMap(node => {
+    const isExpanded = !!expanded[node._id]
+    const hasChildren = node.children.length > 0
+
+    return [
+      <SortableItem
+        key={node._id}
+        id={node._id}
+        title={node.title}
+        selected={selectedId === node._id}
+        onClick={() => onSelect(node._id)}
+        level={level}
+        hasChildren={hasChildren}
+        isExpanded={isExpanded}
+        toggleExpand={() => toggleExpand(node._id)}
+      />,
+      hasChildren && isExpanded
+        ? renderTree(node.children, selectedId, onSelect, expanded, toggleExpand, level + 1)
+        : [],
+    ]
+  })
 }
 
 // -------------------- Categories page --------------------
@@ -116,9 +157,14 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [inputTitle, setInputTitle] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
 
   const tree = useMemo(() => buildTree(catList), [catList])
   const sensors = useSensors(useSensor(PointerSensor))
+
+  const toggleExpand = (id: string) => {
+    setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
+  }
 
   // ---------- CRUD operations ----------
   const handleCreate = async () => {
@@ -216,7 +262,7 @@ export default function CategoriesPage({ categories: initialCategories }: Catego
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={catList.map(c => c._id)} strategy={verticalListSortingStrategy}>
-          {renderTree(tree, selectedId, setSelectedId)}
+          {renderTree(tree, selectedId, setSelectedId, expanded, toggleExpand)}
         </SortableContext>
       </DndContext>
     </div>
