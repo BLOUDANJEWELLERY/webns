@@ -37,6 +37,7 @@
   border: 2px solid #D6BCA6;
   border-radius: 6px;
   outline: none;
+  box-sizing: border-box;
   transition: all 0.2s ease;
 }
 
