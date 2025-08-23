@@ -10,10 +10,6 @@
   -ms-user-select: none;
 }
 
-/* Optional: prevent selection on the entire tree wrapper while dragging */
-.treeWrapper.dragging * {
-  user-select: none !important;
-}
 /* Page container */
 .container {
   padding: 1rem;
@@ -30,18 +26,19 @@
   font-size: 20px;
   font-weight: 700;
   text-align: center;
-  margin-bottom: 1.2rem;
+  margin-bottom: 1rem;
   color: #4E2A0F;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.08);
 }
 
-/* Controls */
+/* Controls - mobile stacked */
 .controls {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   margin-bottom: 1rem;
   justify-content: center;
+  align-items: stretch;
 }
 
 .controls input {
@@ -174,7 +171,6 @@
   font-size: 14px;
   cursor: grab;
   padding-left: 0.3rem;
-  user-select: none;
   transition: color 0.2s ease;
 }
 
@@ -186,51 +182,54 @@
 @media (min-width: 769px) {
   .pageTitle {
     font-size: 24px;
-    margin-bottom: 1.8rem;
+    margin-bottom: 1.5rem;
   }
 
+  /* Controls horizontal for larger screens */
   .controls {
     flex-direction: row;
-    gap: 0.6rem;
+    gap: 0.5rem;
+    justify-content: flex-start;
+    align-items: center;
   }
 
   .controls input {
-    flex: 1 1 250px;
-    padding: 0.5rem 0.8rem;
+    flex: 1 1 220px;
+    padding: 0.5rem 0.7rem;
     font-size: 0.95rem;
     border-radius: 8px;
   }
 
   .controls button {
     width: auto;
-    padding: 0.5rem 1.2rem;
+    padding: 0.5rem 1rem;
     font-size: 0.9rem;
     border-radius: 8px;
   }
 
   .treeWrapper {
-    padding: 0.8rem;
+    padding: 0.7rem;
   }
 
   .childBranch {
-    margin-left: 1rem;
-    padding-left: 0.8rem;
+    margin-left: 0.8rem;
+    padding-left: 0.7rem;
     border-left-width: 2px;
   }
 
   .item {
-    padding: 0.7rem 0.8rem;
+    padding: 0.6rem 0.7rem;
   }
 
   .title {
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .toggleBtn {
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .dragHandle {
-    font-size: 16px;
+    font-size: 15px;
   }
 }
