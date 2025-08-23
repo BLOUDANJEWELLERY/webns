@@ -17,6 +17,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import React from 'react'
+import { client } from '../../lib/sanityClient'
 
 export interface CategoryRaw {
   _id: string
@@ -29,6 +30,7 @@ interface CategoryNode extends CategoryRaw {
   children: CategoryNode[]
 }
 
+// Build hierarchical tree
 const buildTree = (categories: CategoryRaw[]): CategoryNode[] => {
   const map: Record<string, CategoryNode> = {}
   const roots: CategoryNode[] = []
@@ -50,6 +52,7 @@ const buildTree = (categories: CategoryRaw[]): CategoryNode[] => {
   return roots
 }
 
+// Sortable item
 interface SortableItemProps {
   id: string
   title: string
@@ -99,6 +102,7 @@ const SortableItem: React.FC<SortableItemProps> = ({
   )
 }
 
+// Recursive tree renderer
 const renderTree = (
   nodes: CategoryNode[],
   selectedId: string | null,
@@ -130,11 +134,11 @@ const renderTree = (
 }
 
 interface Props {
-  initialCategories: CategoryRaw[]
+  categories: CategoryRaw[]
 }
 
-export default function CategoriesPage({ initialCategories }: Props) {
-  const [catList, setCatList] = useState<CategoryRaw[]>(initialCategories)
+export default function CategoriesPage({ categories }: Props) {
+  const [catList, setCatList] = useState<CategoryRaw[]>(categories)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [inputTitle, setInputTitle] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
@@ -188,7 +192,7 @@ export default function CategoriesPage({ initialCategories }: Props) {
     await fetchLatest()
   }
 
-  // ---------------- Drag & Drop (siblings only, optimistic update) ----------------
+  // Drag & Drop (siblings only, optimistic update)
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
     if (!over || active.id === over.id) return
@@ -199,7 +203,6 @@ export default function CategoriesPage({ initialCategories }: Props) {
     const newIndex = siblings.findIndex(c => c._id === over.id)
     const newSiblings = arrayMove(siblings, oldIndex, newIndex)
 
-    // Optimistic local update
     const newList = catList.map(c => (c.parent?._id || null) === parentId ? newSiblings.find(s => s._id === c._id)! : c)
     setCatList(newList)
 
@@ -212,7 +215,6 @@ export default function CategoriesPage({ initialCategories }: Props) {
           order: newSiblings.map((c, i) => ({ id: c._id, order: i })),
         }),
       })
-      // Only fetch after API returns to avoid snap-back
       await fetchLatest()
     } catch (err) {
       console.error(err)
@@ -248,7 +250,14 @@ export default function CategoriesPage({ initialCategories }: Props) {
 
 // ------------------- getStaticProps -------------------
 export async function getStaticProps() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/categories`)
-  const initialCategories: CategoryRaw[] = await res.json()
-  return { props: { initialCategories }, revalidate: 10 }
+  const categories: CategoryRaw[] = await client.fetch(`
+    *[_type=="category"]{
+      _id,
+      title,
+      parent->{_id, title},
+      order
+    } | order(order asc)
+  `)
+
+  return { props: { categories: categories || [] } }
 }
