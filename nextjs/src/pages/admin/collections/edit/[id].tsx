@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 import Image from 'next/image'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
-import styles from '../../../../styles/admincat.module.css'
+import styles from '../../../styles/admincat.module.css'
 
 type Product = {
   _id: string
@@ -17,6 +17,7 @@ type Collection = {
   name: string
   description: string
   linkTarget: string
+  slug: { _type: string; current: string }
   image?: { asset: { _ref: string } }
   products: Product[]
 }
@@ -36,6 +37,18 @@ const client = createClient({
 const builder = imageUrlBuilder(client)
 const urlFor = (source: any) => builder.image(source).url()
 
+// Simple slugify helper
+const slugify = (text: string) =>
+  text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/&/g, '-and-')
+    .replace(/[^\w\-]+/g, '')
+    .replace(/\-\-+/g, '-')
+    .slice(0, 96)
+
 export default function EditCollectionPage({ collection, allProducts }: Props) {
   const router = useRouter()
   const { id } = router.query
@@ -43,6 +56,7 @@ export default function EditCollectionPage({ collection, allProducts }: Props) {
   const [name, setName] = useState(collection.name)
   const [description, setDescription] = useState(collection.description || '')
   const [linkTarget, setLinkTarget] = useState(collection.linkTarget || '')
+  const [slug, setSlug] = useState(collection.slug?.current || '')
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(
     collection.image ? urlFor(collection.image) : null
@@ -53,6 +67,11 @@ export default function EditCollectionPage({ collection, allProducts }: Props) {
   const [selectedProducts, setSelectedProducts] = useState<string[]>(
     collection.products.map(p => p._id)
   )
+
+  // Auto-update slug whenever name changes
+  useEffect(() => {
+    setSlug(slugify(name))
+  }, [name])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -112,6 +131,7 @@ export default function EditCollectionPage({ collection, allProducts }: Props) {
         body: JSON.stringify({
           id,
           name,
+          slug: { _type: 'slug', current: slug },
           description,
           linkTarget,
           image: imageAsset,
@@ -142,6 +162,12 @@ export default function EditCollectionPage({ collection, allProducts }: Props) {
           placeholder="Collection Name"
           value={name}
           onChange={e => setName(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Slug (auto-updates)"
+          value={slug}
+          readOnly
         />
         <textarea
           placeholder="Description"
@@ -217,7 +243,7 @@ export async function getServerSideProps(context: any) {
 
   const collection: Collection = await client.fetch(
     `*[_type=="collection" && _id==$id][0]{
-      _id, name, description, linkTarget, image,
+      _id, name, description, linkTarget, slug, image,
       "products": products[]->{_id, title, "defaultImage": defaultImage.asset->{_id,url}}
     }`,
     { id }
