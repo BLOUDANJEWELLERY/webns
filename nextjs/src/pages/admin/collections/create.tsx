@@ -1,15 +1,19 @@
 // src/admin/collections/create.tsx
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/router'
+import { createClient } from 'next-sanity'
 import styles from '../../../styles/admincat.module.css'
 
 type Product = {
   _id: string
   title: string
-  defaultImage?: { asset: { _ref: string } }
 }
 
-export default function CreateCollectionPage() {
+type Props = {
+  products: Product[]
+}
+
+export default function CreateCollectionPage({ products }: Props) {
   const router = useRouter()
 
   const [name, setName] = useState('')
@@ -18,23 +22,8 @@ export default function CreateCollectionPage() {
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
 
-  const [products, setProducts] = useState<Product[]>([])
   const [search, setSearch] = useState('')
   const [selectedProducts, setSelectedProducts] = useState<string[]>([])
-
-  // Fetch products from API
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await fetch('/api/products/list')
-        const data = await res.json()
-        setProducts(data.products || [])
-      } catch (err) {
-        console.error(err)
-      }
-    }
-    fetchProducts()
-  }, [])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) setImageFile(e.target.files[0])
@@ -56,7 +45,7 @@ export default function CreateCollectionPage() {
 
     let imageAsset: any = null
 
-    // Upload image first if provided
+    // Upload image if chosen
     if (imageFile) {
       const formData = new FormData()
       formData.append('file', imageFile)
@@ -81,7 +70,6 @@ export default function CreateCollectionPage() {
       }
     }
 
-    // Create collection via backend API
     try {
       const res = await fetch('/api/collections/create', {
         method: 'POST',
@@ -109,7 +97,7 @@ export default function CreateCollectionPage() {
     }
   }
 
-  // Filtered products
+  // Filter products by search
   const filteredProducts = products.filter(p =>
     p.title.toLowerCase().includes(search.toLowerCase())
   )
@@ -133,7 +121,7 @@ export default function CreateCollectionPage() {
         />
         <input
           type="text"
-          placeholder="Link Target (e.g. /product?category=men)"
+          placeholder="Link Target (e.g. /products?category=men)"
           value={linkTarget}
           onChange={e => setLinkTarget(e.target.value)}
         />
@@ -146,6 +134,7 @@ export default function CreateCollectionPage() {
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
+
         <div className={styles.productList}>
           {filteredProducts.map(product => (
             <label key={product._id} className={styles.productItem}>
@@ -169,3 +158,19 @@ export default function CreateCollectionPage() {
     </div>
   )
 }
+
+// ✅ Server-side fetch of products
+export async function getServerSideProps() {
+  const client = createClient({
+    projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
+    dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
+    apiVersion: '2023-08-01',
+    useCdn: false,
+  })
+
+  const products = await client.fetch(
+    `*[_type == "product"]{_id, title} | order(title asc)`
+  )
+
+  return { props: { products } }
+}m
