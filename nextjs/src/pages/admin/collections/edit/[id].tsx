@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 import Image from 'next/image'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
-import styles from '../../../../styles/admincat.module.css'
+import styles from '../../../styles/admincat.module.css'
 
 type Product = {
   _id: string
@@ -15,8 +15,8 @@ type Product = {
 type Collection = {
   _id: string
   name: string
-  description: string
-  linkTarget: string
+  description?: string
+  linkTarget?: string
   slug: { _type: string; current: string }
   image?: { asset: { _ref: string } }
   products: Product[]
@@ -62,16 +62,13 @@ export default function EditCollectionPage({ collection, allProducts }: Props) {
     collection.image ? urlFor(collection.image) : null
   )
   const [isProcessing, setIsProcessing] = useState(false)
-
   const [search, setSearch] = useState('')
   const [selectedProducts, setSelectedProducts] = useState<string[]>(
     collection.products.map(p => p._id)
   )
 
   // Auto-update slug whenever name changes
-  useEffect(() => {
-    setSlug(slugify(name))
-  }, [name])
+  useEffect(() => setSlug(slugify(name)), [name])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -86,27 +83,20 @@ export default function EditCollectionPage({ collection, allProducts }: Props) {
     )
   }
 
-  const handleSubmit = async () => {
+  const handleUpdate = async () => {
     if (!name.trim() || !linkTarget.trim()) {
       alert('Name and Link Target are required')
       return
     }
-
     setIsProcessing(true)
 
     let imageAsset: any = collection.image || null
-
-    // Upload new image if chosen
     if (imageFile) {
       const formData = new FormData()
       formData.append('file', imageFile)
       formData.append('type', 'image')
-
       try {
-        const res = await fetch('/api/products/uploadImage', {
-          method: 'POST',
-          body: formData,
-        })
+        const res = await fetch('/api/product/uploadImage', { method: 'POST', body: formData })
         const data = await res.json()
         if (!res.ok || !data.assetId) throw new Error(data.error || 'Upload failed')
         imageAsset = { _type: 'image', asset: { _ref: data.assetId, _type: 'reference' } }
@@ -128,15 +118,7 @@ export default function EditCollectionPage({ collection, allProducts }: Props) {
       const res = await fetch('/api/collections/update', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id,
-          name,
-          slug: { _type: 'slug', current: slug },
-          description,
-          linkTarget,
-          image: imageAsset,
-          products: productsRef,
-        }),
+        body: JSON.stringify({ id, name, slug: { _type: 'slug', current: slug }, description, linkTarget, image: imageAsset, products: productsRef }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Update failed')
@@ -145,6 +127,23 @@ export default function EditCollectionPage({ collection, allProducts }: Props) {
       console.error(err)
       alert(err.message || 'Collection update failed')
       setIsProcessing(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this collection? This cannot be undone.')) return
+    try {
+      const res = await fetch('/api/collections/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Delete failed')
+      router.push('/admin/collections')
+    } catch (err: any) {
+      console.error(err)
+      alert(err.message || 'Failed to delete collection')
     }
   }
 
@@ -157,80 +156,42 @@ export default function EditCollectionPage({ collection, allProducts }: Props) {
       <h1 className={styles.pageTitle}>Edit Collection</h1>
 
       <div className={styles.controls}>
-        <input
-          type="text"
-          placeholder="Collection Name"
-          value={name}
-          onChange={e => setName(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Slug (auto-updates)"
-          value={slug}
-          readOnly
-        />
-        <textarea
-          placeholder="Description"
-          rows={3}
-          value={description}
-          onChange={e => setDescription(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Link Target (e.g. /products?category=men)"
-          value={linkTarget}
-          onChange={e => setLinkTarget(e.target.value)}
-        />
+        <input type="text" placeholder="Collection Name" value={name} onChange={e => setName(e.target.value)} />
+        <input type="text" placeholder="Slug (auto-updates)" value={slug} readOnly />
+        <textarea placeholder="Description" rows={3} value={description} onChange={e => setDescription(e.target.value)} />
+        <input type="text" placeholder="Link Target" value={linkTarget} onChange={e => setLinkTarget(e.target.value)} />
         <input type="file" accept="image/*" onChange={handleFileChange} />
 
-        {imagePreview && (
-          <div style={{ marginTop: '10px' }}>
-            <Image src={imagePreview} alt="Preview" width={150} height={150} />
-          </div>
-        )}
+        {imagePreview && <div style={{ marginTop: '10px' }}>
+          <Image src={imagePreview} alt="Preview" width={150} height={150} />
+        </div>}
 
         <h3>Select Products</h3>
-        <input
-          type="text"
-          placeholder="Search products..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
+        <input type="text" placeholder="Search products..." value={search} onChange={e => setSearch(e.target.value)} />
 
         <div className={styles.productList}>
           {filteredProducts.map(product => (
             <label key={product._id} className={styles.productItem}>
-              <input
-                type="checkbox"
-                checked={selectedProducts.includes(product._id)}
-                onChange={() => toggleProductSelection(product._id)}
-              />
-              {product.defaultImage?.url && (
-                <Image
-                  src={product.defaultImage.url}
-                  alt={product.title}
-                  width={50}
-                  height={50}
-                  style={{ marginRight: '10px' }}
-                />
-              )}
+              <input type="checkbox" checked={selectedProducts.includes(product._id)} onChange={() => toggleProductSelection(product._id)} />
+              {product.defaultImage?.url && <Image src={product.defaultImage.url} alt={product.title} width={50} height={50} style={{ marginRight: '10px' }} />}
               {product.title}
             </label>
           ))}
         </div>
 
-        <button
-          onClick={handleSubmit}
-          disabled={isProcessing || !name.trim() || !linkTarget.trim()}
-        >
+        <button onClick={handleUpdate} disabled={isProcessing || !name.trim() || !linkTarget.trim()}>
           {isProcessing ? 'Updating...' : 'Update Collection'}
+        </button>
+
+        <button onClick={handleDelete} style={{ marginTop: '10px', backgroundColor: 'red', color: 'white' }}>
+          Delete Collection
         </button>
       </div>
     </div>
   )
 }
 
-// Fetch collection and all products
+// Fetch collection and all products server-side
 export async function getServerSideProps(context: any) {
   const { id } = context.query
 
