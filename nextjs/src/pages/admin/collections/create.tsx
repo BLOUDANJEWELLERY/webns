@@ -1,18 +1,11 @@
 // src/admin/collections/create.tsx
 import { useState } from 'react'
 import { useRouter } from 'next/router'
-import { createClient } from 'next-sanity'
 import styles from '../../../styles/admincat.module.css'
-
-const client = createClient({
-  projectId: '3jc8hsku', // your Sanity projectId
-  dataset: 'production',
-  apiVersion: '2023-07-30',
-  useCdn: false,
-})
 
 export default function CreateCollectionPage() {
   const router = useRouter()
+
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [linkTarget, setLinkTarget] = useState('')
@@ -31,8 +24,9 @@ export default function CreateCollectionPage() {
 
     setIsProcessing(true)
 
-    let imageAsset = null
+    let imageAsset: any = null
 
+    // Upload image first if provided
     if (imageFile) {
       const formData = new FormData()
       formData.append('file', imageFile)
@@ -43,26 +37,30 @@ export default function CreateCollectionPage() {
           body: formData,
         })
         const data = await res.json()
+        if (!data.assetId) throw new Error('Image upload failed')
         imageAsset = { _type: 'image', asset: { _ref: data.assetId, _type: 'reference' } }
       } catch (err) {
-        console.error('Image upload failed', err)
+        console.error(err)
         alert('Image upload failed')
         setIsProcessing(false)
         return
       }
     }
 
+    // Create collection via backend API
     try {
-      await client.create({
-        _type: 'collection',
-        name,
-        description,
-        linkTarget,
-        image: imageAsset || null,
+      const res = await fetch('/api/collections/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description, linkTarget, image: imageAsset }),
       })
+      const data = await res.json()
+
+      if (!data.success) throw new Error(data.error || 'Creation failed')
+
       router.push('/admin/collections')
     } catch (err) {
-      console.error('Collection creation failed', err)
+      console.error(err)
       alert('Collection creation failed')
       setIsProcessing(false)
     }
@@ -93,7 +91,10 @@ export default function CreateCollectionPage() {
         />
         <input type="file" accept="image/*" onChange={handleFileChange} />
 
-        <button onClick={handleSubmit} disabled={isProcessing || !name.trim() || !linkTarget.trim()}>
+        <button
+          onClick={handleSubmit}
+          disabled={isProcessing || !name.trim() || !linkTarget.trim()}
+        >
           {isProcessing ? 'Creating...' : 'Create Collection'}
         </button>
       </div>
