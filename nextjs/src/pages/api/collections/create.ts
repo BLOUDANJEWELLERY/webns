@@ -8,21 +8,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { name, description, linkTarget, image } = req.body
+    const { name, description, linkTarget, image, products } = req.body
 
     if (!name || !linkTarget) {
       return res.status(400).json({ error: 'Name and linkTarget are required' })
     }
 
-    const doc = await client.create({
+    const doc = {
       _type: 'collection',
       name,
-      description,
+      description: description || '',
       linkTarget,
       image: image || null,
-    })
+      products: Array.isArray(products) ? products : [],
+    }
 
-    return res.status(200).json({ success: true, collection: doc })
+    const created = await client.create(doc)
+
+    return res.status(200).json({ success: true, collection: created })
   } catch (err: any) {
     console.error('Error creating collection:', err.message)
     return res.status(500).json({ error: 'Failed to create collection' })
