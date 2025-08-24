@@ -13,7 +13,9 @@ export default function CreateCollectionPage() {
   const [isProcessing, setIsProcessing] = useState(false)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) setImageFile(e.target.files[0])
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0])
+    }
   }
 
   const handleSubmit = async () => {
@@ -26,7 +28,7 @@ export default function CreateCollectionPage() {
 
     let imageAsset: any = null
 
-    // Upload image first if provided
+    // 🔹 Step 1: Upload image if selected
     if (imageFile) {
       const formData = new FormData()
       formData.append('file', imageFile)
@@ -36,31 +38,45 @@ export default function CreateCollectionPage() {
           method: 'POST',
           body: formData,
         })
+
         const data = await res.json()
-        if (!data.assetId) throw new Error('Image upload failed')
-        imageAsset = { _type: 'image', asset: { _ref: data.assetId, _type: 'reference' } }
+        if (!res.ok || !data.assetId) {
+          throw new Error(data.error || 'Image upload failed')
+        }
+
+        imageAsset = {
+          _type: 'image',
+          asset: { _type: 'reference', _ref: data.assetId },
+        }
       } catch (err) {
-        console.error(err)
+        console.error('Image upload error:', err)
         alert('Image upload failed')
         setIsProcessing(false)
         return
       }
     }
 
-    // Create collection via backend API
+    // 🔹 Step 2: Create collection using secure API
     try {
       const res = await fetch('/api/collections/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, description, linkTarget, image: imageAsset }),
+        body: JSON.stringify({
+          name: name.trim(),
+          description: description.trim(),
+          linkTarget: linkTarget.trim(),
+          image: imageAsset,
+        }),
       })
-      const data = await res.json()
 
-      if (!data.success) throw new Error(data.error || 'Creation failed')
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Collection creation failed')
+      }
 
       router.push('/admin/collections')
     } catch (err) {
-      console.error(err)
+      console.error('Collection creation error:', err)
       alert('Collection creation failed')
       setIsProcessing(false)
     }
@@ -75,19 +91,19 @@ export default function CreateCollectionPage() {
           type="text"
           placeholder="Collection Name"
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
         />
         <textarea
           placeholder="Description"
           rows={3}
           value={description}
-          onChange={e => setDescription(e.target.value)}
+          onChange={(e) => setDescription(e.target.value)}
         />
         <input
           type="text"
-          placeholder="Link Target (e.g. /product?category=men)"
+          placeholder="Link Target (e.g. /products?category=men)"
           value={linkTarget}
-          onChange={e => setLinkTarget(e.target.value)}
+          onChange={(e) => setLinkTarget(e.target.value)}
         />
         <input type="file" accept="image/*" onChange={handleFileChange} />
 
