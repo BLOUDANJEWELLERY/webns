@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 import Image from 'next/image'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
-import styles from '../../../styles/admincat.module.css'
+import styles from '../../../../styles/admincat.module.css'
 
 type Product = {
   _id: string
