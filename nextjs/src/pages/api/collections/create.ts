@@ -14,19 +14,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Name and linkTarget are required' })
     }
 
-    const doc = {
+    const doc = await client.create({
       _type: 'collection',
       name,
-      description: description || '',
+      description,
       linkTarget,
       image: image || null,
-    }
+    })
 
-    const created = await client.create(doc)
-
-    res.status(200).json({ success: true, collection: created })
+    return res.status(200).json({ success: true, collection: doc })
   } catch (err: any) {
-    console.error(err)
-    res.status(500).json({ error: err.message })
+    console.error('Error creating collection:', err.message)
+    return res.status(500).json({ error: 'Failed to create collection' })
   }
 }
