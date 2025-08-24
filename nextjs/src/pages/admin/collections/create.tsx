@@ -34,7 +34,7 @@ export default function CreateCollectionPage() {
       formData.append('file', imageFile)
 
       try {
-        const res = await fetch('/api/product/uploadImage', {
+        const res = await fetch('/api/products/uploadImage', {
           method: 'POST',
           body: formData,
         })
