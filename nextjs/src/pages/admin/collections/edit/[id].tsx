@@ -96,7 +96,7 @@ export default function EditCollectionPage({ collection, allProducts }: Props) {
       formData.append('file', imageFile)
       formData.append('type', 'image')
       try {
-        const res = await fetch('/api/product/uploadImage', { method: 'POST', body: formData })
+        const res = await fetch('/api/products/uploadImage', { method: 'POST', body: formData })
         const data = await res.json()
         if (!res.ok || !data.assetId) throw new Error(data.error || 'Upload failed')
         imageAsset = { _type: 'image', asset: { _ref: data.assetId, _type: 'reference' } }
