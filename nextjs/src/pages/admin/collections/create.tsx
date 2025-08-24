@@ -63,7 +63,7 @@ export default function CreateCollectionPage({ products }: Props) {
       formData.append('type', 'image')
 
       try {
-        const res = await fetch('/api/product/uploadImage', {
+        const res = await fetch('/api/products/uploadImage', {
           method: 'POST',
           body: formData,
         })
