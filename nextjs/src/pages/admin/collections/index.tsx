@@ -7,14 +7,15 @@ import imageUrlBuilder from '@sanity/image-url'
 import styles from '../../../styles/admincat.module.css'
 
 const client = createClient({
-  projectId: '3jc8hsku', // your projectId
+  projectId: '3jc8hsku', // replace with your projectId
   dataset: 'production',
   apiVersion: '2023-07-30',
   useCdn: false,
 })
 
 const builder = imageUrlBuilder(client)
-const urlFor = (source: any) => builder.image(source)
+const urlFor = (source: any) =>
+  builder.image(source).width(150).height(150).fit('crop').auto('format').quality(90)
 
 type Collection = {
   _id: string
@@ -42,25 +43,42 @@ export default function CollectionsListPage({ collections }: Props) {
       </div>
 
       <div className={styles.treeWrapper}>
-        {collections.map(col => (
+        {collections.map((col) => (
           <Link
             key={col._id}
             href={`/admin/collections/edit/${col._id}`}
             className={`${styles.item} ${styles.collectionItem}`}
           >
             <div className={styles.itemContent}>
-              {col.image && (
+              {col.image ? (
                 <Image
-                  src={urlFor(col.image).width(50).height(50).url()}
+                  src={urlFor(col.image).url()}
                   alt={col.name}
-                  width={50}
-                  height={50}
+                  width={80}
+                  height={80}
                   className={styles.collectionImage}
+                  style={{
+                    borderRadius: '6px',
+                    objectFit: 'cover',
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: 80,
+                    height: 80,
+                    background: '#eee',
+                    borderRadius: '6px',
+                  }}
                 />
               )}
-              <span className={styles.title}>{col.name}</span>
+              <div style={{ marginLeft: '0.75rem' }}>
+                <span className={styles.title}>{col.name}</span>
+                <p style={{ fontSize: '0.85rem', color: '#666', margin: 0 }}>
+                  {col.description || 'No description'}
+                </p>
+              </div>
             </div>
-            <span>{col.description}</span>
           </Link>
         ))}
 
