@@ -3,13 +3,12 @@ import { useState } from 'react'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
 import { createClient } from 'next-sanity'
-import imageUrlBuilder from '@sanity/image-url'
 import styles from '../../../styles/admincat.module.css'
 
 type Product = {
   _id: string
   title: string
-  defaultImage?: any
+  defaultImage?: { _id: string; url: string }
 }
 
 type Props = {
@@ -22,9 +21,6 @@ const client = createClient({
   apiVersion: '2023-08-01',
   useCdn: false,
 })
-
-const builder = imageUrlBuilder(client)
-const urlFor = (source: any) => builder.image(source).url()
 
 export default function CreateCollectionPage({ products }: Props) {
   const router = useRouter()
@@ -61,8 +57,6 @@ export default function CreateCollectionPage({ products }: Props) {
     setIsProcessing(true)
 
     let imageAsset: any = null
-
-    // Upload collection image if provided
     if (imageFile) {
       const formData = new FormData()
       formData.append('file', imageFile)
@@ -84,7 +78,7 @@ export default function CreateCollectionPage({ products }: Props) {
       }
     }
 
-    // Prepare products array with _key for Sanity
+    // Generate unique _key for each product reference
     const productsRef = selectedProducts.map(id => ({
       _key: `${id}-${Date.now()}`,
       _type: 'reference',
@@ -164,13 +158,23 @@ export default function CreateCollectionPage({ products }: Props) {
                 checked={selectedProducts.includes(product._id)}
                 onChange={() => toggleProductSelection(product._id)}
               />
-              {product.defaultImage?.asset?.url && (
+              {product.defaultImage?.url ? (
                 <Image
-                  src={product.defaultImage.asset.url}
+                  src={product.defaultImage.url}
                   alt={product.title}
                   width={50}
                   height={50}
-                  style={{ marginRight: '10px' }}
+                  style={{ marginRight: '10px', borderRadius: '4px' }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: 50,
+                    height: 50,
+                    background: '#ccc',
+                    marginRight: '10px',
+                    borderRadius: '4px',
+                  }}
                 />
               )}
               {product.title}
@@ -189,7 +193,7 @@ export default function CreateCollectionPage({ products }: Props) {
   )
 }
 
-// Server-side fetch of products
+// Server-side fetch of products with default images
 export async function getServerSideProps() {
   const client = createClient({
     projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
