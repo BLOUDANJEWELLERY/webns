@@ -91,7 +91,6 @@ export default function CreateCollectionPage({ products }: Props) {
       _ref: id,
     }))
 
-    // Create collection
     try {
       const res = await fetch('/api/collections/create', {
         method: 'POST',
@@ -165,9 +164,9 @@ export default function CreateCollectionPage({ products }: Props) {
                 checked={selectedProducts.includes(product._id)}
                 onChange={() => toggleProductSelection(product._id)}
               />
-              {product.defaultImage && (
+              {product.defaultImage?.asset?.url && (
                 <Image
-                  src={urlFor(product.defaultImage).width(50).height(50).url()}
+                  src={product.defaultImage.asset.url}
                   alt={product.title}
                   width={50}
                   height={50}
@@ -190,7 +189,7 @@ export default function CreateCollectionPage({ products }: Props) {
   )
 }
 
-// Fetch products server-side
+// Server-side fetch of products
 export async function getServerSideProps() {
   const client = createClient({
     projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
@@ -203,7 +202,10 @@ export async function getServerSideProps() {
     *[_type == "product"]{
       _id,
       title,
-      defaultImage
+      "defaultImage": defaultImage.asset->{
+        _id,
+        url
+      }
     } | order(title asc)
   `)
 
