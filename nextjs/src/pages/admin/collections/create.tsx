@@ -49,8 +49,8 @@ export default function CreateCollectionPage({ products }: Props) {
   }
 
   const handleSubmit = async () => {
-    if (!name.trim() || !linkTarget.trim()) {
-      alert('Name and Link Target are required')
+    if (!name.trim()) {
+      alert('Name is required')
       return
     }
 
@@ -78,12 +78,7 @@ export default function CreateCollectionPage({ products }: Props) {
       }
     }
 
-    // Generate unique _key for each product reference
-    const productsRef = selectedProducts.map(id => ({
-      _key: `${id}-${Date.now()}`,
-      _type: 'reference',
-      _ref: id,
-    }))
+    const productsPayload = selectedProducts.map(id => ({ _ref: id }))
 
     try {
       const res = await fetch('/api/collections/create', {
@@ -94,11 +89,11 @@ export default function CreateCollectionPage({ products }: Props) {
           description,
           linkTarget,
           image: imageAsset,
-          products: productsRef,
+          products: productsPayload,
         }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Creation failed')
+      if (!res.ok) throw new Error(data.error || 'Collection creation failed')
       router.push('/admin/collections')
     } catch (err: any) {
       console.error(err)
@@ -184,7 +179,7 @@ export default function CreateCollectionPage({ products }: Props) {
 
         <button
           onClick={handleSubmit}
-          disabled={isProcessing || !name.trim() || !linkTarget.trim()}
+          disabled={isProcessing || !name.trim()}
         >
           {isProcessing ? 'Creating...' : 'Create Collection'}
         </button>
