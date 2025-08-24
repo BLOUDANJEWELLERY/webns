@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
-import styles from '../../../styles/Home.module.css'
+import styles from '../../../styles/admincat.module.css'
 
 const client = createClient({
   projectId: '3jc8hsku', // your projectId
