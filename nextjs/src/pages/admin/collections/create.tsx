@@ -1,176 +1,175 @@
-// src/admin/collections/create.tsx
+// src/pages/admin/create.tsx
 import { useState } from 'react'
 import { useRouter } from 'next/router'
-import { createClient } from 'next-sanity'
-import styles from '../../../styles/admincat.module.css'
+import Image from 'next/image'
+import { GetServerSideProps } from 'next'
+import { client } from '../../lib/sanityClient'
+import imageUrlBuilder from '@sanity/image-url'
 
-type Product = {
-  _id: string
-  title: string
+const builder = imageUrlBuilder(client)
+function urlFor(source: any) {
+  return builder.image(source).url()
 }
 
-type Props = {
-  products: Product[]
-}
-
-export default function CreateCollectionPage({ products }: Props) {
+export default function CreateCollection({ products }: { products: any[] }) {
   const router = useRouter()
-
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [linkTarget, setLinkTarget] = useState('')
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [isProcessing, setIsProcessing] = useState(false)
-
-  const [search, setSearch] = useState('')
+  const [image, setImage] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [selectedProducts, setSelectedProducts] = useState<string[]>([])
+  const [search, setSearch] = useState('')
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) setImageFile(e.target.files[0])
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      setImage(file)
+      setImagePreview(URL.createObjectURL(file)) // local preview
+    }
   }
 
-  const toggleProductSelection = (id: string) => {
-    setSelectedProducts(prev =>
-      prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
+  const handleProductSelect = (id: string) => {
+    setSelectedProducts((prev) =>
+      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
     )
   }
 
-  const handleSubmit = async () => {
-    if (!name.trim() || !linkTarget.trim()) {
-      alert('Name and Link Target are required')
-      return
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
 
-    setIsProcessing(true)
-
-    let imageAsset: any = null
-
-    // Upload image if chosen
-    if (imageFile) {
+    let imageAsset = null
+    if (image) {
       const formData = new FormData()
-      formData.append('file', imageFile)
+      formData.append('file', image)
       formData.append('type', 'image')
 
-      try {
-        const res = await fetch('/api/products/uploadImage', {
-          method: 'POST',
-          body: formData,
-        })
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error)
-        imageAsset = {
-          _type: 'image',
-          asset: { _type: 'reference', _ref: data.assetId },
-        }
-      } catch (err) {
-        console.error(err)
-        alert('Image upload failed')
-        setIsProcessing(false)
-        return
+      const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData })
+      const data = await uploadRes.json()
+      if (data.asset) {
+        imageAsset = { _type: 'image', asset: { _type: 'reference', _ref: data.asset._id } }
       }
     }
 
-    try {
-      const res = await fetch('/api/collections/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          description,
-          linkTarget,
-          image: imageAsset,
-          products: selectedProducts.map(id => ({
-            _type: 'reference',
-            _ref: id,
-          })),
-        }),
-      })
-      const data = await res.json()
+    const res = await fetch('/api/collections/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        description,
+        linkTarget,
+        image: imageAsset,
+        products: selectedProducts.map((id) => ({ _ref: id })),
+      }),
+    })
 
-      if (!res.ok) throw new Error(data.error || 'Creation failed')
-
+    if (res.ok) {
       router.push('/admin/collections')
-    } catch (err) {
-      console.error(err)
-      alert('Collection creation failed')
-      setIsProcessing(false)
+    } else {
+      const err = await res.json()
+      alert(err.error || 'Failed to create collection')
     }
   }
 
-  // Filter products by search
-  const filteredProducts = products.filter(p =>
+  const filteredProducts = products.filter((p) =>
     p.title.toLowerCase().includes(search.toLowerCase())
   )
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.pageTitle}>Create New Collection</h1>
-
-      <div className={styles.controls}>
-        <input
-          type="text"
-          placeholder="Collection Name"
-          value={name}
-          onChange={e => setName(e.target.value)}
-        />
-        <textarea
-          placeholder="Description"
-          rows={3}
-          value={description}
-          onChange={e => setDescription(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Link Target (e.g. /products?category=men)"
-          value={linkTarget}
-          onChange={e => setLinkTarget(e.target.value)}
-        />
-        <input type="file" accept="image/*" onChange={handleFileChange} />
-
-        <h3>Select Products</h3>
-        <input
-          type="text"
-          placeholder="Search products..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-
-        <div className={styles.productList}>
-          {filteredProducts.map(product => (
-            <label key={product._id} className={styles.productItem}>
-              <input
-                type="checkbox"
-                checked={selectedProducts.includes(product._id)}
-                onChange={() => toggleProductSelection(product._id)}
-              />
-              {product.title}
-            </label>
-          ))}
+    <div style={{ maxWidth: '600px', margin: 'auto' }}>
+      <h1>Create New Collection</h1>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Collection Name</label>
+          <input value={name} onChange={(e) => setName(e.target.value)} required />
         </div>
 
-        <button
-          onClick={handleSubmit}
-          disabled={isProcessing || !name.trim() || !linkTarget.trim()}
-        >
-          {isProcessing ? 'Creating...' : 'Create Collection'}
+        <div>
+          <label>Description</label>
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+        </div>
+
+        <div>
+          <label>Link Target</label>
+          <input value={linkTarget} onChange={(e) => setLinkTarget(e.target.value)} />
+        </div>
+
+        <div>
+          <label>Collection Image</label>
+          <input type="file" accept="image/*" onChange={handleImageChange} />
+          {imagePreview && (
+            <div style={{ marginTop: '10px' }}>
+              <Image src={imagePreview} alt="Preview" width={200} height={200} />
+            </div>
+          )}
+        </div>
+
+        <div style={{ marginTop: '20px' }}>
+          <label>Search Products</label>
+          <input
+            type="text"
+            placeholder="Search..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <div style={{ marginTop: '10px', maxHeight: '300px', overflowY: 'auto' }}>
+            {filteredProducts.map((product) => (
+              <div
+                key={product._id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginBottom: '10px',
+                  cursor: 'pointer',
+                }}
+                onClick={() => handleProductSelect(product._id)}
+              >
+                {product.defaultImage ? (
+                  <Image
+                    src={urlFor(product.defaultImage).width(80).height(80).url()}
+                    alt={product.title}
+                    width={80}
+                    height={80}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: 80,
+                      height: 80,
+                      background: '#ddd',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '12px',
+                    }}
+                  >
+                    No Image
+                  </div>
+                )}
+                <span style={{ marginLeft: '10px' }}>
+                  {product.title} {selectedProducts.includes(product._id) ? '✅' : ''}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <button type="submit" style={{ marginTop: '20px' }}>
+          Create Collection
         </button>
-      </div>
+      </form>
     </div>
   )
 }
 
-// ✅ Server-side fetch of products
-export async function getServerSideProps() {
-  const client = createClient({
-    projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-    dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
-    apiVersion: '2023-08-01',
-    useCdn: false,
-  })
-
-  const products = await client.fetch(
-    `*[_type == "product"]{_id, title} | order(title asc)`
-  )
+export const getServerSideProps: GetServerSideProps = async () => {
+  const products = await client.fetch(`
+    *[_type == "product"]{
+      _id,
+      title,
+      defaultImage
+    }
+  `)
 
   return { props: { products } }
 }
