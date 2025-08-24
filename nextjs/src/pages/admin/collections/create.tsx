@@ -20,9 +20,7 @@ export default function CreateCollectionPage() {
   const [isProcessing, setIsProcessing] = useState(false)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0])
-    }
+    if (e.target.files && e.target.files[0]) setImageFile(e.target.files[0])
   }
 
   const handleSubmit = async () => {
@@ -33,22 +31,19 @@ export default function CreateCollectionPage() {
 
     setIsProcessing(true)
 
-    let imageAssetId = null
+    let imageAsset = null
 
-    // Upload image to Sanity
     if (imageFile) {
       const formData = new FormData()
       formData.append('file', imageFile)
-      formData.append('contentType', imageFile.type)
-      formData.append('filename', imageFile.name)
 
       try {
-        const res = await fetch(`/api/sanity/upload`, {
+        const res = await fetch('/api/product/uploadImage', {
           method: 'POST',
           body: formData,
         })
         const data = await res.json()
-        imageAssetId = data.asset._id
+        imageAsset = { _type: 'image', asset: { _ref: data.assetId, _type: 'reference' } }
       } catch (err) {
         console.error('Image upload failed', err)
         alert('Image upload failed')
@@ -57,17 +52,13 @@ export default function CreateCollectionPage() {
       }
     }
 
-    // Create the collection in Sanity
     try {
-      await fetch('/api/collections/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          description,
-          linkTarget,
-          imageAssetId,
-        }),
+      await client.create({
+        _type: 'collection',
+        name,
+        description,
+        linkTarget,
+        image: imageAsset || null,
       })
       router.push('/admin/collections')
     } catch (err) {
