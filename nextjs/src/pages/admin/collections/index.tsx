@@ -1,40 +1,35 @@
 // src/admin/collections/index.tsx
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { client } from '../../../lib/sanityClient'
+import { createClient } from 'next-sanity'
+import imageUrlBuilder from '@sanity/image-url'
 import styles from '../../../styles/admincat.module.css'
 
-interface Collection {
+const client = createClient({
+  projectId: '3jc8hsku', // your projectId
+  dataset: 'production',
+  apiVersion: '2023-07-30',
+  useCdn: false,
+})
+
+const builder = imageUrlBuilder(client)
+const urlFor = (source: any) => builder.image(source)
+
+type Collection = {
   _id: string
   name: string
-  slug?: { current: string }
-  image?: { asset: { url: string } }
-  products?: { _id: string; title: string }[]
+  description: string
+  image: any
+  linkTarget: string
 }
 
-export default function CollectionsListPage() {
-  const [collections, setCollections] = useState<Collection[]>([])
-  const [loading, setLoading] = useState(true)
+interface Props {
+  collections: Collection[]
+}
 
-  const fetchCollections = async () => {
-    setLoading(true)
-    const data: Collection[] = await client.fetch(`
-      *[_type=="collection"]{
-        _id,
-        name,
-        slug,
-        image,
-        products[]->{_id, title}
-      } | order(name asc)
-    `)
-    setCollections(data)
-    setLoading(false)
-  }
-
-  useEffect(() => {
-    fetchCollections()
-  }, [])
+export default function CollectionsListPage({ collections }: Props) {
+  const [menuOpen, setMenuOpen] = useState(false)
 
   return (
     <div className={styles.container}>
@@ -46,8 +41,6 @@ export default function CollectionsListPage() {
         </Link>
       </div>
 
-      {loading && <div>Loading collections...</div>}
-
       <div className={styles.treeWrapper}>
         {collections.map(col => (
           <Link
@@ -56,9 +49,9 @@ export default function CollectionsListPage() {
             className={`${styles.item} ${styles.collectionItem}`}
           >
             <div className={styles.itemContent}>
-              {col.image?.asset?.url && (
+              {col.image && (
                 <Image
-                  src={col.image.asset.url}
+                  src={urlFor(col.image).width(50).height(50).url()}
                   alt={col.name}
                   width={50}
                   height={50}
@@ -67,14 +60,25 @@ export default function CollectionsListPage() {
               )}
               <span className={styles.title}>{col.name}</span>
             </div>
-            <span>{col.products?.length || 0} products</span>
+            <span>{col.description}</span>
           </Link>
         ))}
 
-        {!loading && collections.length === 0 && (
-          <div>No collections found. Create one to get started.</div>
-        )}
+        {collections.length === 0 && <div>No collections found. Create one to get started.</div>}
       </div>
     </div>
   )
+}
+
+// ---------------- Fetch collections from Sanity ----------------
+export async function getServerSideProps() {
+  const query = `*[_type == "collection"]{
+    _id,
+    name,
+    description,
+    image,
+    linkTarget
+  }`
+  const collections: Collection[] = await client.fetch(query)
+  return { props: { collections } }
 }
