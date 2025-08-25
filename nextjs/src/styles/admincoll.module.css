@@ -101,28 +101,19 @@
 }
 
 /* Button */
-button {
+/* ✅ Scoped Button Style */
+.button {
   margin-top: 1.5rem;
   padding: 0.85rem 1.5rem;
+  background: #8b5e3c;
   border: none;
   border-radius: 6px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.3s, transform 0.15s;
-  background: linear-gradient(135deg, #d4af37, #c4a46e); /* golden gradient */
   color: #fff;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.12);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
 }
 
-button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #caa437, #b8955e);
-  transform: translateY(-2px);
-}
-
-button:disabled {
-  background: #e0d6b8;
-  color: #8a7f6a;
-  cursor: not-allowed;
-  box-shadow: none;
+.button:hover {
+  background: #70472d;
 }
