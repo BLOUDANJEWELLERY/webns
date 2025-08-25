@@ -73,6 +73,8 @@ export default function AdminCreatePage({ categories }: { categories: CategoryRa
   const [defaultImagePreview, setDefaultImagePreview] = useState<string | null>(null)
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [colors, setColors] = useState<ColorOption[]>([])
+  // At the top of your AdminCreatePage component:
+const [openColors, setOpenColors] = useState<boolean[]>([]);
 
   // Modal controls
   const [showModal, setShowModal] = useState(false)
@@ -159,17 +161,30 @@ export default function AdminCreatePage({ categories }: { categories: CategoryRa
     )
   }
 
-  // ----------- Colors & Variants logic ----------
-  const addColor = () => {
-    setColors(prev => [
-      ...prev,
-      { color: '', imageFile: null, imagePreview: null, variants: [], _key: uuidv4() },
-    ])
-  }
+// ----------- Colors & Variants logic ----------
+const addColor = () => {
+  const newColor = {
+    color: '',
+    imageFile: null,
+    imagePreview: null,
+    variants: [],
+    _key: uuidv4(),
+  };
 
-  const removeColor = (index: number) => {
-    setColors(prev => prev.filter((_, i) => i !== index))
-  }
+  // Add the new color to colors array
+  setColors(prevColors => [...prevColors, newColor]);
+
+  // Automatically expand the new color block in the UI
+  setOpenColors(prevOpen => [...prevOpen, true]);
+};
+
+const removeColor = (index: number) => {
+  // Remove the color from colors array
+  setColors(prevColors => prevColors.filter((_, i) => i !== index));
+
+  // Also remove the corresponding open/close state
+  setOpenColors(prevOpen => prevOpen.filter((_, i) => i !== index));
+};
 
   const handleColorImageChange = (index: number, file: File) => {
     setColors(prev => {
