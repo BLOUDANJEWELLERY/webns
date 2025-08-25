@@ -27,7 +27,7 @@ type Product = {
 export default function AdminPage({ products }: { products: Product[] }) {
   return (
 <>
-<AdminHeader />
+<AdminHeader title="" titleHref="" />
     <div className={styles.mainContainer}>
       {/* Floating Settings Button 
           <Link href="/admin/categories" passHref>
