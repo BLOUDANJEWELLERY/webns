@@ -65,7 +65,7 @@ export default function AdminPage({ products }: { products: Product[] }) {
           {products.map((product) => (
             <Link
               key={product._id}
-              href={`/admin/${product.slug}`}
+              href={`/admin/products/${product.slug}`}
               className={styles.card}
             >
               {product.defaultImage?.asset && (
