@@ -60,6 +60,7 @@ export async function getServerSideProps() {
   `)
   return { props: { categories: categories || [] } }
 }
+const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
 export default function AdminCreatePage({ categories }: { categories: CategoryRaw[] }) {
   const router = useRouter()
