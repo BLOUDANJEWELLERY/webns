@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import styles from '../../styles/admin.module.css'
+import AdminHeader from '../components/AdminHeader'
 
 const client = createClient({
   projectId: '3jc8hsku',
@@ -25,6 +26,8 @@ type Product = {
 
 export default function AdminPage({ products }: { products: Product[] }) {
   return (
+<>
+<AdminHeader />
     <div className={styles.mainContainer}>
       {/* Floating Settings Button */}
           <Link href="/admin/categories" passHref>
@@ -89,6 +92,7 @@ export default function AdminPage({ products }: { products: Product[] }) {
         </div>
       )}
     </div>
+</>
   )
 }
 
