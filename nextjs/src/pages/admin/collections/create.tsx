@@ -4,6 +4,8 @@ import { useRouter } from 'next/router'
 import Image from 'next/image'
 import { createClient } from 'next-sanity'
 import styles from '../../../styles/admincat.module.css'
+import AdminHeader from '../../components/AdminHeader'
+
 
 type Product = {
   _id: string
@@ -107,6 +109,8 @@ export default function CreateCollectionPage({ products }: Props) {
   )
 
   return (
+<>
+ <AdminHeader title="Collections" titleHref="/admin/collections" />
     <div className={styles.container}>
       <h1 className={styles.pageTitle}>Create New Collection</h1>
 
@@ -185,6 +189,7 @@ export default function CreateCollectionPage({ products }: Props) {
         </button>
       </div>
     </div>
+</>
   )
 }
 
