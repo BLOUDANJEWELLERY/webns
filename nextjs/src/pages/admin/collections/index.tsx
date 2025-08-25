@@ -37,16 +37,17 @@ export default function CollectionsListPage({ collections }: Props) {
 <>
   <AdminHeader title="Admin Dashboard" titleHref="/admin" />
 
-  <div className={styles.container}>
-    <div className={styles.header}>
-      <h1 className={styles.pageTitle}>Collections</h1>
+  <div className={styles.mainContainer}>
+    <h1 className={styles.heading}>Collections</h1>
+
+    <div className={styles.createWrapper}>
       <Link href="/admin/collections/create">
-        <button className={styles.createButton}>+ Create Collection</button>
+        <button className={styles.actionButton}>+ Create Collection</button>
       </Link>
     </div>
 
     {collections.length === 0 ? (
-      <p className={styles.emptyMessage}>
+      <p className={styles.message}>
         No collections found. Start by creating a new collection.
       </p>
     ) : (
@@ -62,12 +63,12 @@ export default function CollectionsListPage({ collections }: Props) {
                 <Image
                   src={urlFor(col.image).url()}
                   alt={col.name}
-                  width={120}
-                  height={120}
+                  width={150}
+                  height={150}
                   className={styles.image}
                 />
               ) : (
-                <div className={styles.placeholder} />
+                <div className={styles.imageWrapper}></div>
               )}
             </div>
             <div className={styles.cardContent}>
