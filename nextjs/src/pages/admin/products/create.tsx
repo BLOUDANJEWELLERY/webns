@@ -77,10 +77,19 @@ export default function AdminCreatePage({ categories }: { categories: CategoryRa
   // At the top of your AdminCreatePage component:
 const [openColors, setOpenColors] = useState<boolean[]>([]);
 
-  // Modal controls
-  const [showModal, setShowModal] = useState(false)
+   // Modal controls
+  const [showUpdateModal, setShowUpdateModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [modalMessage, setModalMessage] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
+// For color & variant removal
+const [showRemoveColorModal, setShowRemoveColorModal] = useState(false)
+const [showRemoveVariantModal, setShowRemoveVariantModal] = useState(false)
+const [pendingRemoveColorIndex, setPendingRemoveColorIndex] = useState<number | null>(null)
+const [pendingRemoveVariant, setPendingRemoveVariant] = useState<{ ci: number, vi: number } | null>(null)
+
+
+
 
   // ----------- Category tree logic ----------
   const buildCategoryTree = (cats: CategoryRaw[] = []): CategoryNode[] => {
