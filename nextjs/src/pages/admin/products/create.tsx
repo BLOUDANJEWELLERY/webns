@@ -109,9 +109,15 @@ const buildCategoryTree = (cats: CategoryRaw[] = []): CategoryNode[] => {
 const categoryTree = useMemo(() => buildCategoryTree(categories || []), [categories]);
 
 // Toggle selection of category
+// Selected categories state
+const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+
+// Toggle a category on or off
 const handleCategoryToggle = (id: string) => {
   setSelectedCategories(prev =>
-    prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+    prev.includes(id)
+      ? prev.filter(catId => catId !== id) // remove if already selected
+      : [...prev, id] // add if not selected
   );
 };
 
