@@ -110,85 +110,93 @@ export default function CreateCollectionPage({ products }: Props) {
 
   return (
 <>
- <AdminHeader title="Collections" titleHref="/admin/collections" />
-    <div className={styles.container}>
-      <h1 className={styles.pageTitle}>Create New Collection</h1>
+  <AdminHeader title="Collections" titleHref="/admin/collections" />
 
-      <div className={styles.controls}>
-        <input
-          type="text"
-          placeholder="Collection Name"
-          value={name}
-          onChange={e => setName(e.target.value)}
-        />
-        <textarea
-          placeholder="Description"
-          rows={3}
-          value={description}
-          onChange={e => setDescription(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Link Target (e.g. /products?category=men)"
-          value={linkTarget}
-          onChange={e => setLinkTarget(e.target.value)}
-        />
-        <input type="file" accept="image/*" onChange={handleFileChange} />
+  <div className={styles.container}>
+    <h1 className={styles.pageTitle}>Create New Collection</h1>
 
-        {imagePreview && (
-          <div style={{ marginTop: '10px' }}>
-            <Image src={imagePreview} alt="Preview" width={150} height={150} />
-          </div>
-        )}
+    <div className={styles.controls}>
+      <input
+        type="text"
+        placeholder="Collection Name"
+        value={name}
+        onChange={e => setName(e.target.value)}
+        className={styles.controlsInput}
+      />
 
-        <h3>Select Products</h3>
-        <input
-          type="text"
-          placeholder="Search products..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
+      <textarea
+        placeholder="Description"
+        rows={3}
+        value={description}
+        onChange={e => setDescription(e.target.value)}
+        className={styles.controlsTextarea}
+      />
 
-        <div className={styles.productList}>
-          {filteredProducts.map(product => (
-            <label key={product._id} className={styles.productItem}>
-              <input
-                type="checkbox"
-                checked={selectedProducts.includes(product._id)}
-                onChange={() => toggleProductSelection(product._id)}
-              />
-              {product.defaultImage?.url ? (
-                <Image
-                  src={product.defaultImage.url}
-                  alt={product.title}
-                  width={50}
-                  height={50}
-                  style={{ marginRight: '10px', borderRadius: '4px' }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: 50,
-                    height: 50,
-                    background: '#ccc',
-                    marginRight: '10px',
-                    borderRadius: '4px',
-                  }}
-                />
-              )}
-              {product.title}
-            </label>
-          ))}
+      <input
+        type="text"
+        placeholder="Link Target (e.g. /products?category=men)"
+        value={linkTarget}
+        onChange={e => setLinkTarget(e.target.value)}
+        className={styles.controlsInput}
+      />
+
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        className={styles.controlsInput}
+      />
+
+      {imagePreview && (
+        <div className={styles.imagePreview}>
+          <Image src={imagePreview} alt="Preview" width={150} height={150} />
         </div>
+      )}
 
-        <button
-          onClick={handleSubmit}
-          disabled={isProcessing || !name.trim()}
-        >
-          {isProcessing ? 'Creating...' : 'Create Collection'}
-        </button>
+      <h3>Select Products</h3>
+
+      <input
+        type="text"
+        placeholder="Search products..."
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        className={styles.controlsInput}
+      />
+
+      <div className={styles.productList}>
+        {filteredProducts.map(product => (
+          <label key={product._id} className={styles.productItem}>
+            <input
+              type="checkbox"
+              checked={selectedProducts.includes(product._id)}
+              onChange={() => toggleProductSelection(product._id)}
+            />
+
+            {product.defaultImage?.url ? (
+              <Image
+                src={product.defaultImage.url}
+                alt={product.title}
+                width={50}
+                height={50}
+                className={styles.productImage}
+              />
+            ) : (
+              <div className={styles.productPlaceholder} />
+            )}
+
+            <span>{product.title}</span>
+          </label>
+        ))}
       </div>
+
+      <button
+        onClick={handleSubmit}
+        disabled={isProcessing || !name.trim()}
+      >
+        {isProcessing ? 'Creating...' : 'Create Collection'}
+      </button>
     </div>
+  </div>
 </>
   )
 }
