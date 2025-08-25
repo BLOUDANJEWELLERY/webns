@@ -91,85 +91,103 @@ const [pendingRemoveVariant, setPendingRemoveVariant] = useState<{ ci: number, v
 
 
 
-  // ----------- Category tree logic ----------
-  const buildCategoryTree = (cats: CategoryRaw[] = []): CategoryNode[] => {
-    const map: Record<string, CategoryNode> = {}
-    const roots: CategoryNode[] = []
+// ----------- Category tree logic ----------
+const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
 
-    cats.forEach(cat => { map[cat._id] = { ...cat, children: [] } })
-    cats.forEach(cat => {
-      if (cat.parent?._id) map[cat.parent._id].children.push(map[cat._id])
-      else roots.push(map[cat._id])
-    })
+const toggleCategoryExpand = (id: string) => {
+  setExpandedCategories(prev => {
+    const next = new Set(prev)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    return next
+  })
+}
 
-    const sortTree = (nodes: CategoryNode[]) => {
-      nodes.sort((a, b) => (a.order || 0) - (b.order || 0))
-      nodes.forEach(n => sortTree(n.children))
-    }
-    sortTree(roots)
-    return roots
+const buildCategoryTree = (cats: CategoryRaw[] = []): CategoryNode[] => {
+  const map: Record<string, CategoryNode> = {}
+  const roots: CategoryNode[] = []
+
+  cats.forEach(cat => { map[cat._id] = { ...cat, children: [] } })
+  cats.forEach(cat => {
+    if (cat.parent?._id) map[cat.parent._id].children.push(map[cat._id])
+    else roots.push(map[cat._id])
+  })
+
+  const sortTree = (nodes: CategoryNode[]) => {
+    nodes.sort((a, b) => (a.order || 0) - (b.order || 0))
+    nodes.forEach(n => sortTree(n.children))
   }
+  sortTree(roots)
+  return roots
+}
 
-  const categoryTree = useMemo(() => buildCategoryTree(categories), [categories])
-  const handleCategoryToggle = (id: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
-    )
-  }
+const categoryTree = useMemo(() => buildCategoryTree(categories), [categories])
 
-  const renderCategoryTree = (nodes: CategoryNode[]): React.ReactElement[] => {
-    return nodes.map(node => (
-      <CategoryNodeItem
-        key={node._id}
-        node={node}
-        selectedCategories={selectedCategories}
-        handleCategoryToggle={handleCategoryToggle}
-      />
-    ))
-  }
+const handleCategoryToggle = (id: string) => {
+  setSelectedCategories(prev =>
+    prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+  )
+}
 
-  const CategoryNodeItem: React.FC<{
-    node: CategoryNode
-    selectedCategories: string[]
-    handleCategoryToggle: (id: string) => void
-  }> = ({ node, selectedCategories, handleCategoryToggle }) => {
-    const [expanded, setExpanded] = useState(false)
-    return (
-      <div>
-        <div className={styles.categoryRow}>
-          {node.children.length > 0 && (
-            <button
-              type="button"
-              className={styles.toggleBtn}
-              onClick={() => setExpanded(prev => !prev)}
-            >
-              {expanded ? '▾' : '▸'}
-            </button>
-          )}
-          <label>
-            <input
-              type="checkbox"
-              checked={selectedCategories.includes(node._id)}
-              onChange={() => handleCategoryToggle(node._id)}
-            />
-            {node.title}
-          </label>
-        </div>
-        {expanded && node.children.length > 0 && (
-          <div className={styles.nested}>
-            {node.children.map(child => (
-              <CategoryNodeItem
-                key={child._id}
-                node={child}
-                selectedCategories={selectedCategories}
-                handleCategoryToggle={handleCategoryToggle}
-              />
-            ))}
-          </div>
+const renderCategoryTree = (nodes: CategoryNode[]): React.ReactElement[] => {
+  return nodes.map(node => (
+    <CategoryNodeItem
+      key={node._id}
+      node={node}
+      selectedCategories={selectedCategories}
+      handleCategoryToggle={handleCategoryToggle}
+      expandedCategories={expandedCategories}
+      toggleCategoryExpand={toggleCategoryExpand}
+    />
+  ))
+}
+
+const CategoryNodeItem: React.FC<{
+  node: CategoryNode
+  selectedCategories: string[]
+  handleCategoryToggle: (id: string) => void
+  expandedCategories: Set<string>
+  toggleCategoryExpand: (id: string) => void
+}> = ({ node, selectedCategories, handleCategoryToggle, expandedCategories, toggleCategoryExpand }) => {
+  const isExpanded = expandedCategories.has(node._id)
+  return (
+    <div>
+      <div className={styles.categoryRow}>
+        {node.children.length > 0 && (
+          <button
+            type="button"
+            className={styles.toggleBtn}
+            onClick={() => toggleCategoryExpand(node._id)}
+          >
+            {isExpanded ? '▾' : '▸'}
+          </button>
         )}
+        <label>
+          <input
+            type="checkbox"
+            checked={selectedCategories.includes(node._id)}
+            onChange={() => handleCategoryToggle(node._id)}
+          />
+          {node.title}
+        </label>
       </div>
-    )
-  }
+      {isExpanded && node.children.length > 0 && (
+        <div className={styles.nested}>
+          {node.children.map(child => (
+            <CategoryNodeItem
+              key={child._id}
+              node={child}
+              selectedCategories={selectedCategories}
+              handleCategoryToggle={handleCategoryToggle}
+              expandedCategories={expandedCategories}
+              toggleCategoryExpand={toggleCategoryExpand}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 // ----------- Colors & Variants logic ----------
 const addColor = () => {
