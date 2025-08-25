@@ -252,54 +252,6 @@ const [showRemoveVariantModal, setShowRemoveVariantModal] = useState(false)
 const [pendingRemoveColorIndex, setPendingRemoveColorIndex] = useState<number | null>(null)
 const [pendingRemoveVariant, setPendingRemoveVariant] = useState<{ ci: number, vi: number } | null>(null)
 
-// Detect changes
-const isProductChanged = useMemo(() => {
-  if (!product) return false
-  if (title !== product.title) return true
-  if (description !== (product.description || '')) return true // ✅ check description
-  if (Number(price) !== product.price) return true
-  if (defaultImageFile) return true
-  if (colors.length !== (product.colorImages?.length || 0)) return true
-  if (
-      JSON.stringify(selectedCategories.sort()) !==
-      JSON.stringify((product.categories || []).map(c => c._id).sort())
-    )
-    return true
-
-
-
-  for (let i = 0; i < colors.length; i++) {
-    const color = colors[i]
-    const origColor = product.colorImages?.[i]
-
-    if (color.color !== origColor?.color) return true
-    if (color.imageFile) return true
-
-    const origVariants = product.variants?.filter(v => v.color === color.color) || []
-    if (color.variants.length !== origVariants.length) return true
-
-    for (let j = 0; j < color.variants.length; j++) {
-      const v = color.variants[j]
-      const ov = origVariants[j]
-      if (!ov) return true
-      if (v.size !== ov.size) return true
-      if (v.quantity !== ov.quantity) return true
-      if ((v.priceOverride || 0) !== (ov.priceOverride || 0)) return true
-    }
-  }
-  return false
-}, [title, description, price, defaultImageFile, colors, selectedCategories, product])
-
-  // Default image preview
-  useEffect(() => {
-    if (!defaultImageFile) return
-    const url = URL.createObjectURL(defaultImageFile)
-    setDefaultImagePreview(url)
-    return () => URL.revokeObjectURL(url)
-  }, [defaultImageFile])
-
-  if (router.isFallback) return <p>Loading product...</p>
-  if (!product) return <p>Product not found</p>
 
   // Handlers
   const handleDefaultImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
