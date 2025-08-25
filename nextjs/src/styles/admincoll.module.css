@@ -57,7 +57,7 @@
   box-shadow: 0 0 6px rgba(200, 155, 60, 0.3);
 }
 
-h3 {
+.sectionTitle {
   font-size: 20px;
   font-weight: 600;
   color: #4E2A0F;
@@ -93,13 +93,13 @@ h3 {
   background: #f8f2e8;
 }
 
-.productItem input[type="checkbox"] {
+.productCheckbox {
   accent-color: #C89B3C;
   width: 18px;
   height: 18px;
 }
 
-button {
+.button {
   padding: 0.75rem 1.8rem;
   background: linear-gradient(135deg, #C89B3C, #b3842f);
   color: #fff;
@@ -113,12 +113,12 @@ button {
   transition: all 0.3s ease;
 }
 
-button:disabled {
+.buttonDisabled {
   background: #d9c4a2;
   cursor: not-allowed;
 }
 
-button:hover:not(:disabled) {
+.button:not(.buttonDisabled):hover {
   background: linear-gradient(135deg, #b3842f, #a07225);
   transform: translateY(-2px) scale(1.02);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
