@@ -303,10 +303,16 @@ export default function AdminCreatePage({ categories }: { categories: CategoryRa
 <>
  <AdminHeader title="Products" titleHref="/admin/products" />
 
-    <div className={styles.mainContainer}>
+ <div className={styles.mainContainer}>
   <h1 className={styles.heading}>Create Product</h1>
 
-  <form className={styles.form} onSubmit={handleSubmit}>
+  <form
+    className={styles.form}
+    onSubmit={e => {
+      e.preventDefault()
+      handleSubmit()
+    }}
+  >
     {/* Title */}
     <div className={styles.formGroup}>
       <label className={styles.label}>Title</label>
@@ -326,242 +332,235 @@ export default function AdminCreatePage({ categories }: { categories: CategoryRa
         step="0.01"
         className={styles.input}
         value={price}
-        onChange={e => setPrice(e.target.value)}
+        onChange={e => {
+          const val = e.target.value
+          setPrice(val === '' ? '' : Number(val))
+        }}
         required
       />
     </div>
 
     {/* Default Image */}
     <div className={styles.formGroup}>
-  <label className={styles.label}>Default Image</label>
+      <label className={styles.label}>Default Image</label>
 
-  {/* Custom File Upload Button */}
-  <label className={styles.fileLabel}>
-    Upload Default Image
-    <input
-      type="file"
-      accept="image/*"
-      onChange={handleDefaultImageChange}
-      className={styles.hiddenFileInput}
-    />
-  </label>
+      <label className={styles.fileLabel}>
+        Upload Default Image
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleDefaultImageChange}
+          className={styles.hiddenFileInput}
+        />
+      </label>
 
-  {/* Preview */}
-  {defaultImagePreview && (
-    <div className={styles.previewWrapper}>
-      <Image
-        src={defaultImagePreview}
-        alt="Default"
-        width={150}
-        height={150}
-        className={styles.previewImage}
+      {defaultImagePreview && (
+        <div className={styles.previewWrapper}>
+          <Image
+            src={defaultImagePreview}
+            alt="Default Image"
+            width={150}
+            height={150}
+            className={styles.previewImage}
+          />
+        </div>
+      )}
+    </div>
+
+    {/* Categories */}
+    <div className={styles.formGroup}>
+      <label className={styles.label}>Categories</label>
+      <div className={styles.checkboxGroup}>
+        {renderCategoryTree(categoryTree)}
+      </div>
+    </div>
+
+    {/* Description */}
+    <div className={styles.formGroup}>
+      <label className={styles.label}>Description</label>
+      <textarea
+        className={styles.textarea}
+        value={description}
+        onChange={e => setDescription(e.target.value)}
+        rows={4}
+        placeholder="Enter product description..."
       />
     </div>
-  )}
-</div>
 
-     <label className={styles.label}>Categories</label>
-<div className={styles.checkboxGroup}>
-  {renderCategoryTree(categoryTree, selectedCategories, handleCategoryToggle)}
-</div>
-
-
-{/* Description */}
-<div className={styles.formGroup}>
-  <label className={styles.label}>Description</label>
-  <textarea
-    className={styles.textarea}
-    value={description}
-    onChange={e => setDescription(e.target.value)}
-    rows={4}
-    placeholder="Enter product description..."
-  />
-</div>
-
-{/* Colors & Variants */}
-<h3 className={styles.subHeading}>Colors & Variants</h3>
-{colors.map((color, ci) => (
-  <div key={color._key} className={styles.colorBlock}>
-    {/* Collapsible Header */}
-    <div
-      className={styles.colorHeader}
-      onClick={() => {
-        const updated = [...openColors];
-        updated[ci] = !updated[ci];
-        setOpenColors(updated);
-      }}
-    >
-      <span>{color.color || 'Unnamed Color'}</span>
-      <span>{openColors[ci] ? '▲' : '▼'}</span>
-    </div>
-
-    {/* Render color inputs only if open */}
-  {openColors[ci] && (
-  <>
-    {/* All inputs, variants, buttons… */}
-  
-        {/* Color Name */}
-<label className={styles.label}>Color Name</label>
-        <input
-          className={styles.input}
-          value={color.color}
-          onChange={e => {
-            const updated = [...colors];
-            updated[ci].color = e.target.value;
-            setColors(updated);
+    {/* Colors & Variants */}
+    <h3 className={styles.subHeading}>Colors & Variants</h3>
+    {colors.map((color, ci) => (
+      <div key={color._key} className={styles.colorBlock}>
+        {/* Collapsible Header */}
+        <div
+          className={styles.colorHeader}
+          onClick={() => {
+            const updated = [...openColors]
+            updated[ci] = !updated[ci]
+            setOpenColors(updated)
           }}
-          required
-        />
+        >
+          <span>{color.color || 'Unnamed Color'}</span>
+          <span>{openColors[ci] ? '▲' : '▼'}</span>
+        </div>
 
-        {/* Color Image */}
-        <label className={styles.label}>Color Image</label>
-        <label className={styles.fileLabel}>
-          Upload Color Image
-          <input
-            type="file"
-            accept="image/*"
-            onChange={e =>
-              e.target.files && handleColorImageChange(ci, e.target.files[0])
-            }
-            className={styles.hiddenFileInput}
-          />
-        </label>
-
-        {/* Preview */}
-        {color.imagePreview && (
-          <div className={styles.previewWrapper}>
-            <Image
-              src={color.imagePreview}
-              alt="Color"
-              width={120}
-              height={120}
-              className={styles.previewImage}
-            />
-          </div>
-        )}
-
-        {/* Variants */}
-        <h4 className={styles.variantHeading}>Variants</h4>
-        {color.variants.map((v, vi) => (
-          <div key={v._key} className={styles.variantCard}>
-            {/* Size Selector */}
-            <select
-              value={v.size}
-              onChange={e => {
-                const updated = [...colors];
-                updated[ci].variants[vi].size = e.target.value;
-                setColors(updated);
-              }}
-              required
-              className={styles.select}
-            >
-              <option value="">Size</option>
-              {SIZE_OPTIONS.map(s => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-
-            {/* Quantity */}
+        {openColors[ci] && (
+          <>
+            {/* Color Name */}
+            <label className={styles.label}>Color Name</label>
             <input
-              type="number"
-              placeholder="Qty"
-              min={1}
-              value={v.quantity}
+              className={styles.input}
+              value={color.color}
               onChange={e => {
-                const updated = [...colors];
-                updated[ci].variants[vi].quantity = Number(e.target.value);
-                setColors(updated);
+                const updated = [...colors]
+                updated[ci].color = e.target.value
+                setColors(updated)
               }}
-              className={styles.inputSmall}
               required
             />
 
-            {/* Price Override */}
-            <div className={styles.priceOverrideWrapper}>
-              {v.showPriceOverride && (
+            {/* Color Image */}
+            <label className={styles.label}>Color Image</label>
+            <label className={styles.fileLabel}>
+              Upload Color Image
+              <input
+                type="file"
+                accept="image/*"
+                onChange={e =>
+                  e.target.files && handleColorImageChange(ci, e.target.files[0])
+                }
+                className={styles.hiddenFileInput}
+              />
+            </label>
+
+            {color.imagePreview && (
+              <div className={styles.previewWrapper}>
+                <Image
+                  src={color.imagePreview}
+                  alt="Color"
+                  width={120}
+                  height={120}
+                  className={styles.previewImage}
+                />
+              </div>
+            )}
+
+            {/* Variants */}
+            <h4 className={styles.variantHeading}>Variants</h4>
+            {color.variants.map((v, vi) => (
+              <div key={v._key} className={styles.variantCard}>
+                {/* Size Selector */}
+                <select
+                  value={v.size}
+                  onChange={e => {
+                    const updated = [...colors]
+                    updated[ci].variants[vi].size = e.target.value
+                    setColors(updated)
+                  }}
+                  required
+                  className={styles.select}
+                >
+                  <option value="">Size</option>
+                  {SIZE_OPTIONS.map(s => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Quantity */}
                 <input
                   type="number"
-                  placeholder="Price Override"
-                  className={styles.priceOverrideInput}
-                  value={v.priceOverride || ''}
+                  placeholder="Qty"
+                  min={1}
+                  value={v.quantity}
                   onChange={e => {
-                    const updated = [...colors];
-                    updated[ci].variants[vi].priceOverride = Number(e.target.value);
-                    setColors(updated);
+                    const updated = [...colors]
+                    updated[ci].variants[vi].quantity = Number(e.target.value)
+                    setColors(updated)
                   }}
+                  className={styles.inputSmall}
+                  required
                 />
-              )}
+
+                {/* Price Override */}
+                <div className={styles.priceOverrideWrapper}>
+                  {v.showPriceOverride && (
+                    <input
+                      type="number"
+                      placeholder="Price Override"
+                      className={styles.priceOverrideInput}
+                      value={v.priceOverride || ''}
+                      onChange={e => {
+                        const updated = [...colors]
+                        updated[ci].variants[vi].priceOverride = Number(e.target.value)
+                        setColors(updated)
+                      }}
+                    />
+                  )}
+                  <button
+                    type="button"
+                    className={styles.priceToggleButton}
+                    onClick={() => {
+                      const updated = [...colors]
+                      updated[ci].variants[vi].showPriceOverride = !v.showPriceOverride
+                      setColors(updated)
+                    }}
+                  >
+                    {v.showPriceOverride ? 'Hide' : 'Price'}
+                  </button>
+                </div>
+
+                {/* Remove Variant */}
+                <button
+                  type="button"
+                  className={styles.removeButton}
+                  onClick={() => {
+                    setPendingRemoveVariant({ ci, vi })
+                    setShowRemoveVariantModal(true)
+                  }}
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+
+            {/* Add Variant / Remove Color */}
+            <div className={styles.variantActions}>
+              <button type="button" className={styles.button} onClick={() => addVariant(ci)}>
+                Add Variant
+              </button>
               <button
                 type="button"
-                className={styles.priceToggleButton}
-                onClick={() => {
-                  const updated = [...colors];
-                  updated[ci].variants[vi].showPriceOverride = !v.showPriceOverride;
-                  setColors(updated);
-                }}
-              >
-                {v.showPriceOverride ? 'Hide' : 'Price'}
-              </button>
-            </div>
-
-            {/* Remove Variant */}
-            <button
-  type="button"
-  className={styles.removeButton}
-  onClick={() => {
-    setPendingRemoveVariant({ ci, vi })
-    setShowRemoveVariantModal(true)
-  }}
->
-  Remove
-</button>
-          </div>
-        ))}
-
-        {/* Add Variant / Remove Color */}
-        <div className={styles.variantActions}>
-          <button
-            type="button"
-            className={styles.button}
-            onClick={() => addVariant(ci)}
-          >
-            Add Variant
-          </button>
-          <button
-              type="button"
                 className={styles.deleteButton}
                 onClick={() => {
                   setPendingRemoveColorIndex(ci)
                   setShowRemoveColorModal(true)
-                    }}
-                  >
-                  Remove Color
+                }}
+              >
+                Remove Color
               </button>
-        </div>
-      </>
-)}
-  </div>
-))}
+            </div>
+          </>
+        )}
+      </div>
+    ))}
 
     {/* Add Color */}
     <button type="button" className={styles.button} onClick={addColor}>
       Add Color
     </button>
 
-    {/* Actions */}
-<div className={styles.actionWrapper}>
-  <button
-    type="button"
-    disabled={loading || !isProductChanged}
-    className={`${styles.button} ${!isProductChanged ? styles.disabledButton : ''}`}
-    onClick={() => setShowUpdateModal(true)}
-  >
-    {loading ? "Creating..." : "Create Product"}
-  </button>
-
-</div>
+    {/* Submit */}
+    <div className={styles.actionWrapper}>
+      <button
+        type="submit"
+        disabled={loading || !isProductChanged}
+        className={`${styles.button} ${!isProductChanged ? styles.disabledButton : ''}`}
+      >
+        {loading ? 'Creating...' : 'Create Product'}
+      </button>
+    </div>
   </form>
 </div>
 
