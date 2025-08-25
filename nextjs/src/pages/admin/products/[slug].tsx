@@ -7,7 +7,7 @@ import Image from 'next/image'
 import styles from '../../../styles/adminEdit.module.css'
 import { v4 as uuidv4 } from 'uuid'
 import React from "react"
-import AdminHeader from '../../../components/adminHeader'
+import AdminHeader from '../../components/adminHeader'
 
 
 const client = createClient({
