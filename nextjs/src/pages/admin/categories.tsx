@@ -281,6 +281,8 @@ export default function CategoriesPage({ categories }: Props) {
   const tree = useMemo(() => buildTree(catList), [catList])
 
   return (
+<>
+<AdminHeader title="Admin Panel" titleHref="../" />
     <div className={styles.container} ref={containerRef}>
       <h1 className={styles.pageTitle}>Categories</h1>
       {isProcessing && <div>Processing...</div>}
