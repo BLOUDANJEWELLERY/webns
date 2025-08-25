@@ -315,7 +315,7 @@ const removeColor = (index: number) => {
       if (!res.ok) throw new Error(result.error || 'Failed to create product')
 
       setModalMessage('Product created successfully.')
-      setTimeout(() => router.push('/admin'), 500)
+      setTimeout(() => router.push('/admin/products'), 500)
     } catch (err: any) {
       setModalMessage(err.message)
       setIsProcessing(false)
