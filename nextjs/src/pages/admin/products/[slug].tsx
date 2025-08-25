@@ -529,7 +529,7 @@ const handleDelete = async () => {
 <>
  <AdminHeader title="Admin Dashboard" titleHref="/admin" />
 
-    {/*<div className={styles.mainContainer}>*/}
+    <div className={styles.mainContainer}>
   <h1 className={styles.heading}>Edit Product</h1>
 
   <form className={styles.form} onSubmit={handleSubmit}>
@@ -797,6 +797,7 @@ const handleDelete = async () => {
   </button>
 </div>
   </form>
+</div>
 
 {/* Update Confirmation Modal */}
 {showUpdateModal && (
