@@ -23,9 +23,7 @@
   gap: 1.2rem;
 }
 
-.controls input[type="text"],
-.controls textarea,
-.controls input[type="file"] {
+.controlsInput {
   padding: 0.75rem 1rem;
   border: 2px solid #D6BCA6;
   border-radius: 8px;
@@ -35,16 +33,28 @@
   transition: all 0.2s ease;
 }
 
-.controls input[type="text"]:focus,
-.controls textarea:focus {
+.controlsInput:focus {
   outline: none;
   border-color: #C89B3C;
   box-shadow: 0 0 6px rgba(200, 155, 60, 0.3);
 }
 
-textarea {
+.controlsTextarea {
   resize: vertical;
   min-height: 80px;
+  padding: 0.75rem 1rem;
+  border: 2px solid #D6BCA6;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #4E2A0F;
+  background: #fffaf5;
+  transition: all 0.2s ease;
+}
+
+.controlsTextarea:focus {
+  outline: none;
+  border-color: #C89B3C;
+  box-shadow: 0 0 6px rgba(200, 155, 60, 0.3);
 }
 
 h3 {
@@ -114,6 +124,7 @@ button:hover:not(:disabled) {
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
-img {
+.imagePreview {
+  margin-top: 10px;
   border-radius: 6px;
 }
