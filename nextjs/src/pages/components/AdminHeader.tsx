@@ -33,7 +33,7 @@ export default function AdminHeader({ title = 'Admin Panel', titleHref = '/admin
           <button className={styles.closeButton} onClick={() => setMenuOpen(false)}>
             ×
           </button>
-          <Link href="/admin/products" onClick={() => setMenuOpen(false)}>Products</Link>
+          <Link href="/admin" onClick={() => setMenuOpen(false)}>Products</Link>
           <Link href="/admin/categories" onClick={() => setMenuOpen(false)}>Categories</Link>
           <Link href="/admin/collections" onClick={() => setMenuOpen(false)}>Collections</Link>
         </nav>
