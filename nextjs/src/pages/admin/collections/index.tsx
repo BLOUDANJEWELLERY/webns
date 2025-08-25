@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import styles from '../../../styles/admincat.module.css'
+import AdminHeader from '../../components/AdminHeader'
 
 const client = createClient({
   projectId: '3jc8hsku', // replace with your projectId
@@ -33,6 +34,8 @@ export default function CollectionsListPage({ collections }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
+<>
+ <AdminHeader title="Admin Dashboard" titleHref="/admin" />
     <div className={styles.container}>
       <h1 className={styles.pageTitle}>Collections</h1>
 
@@ -85,6 +88,7 @@ export default function CollectionsListPage({ collections }: Props) {
         {collections.length === 0 && <div>No collections found. Create one to get started.</div>}
       </div>
     </div>
+</>
   )
 }
 
