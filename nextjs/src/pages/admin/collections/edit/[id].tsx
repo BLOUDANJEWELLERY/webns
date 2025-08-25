@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import styles from '../../../../styles/admincat.module.css'
+import AdminHeader from '../../../components/AdminHeader'
 
 type Product = {
   _id: string
@@ -152,6 +153,9 @@ export default function EditCollectionPage({ collection, allProducts }: Props) {
   )
 
   return (
+<>
+  <AdminHeader title="Collections" titleHref="/admin/collections" />
+
     <div className={styles.container}>
       <h1 className={styles.pageTitle}>Edit Collection</h1>
 
@@ -188,6 +192,7 @@ export default function EditCollectionPage({ collection, allProducts }: Props) {
         </button>
       </div>
     </div>
+</>
   )
 }
 
