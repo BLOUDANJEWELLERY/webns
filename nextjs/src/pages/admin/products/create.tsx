@@ -578,13 +578,13 @@ const removeColor = (index: number) => {
 
     {/* Submit */}
     <div className={styles.actionWrapper}>
-      <button
-        type="submit"
-        disabled={loading || !isProductChanged}
-        className={`${styles.button} ${!isProductChanged ? styles.disabledButton : ''}`}
-      >
-        {loading ? 'Creating...' : 'Create Product'}
-      </button>
+  <button
+  type="submit"
+  disabled={loading}
+  className={styles.button}
+>
+  {loading ? 'Creating...' : 'Create Product'}
+</button>
     </div>
   </form>
 </div>
