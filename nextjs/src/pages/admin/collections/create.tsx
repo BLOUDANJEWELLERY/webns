@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
 import { createClient } from 'next-sanity'
-import styles from '../../../styles/admincat.module.css'
+import styles from '../../../styles/admincoll.module.css'
 import AdminHeader from '../../components/AdminHeader'
 
 
