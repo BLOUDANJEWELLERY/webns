@@ -50,7 +50,7 @@ export default function AdminPage({ products }: { products: Product[] }) {
 
       {/* Actions */}
       <div className={styles.createWrapper}>
-        <Link href="/admin/create">
+        <Link href="/admin/products/create">
           <button className={styles.actionButton}>Create Product</button>
         </Link>
       </div>
