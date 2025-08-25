@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import styles from '../../../styles/admincreate.module.css'
-import AdminHeader from '../../components/adminHeader'
+import AdminHeader from '../../components/AdminHeader'
 
 
 interface Variant {
