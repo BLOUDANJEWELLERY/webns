@@ -2,7 +2,6 @@
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/router'
 import { createClient } from 'next-sanity'
-import imageUrlBuilder from '@sanity/image-url'
 import Image from 'next/image'
 import styles from '../../../styles/adminEdit.module.css'
 import { v4 as uuidv4 } from 'uuid'
@@ -14,9 +13,6 @@ const client = createClient({
   apiVersion: '2023-07-30',
   useCdn: false,
 })
-
-const builder = imageUrlBuilder(client)
-const urlFor = (source: any) => builder.image(source).width(300).url()
 
 interface Variant {
   size: string
@@ -216,92 +212,92 @@ export default function AdminCreatePage({ categories }: { categories: CategoryRa
     if (file) setDefaultImagePreview(URL.createObjectURL(file))
   }
 
-// --- Update Handler ---
-const handleSubmit = async () => {
-  setIsProcessing(true);   // show processing in modal
-  setLoading(true);
+  // ----------- Create Handler ----------
+  const handleSubmit = async () => {
+    setIsProcessing(true)
+    setLoading(true)
+    try {
+      // Start with undefined for new product
+      let defaultAssetId: string | undefined = undefined
 
-  try {
-    let defaultAssetId = defaultImageId;
-
-    // Upload default image if chosen
-    if (defaultImageFile) {
-      const formData = new FormData();
-      formData.append('file', defaultImageFile);
-      formData.append('type', 'image');
-      const res = await fetch('/api/products/uploadImage', { method: 'POST', body: formData });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      defaultAssetId = data.assetId;
-    }
-
-    // Upload color images
-    const colorImages: any[] = [];
-    for (const color of colors) {
-      let assetId = color.existingImageId;
-      if (color.imageFile) {
-        const formData = new FormData();
-        formData.append('file', color.imageFile);
-        formData.append('type', 'image');
-        const res = await fetch('/api/products/uploadImage', { method: 'POST', body: formData });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-        assetId = data.assetId;
+      // Upload default image if chosen
+      if (defaultImageFile) {
+        const formData = new FormData()
+        formData.append('file', defaultImageFile)
+        formData.append('type', 'image')
+        const res = await fetch('/api/products/uploadImage', { method: 'POST', body: formData })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error)
+        defaultAssetId = data.assetId
       }
-      colorImages.push({
-        _key: color._key,
-        color: color.color,
-        image: assetId ? { _type: 'image', asset: { _type: 'reference', _ref: assetId } } : undefined,
-      });
-    }
 
-    // Build variants array
-    const variants: any[] = [];
-    colors.forEach(c =>
-      c.variants.forEach(v =>
-        variants.push({
-          _key: v._key,
-          size: v.size,
-          quantity: Number(v.quantity),
-          color: c.color,
-          priceOverride: v.priceOverride ? Number(v.priceOverride) : undefined,
-          sku: v.sku || `${c.color}-${v.size}-${Math.floor(Math.random() * 1000000)}`,
+      // Upload color images
+      const colorImages: any[] = []
+      for (const color of colors) {
+        let assetId: string | undefined = undefined
+        if (color.imageFile) {
+          const formData = new FormData()
+          formData.append('file', color.imageFile)
+          formData.append('type', 'image')
+          const res = await fetch('/api/products/uploadImage', { method: 'POST', body: formData })
+          const data = await res.json()
+          if (!res.ok) throw new Error(data.error)
+          assetId = data.assetId
+        }
+        colorImages.push({
+          _key: color._key,
+          color: color.color,
+          image: assetId ? { _type: 'image', asset: { _type: 'reference', _ref: assetId } } : undefined,
         })
+      }
+
+      // Build variants array
+      const variants: any[] = []
+      colors.forEach(c =>
+        c.variants.forEach(v =>
+          variants.push({
+            _key: v._key,
+            size: v.size,
+            quantity: Number(v.quantity),
+            color: c.color,
+            priceOverride: v.priceOverride ? Number(v.priceOverride) : undefined,
+            sku: v.sku,
+          })
+        )
       )
-    );
 
-    // Create product API call
-    const res = await fetch('/api/products/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        title,
-        price: Number(price),
-        description,
-        defaultImage: defaultAssetId
-          ? { _type: 'image', asset: { _type: 'reference', _ref: defaultAssetId } }
-          : undefined,
-        colorImages,
-        variants,
-        categories: selectedCategories.map(id => ({
-          _key: uuidv4(),
-          _type: 'reference',
-          _ref: id,
-        })),
-      }),
-    });
-    const result = await res.json();
-    if (!res.ok) throw new Error(result.error || 'Failed to create product');
+      // Create product API call
+      const res = await fetch('/api/products/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          price: Number(price),
+          description,
+          defaultImage: defaultAssetId
+            ? { _type: 'image', asset: { _type: 'reference', _ref: defaultAssetId } }
+            : undefined,
+          colorImages,
+          variants,
+          categories: selectedCategories.map(id => ({
+            _key: uuidv4(),
+            _type: 'reference',
+            _ref: id,
+          })),
+        }),
+      })
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error || 'Failed to create product')
 
-    setModalMessage('Product created successfully.');
-    setTimeout(() => router.push('/admin'), 500); // redirect to dashboard
-  } catch (err: any) {
-    setModalMessage(err.message);
-    setIsProcessing(false);
-  } finally {
-    setLoading(false);
+      setModalMessage('Product created successfully.')
+      setTimeout(() => router.push('/admin'), 500)
+    } catch (err: any) {
+      setModalMessage(err.message)
+      setIsProcessing(false)
+    } finally {
+      setLoading(false)
+    }
   }
-};
 
   return (
 <>
