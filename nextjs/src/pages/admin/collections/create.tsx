@@ -115,15 +115,18 @@ export default function CreateCollectionPage({ products }: Props) {
   <div className={styles.container}>
     <h1 className={styles.pageTitle}>Create New Collection</h1>
 
-    <div className={styles.controls}>
+    <form className={styles.controls} onSubmit={e => { e.preventDefault(); handleSubmit(); }}>
+      {/* Collection Name */}
       <input
         type="text"
         placeholder="Collection Name"
         value={name}
         onChange={e => setName(e.target.value)}
         className={styles.controlsInput}
+        required
       />
 
+      {/* Description */}
       <textarea
         placeholder="Description"
         rows={3}
@@ -132,6 +135,7 @@ export default function CreateCollectionPage({ products }: Props) {
         className={styles.controlsTextarea}
       />
 
+      {/* Link Target */}
       <input
         type="text"
         placeholder="Link Target (e.g. /products?category=men)"
@@ -140,6 +144,7 @@ export default function CreateCollectionPage({ products }: Props) {
         className={styles.controlsInput}
       />
 
+      {/* Image Upload */}
       <input
         type="file"
         accept="image/*"
@@ -147,14 +152,22 @@ export default function CreateCollectionPage({ products }: Props) {
         className={styles.controlsInput}
       />
 
+      {/* Image Preview */}
       {imagePreview && (
         <div className={styles.imagePreview}>
-          <Image src={imagePreview} alt="Preview" width={150} height={150} />
+          <Image
+            src={imagePreview}
+            alt="Preview"
+            width={150}
+            height={150}
+          />
         </div>
       )}
 
+      {/* Product Selection */}
       <h3>Select Products</h3>
 
+      {/* Product Search */}
       <input
         type="text"
         placeholder="Search products..."
@@ -163,39 +176,44 @@ export default function CreateCollectionPage({ products }: Props) {
         className={styles.controlsInput}
       />
 
+      {/* Product List */}
       <div className={styles.productList}>
-        {filteredProducts.map(product => (
-          <label key={product._id} className={styles.productItem}>
-            <input
-              type="checkbox"
-              checked={selectedProducts.includes(product._id)}
-              onChange={() => toggleProductSelection(product._id)}
-            />
-
-            {product.defaultImage?.url ? (
-              <Image
-                src={product.defaultImage.url}
-                alt={product.title}
-                width={50}
-                height={50}
-                className={styles.productImage}
+        {filteredProducts.length > 0 ? (
+          filteredProducts.map(product => (
+            <label key={product._id} className={styles.productItem}>
+              <input
+                type="checkbox"
+                checked={selectedProducts.includes(product._id)}
+                onChange={() => toggleProductSelection(product._id)}
               />
-            ) : (
-              <div className={styles.productPlaceholder} />
-            )}
 
-            <span>{product.title}</span>
-          </label>
-        ))}
+              {product.defaultImage?.url ? (
+                <Image
+                  src={product.defaultImage.url}
+                  alt={product.title}
+                  width={50}
+                  height={50}
+                  className={styles.productImage}
+                />
+              ) : (
+                <div className={styles.productPlaceholder} />
+              )}
+
+              <span>{product.title}</span>
+            </label>
+          ))
+        ) : (
+          <p style={{ color: "#777", fontSize: "0.9rem" }}>
+            No products found.
+          </p>
+        )}
       </div>
 
-      <button
-        onClick={handleSubmit}
-        disabled={isProcessing || !name.trim()}
-      >
-        {isProcessing ? 'Creating...' : 'Create Collection'}
+      {/* Submit Button */}
+      <button type="submit" disabled={isProcessing || !name.trim()}>
+        {isProcessing ? "Creating..." : "Create Collection"}
       </button>
-    </div>
+    </form>
   </div>
 </>
   )
