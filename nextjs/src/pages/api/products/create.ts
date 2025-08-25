@@ -4,7 +4,40 @@ import { client } from '../../../lib/sanityClient'
 import { v4 as uuidv4 } from 'uuid'
 import slugify from 'slugify'
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+interface ColorImage {
+  _key?: string
+  color: string
+  image: string
+}
+
+interface Variant {
+  _key?: string
+  size: string
+  color: string
+  quantity: number
+  priceOverride?: number
+  sku?: string
+}
+
+interface CategoryRef {
+  _key?: string
+  _ref: string
+}
+
+interface ProductBody {
+  title: string
+  price: number
+  description?: string
+  defaultImage?: string
+  colorImages?: ColorImage[]
+  variants?: Variant[]
+  categories?: CategoryRef[] | string[]
+}
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
@@ -18,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       colorImages,
       variants,
       categories,
-    } = req.body
+    } = req.body as ProductBody
 
     if (!title) return res.status(400).json({ error: 'Missing title' })
     if (price === undefined) return res.status(400).json({ error: 'Missing price' })
@@ -26,51 +59,43 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Auto-generate slug
     const slug = slugify(title, { lower: true, strict: true })
 
-    // Build product data
-    const productData: Record<string, any> = {
+    // Build product document
+    const productData = {
       _type: 'product',
       title,
       price: Number(price),
+      description: description || '',
       slug: { _type: 'slug', current: slug },
-    }
-
-    if (description !== undefined) productData.description = description
-
-    if (defaultImage) productData.defaultImage = defaultImage
-
-    if (Array.isArray(colorImages)) {
-      productData.colorImages = colorImages.map((c: any) => ({
-        _key: c._key || uuidv4(),
-        color: c.color,
-        image: c.image,
-      }))
-    }
-
-    if (Array.isArray(variants)) {
-      productData.variants = variants.map((v: any, index: number) => {
-        // Generate SKU if missing
-        const generatedSku =
-          v.sku ||
-          `${slug.toUpperCase()}-${v.color?.toUpperCase?.() || 'GEN'}-${v.size || 'NA'}-${index + 1}`
-
-        return {
-          _key: v._key || uuidv4(),
-          size: v.size,
-          color: v.color,
-          quantity: Number(v.quantity),
-          priceOverride:
-            v.priceOverride !== undefined ? Number(v.priceOverride) : undefined,
-          sku: generatedSku,
-        }
-      })
-    }
-
-    if (Array.isArray(categories)) {
-      productData.categories = categories.map((cat: any) => ({
-        _key: cat._key || uuidv4(),
-        _type: 'reference',
-        _ref: typeof cat === 'string' ? cat : cat._ref,
-      }))
+      defaultImage: defaultImage || null,
+      colorImages: Array.isArray(colorImages)
+        ? colorImages.map((c) => ({
+            _key: c._key || uuidv4(),
+            _type: 'colorImage',
+            color: c.color,
+            image: c.image,
+          }))
+        : [],
+      variants: Array.isArray(variants)
+        ? variants.map((v, index) => ({
+            _key: v._key || uuidv4(),
+            _type: 'variant',
+            size: v.size,
+            color: v.color,
+            quantity: Number(v.quantity),
+            priceOverride: v.priceOverride !== undefined ? Number(v.priceOverride) : undefined,
+            sku:
+              v.sku ||
+              `${slug.toUpperCase()}-${v.color?.toUpperCase?.() || 'GEN'}-${v.size || 'NA'}-${index + 1}`,
+          }))
+        : [],
+      categories: Array.isArray(categories)
+        ? categories.map((cat) => ({
+            _key: (typeof cat === 'object' && cat._key) || uuidv4(),
+            _type: 'reference',
+            _ref: typeof cat === 'string' ? cat : cat._ref,
+          }))
+        : [],
+      createdAt: new Date().toISOString(),
     }
 
     // Create product in Sanity
