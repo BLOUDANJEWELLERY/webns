@@ -1,130 +1,128 @@
+/* Container */
 .container {
-  max-width: 900px;
+  max-width: 800px;
   margin: 0 auto;
-  padding: 2rem 1rem;
-  background: #fffdfb;
-  font-family: 'Segoe UI', sans-serif;
-  border-radius: 12px;
-  box-shadow: 0 3px 12px rgba(123, 63, 0, 0.15);
+  padding: 2rem;
+  background: #faf7f2; /* light warm background */
+  border: 1px solid #d4c2a8; /* soft brown border */
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
+/* Page Title */
 .pageTitle {
-  font-size: 28px;
-  font-weight: 700;
-  text-align: center;
-  margin-bottom: 2rem;
-  color: #4E2A0F;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #4b2e20; /* deep brown */
 }
 
+/* Controls Form */
 .controls {
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: 1rem;
 }
 
-.controlsInput {
-  padding: 0.75rem 1rem;
-  border: 2px solid #D6BCA6;
-  border-radius: 8px;
-  font-size: 1rem;
-  color: #4E2A0F;
-  background: #fffaf5;
-  transition: all 0.2s ease;
-}
-
-.controlsInput:focus {
-  outline: none;
-  border-color: #C89B3C;
-  box-shadow: 0 0 6px rgba(200, 155, 60, 0.3);
-}
-
+/* Inputs */
+.controlsInput,
 .controlsTextarea {
-  resize: vertical;
-  min-height: 80px;
+  width: 100%;
   padding: 0.75rem 1rem;
-  border: 2px solid #D6BCA6;
-  border-radius: 8px;
+  border: 1px solid #d4c2a8;
+  border-radius: 6px;
   font-size: 1rem;
-  color: #4E2A0F;
-  background: #fffaf5;
-  transition: all 0.2s ease;
+  font-family: inherit;
+  transition: border 0.2s, box-shadow 0.2s;
 }
 
+.controlsInput:focus,
 .controlsTextarea:focus {
+  border-color: #c4a46e;
+  box-shadow: 0 0 0 3px rgba(196, 164, 110, 0.25);
   outline: none;
-  border-color: #C89B3C;
-  box-shadow: 0 0 6px rgba(200, 155, 60, 0.3);
 }
 
-.sectionTitle {
-  font-size: 20px;
-  font-weight: 600;
-  color: #4E2A0F;
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
-  border-left: 4px solid #C89B3C;
-  padding-left: 0.5rem;
-}
-
-.productList {
-  max-height: 300px;
-  overflow-y: auto;
-  border: 2px solid #D6BCA6;
+/* Image Preview */
+.imagePreview {
+  margin-top: 0.5rem;
+  display: inline-block;
+  border: 2px solid #c4a46e;
   border-radius: 8px;
-  background: #fffaf5;
-  padding: 0.75rem;
+  overflow: hidden;
+  padding: 4px;
+  background: #fff;
+  width: fit-content;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.imagePreview img {
+  border-radius: 6px;
+  display: block;
+}
+
+/* Product List */
+.productList {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid #e2d6c2;
+  border-radius: 6px;
+  padding: 0.75rem;
+  background: #fdfcf9;
 }
 
 .productItem {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.4rem 0.6rem;
-  border-radius: 6px;
-  transition: background 0.2s ease;
+  font-size: 0.95rem;
+  color: #3a2a1d;
   cursor: pointer;
 }
 
-.productItem:hover {
-  background: #f8f2e8;
+.productItem input {
+  accent-color: #c4a46e;
 }
 
-.productCheckbox {
-  accent-color: #C89B3C;
-  width: 18px;
-  height: 18px;
+.productImage {
+  border-radius: 4px;
+  border: 1px solid #e2d6c2;
 }
 
-.button {
-  padding: 0.75rem 1.8rem;
-  background: linear-gradient(135deg, #C89B3C, #b3842f);
-  color: #fff;
+.productPlaceholder {
+  width: 50px;
+  height: 50px;
+  border-radius: 4px;
+  background: #ddd;
+  border: 1px solid #bbb;
+}
+
+/* Button */
+button {
+  margin-top: 1.5rem;
+  padding: 0.85rem 1.5rem;
+  border: none;
+  border-radius: 6px;
   font-size: 1rem;
   font-weight: 600;
-  border: none;
-  border-radius: 8px;
   cursor: pointer;
-  margin-top: 1.5rem;
-  align-self: flex-start;
-  transition: all 0.3s ease;
+  transition: background 0.3s, transform 0.15s;
+  background: linear-gradient(135deg, #d4af37, #c4a46e); /* golden gradient */
+  color: #fff;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.12);
 }
 
-.buttonDisabled {
-  background: #d9c4a2;
+button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #caa437, #b8955e);
+  transform: translateY(-2px);
+}
+
+button:disabled {
+  background: #e0d6b8;
+  color: #8a7f6a;
   cursor: not-allowed;
-}
-
-.button:not(.buttonDisabled):hover {
-  background: linear-gradient(135deg, #b3842f, #a07225);
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-}
-
-.imagePreview {
-  margin-top: 10px;
-  border-radius: 6px;
+  box-shadow: none;
 }
