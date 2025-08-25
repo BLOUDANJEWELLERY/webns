@@ -39,85 +39,41 @@ interface ColorOption {
   _key?: string
 }
 
-interface Product {
+// Define the raw category type fetched from Sanity
+interface CategoryRaw {
   _id: string
   title: string
-  price: number
-  description: string
-  defaultImage?: any
-  variants?: Variant[]
-  colorImages?: any[]
-  categories?: { _id: string; title: string }[]
-  slug: string
+  parent?: { _id: string; title: string }
+  order?: number
 }
 
-export async function getStaticPaths() {
-  const slugs: string[] = await client.fetch(
-    `*[_type=="product" && defined(slug.current)].slug.current`
-  )
+// Define the tree node structure (optional, if you want nested categories)
+interface CategoryNode {
+  _id: string
+  title: string
+  parent?: { _id: string; title: string }
+  order?: number
+  children: CategoryNode[]
+}
+
+export async function getServerSideProps() {
+  const categories: CategoryRaw[] = await client.fetch(`
+    *[_type=="category"]{
+      _id,
+      title,
+      parent->{_id, title},
+      order
+    } | order(order asc)
+  `)
+
   return {
-    paths: slugs.map(slug => ({ params: { slug } })),
-    fallback: true,
+    props: { categories: categories || [] },
   }
 }
 
-export async function getStaticProps({ params }: { params: { slug: string } }) {
-  const query = `*[_type=="product" && slug.current==$slug][0]{
-    _id,
-    title,
-    price,
-    description,
-    defaultImage,
-    variants,
-    colorImages,
-    categories[]->{_id, title},
-    "slug": slug.current
-  }`
-  const product: Product | null = await client.fetch(query, { slug: params.slug })
+// No need for product prop
+export default function AdminCreatePage({ categories }: { categories: CategoryRaw[] }) {
 
-  const categories = await client.fetch(`
-  *[_type=="category"]{
-    _id,
-    title,
-    parent->{_id, title},
-    order
-  } | order(order asc)
-`)
-
-  if (!product) return { notFound: true }
-  return { props: { product, categories: categories || [] }, revalidate: 60 }
-}
-
-// Define the raw category type fetched from Sanity
-interface CategoryRaw {
-  _id: string;
-  title: string;
-  parent?: { _id: string; title: string };
-  order?: number;
-}
-
-// Define the tree node structure
-interface CategoryNode {
-  _id: string;
-  title: string;
-  parent?: { _id: string; title: string };
-  order?: number;
-  children: CategoryNode[];
-}
-
-
-
-
-
-const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
-
-export default function AdminEditPage({ 
-product,
-  categories,
-}: {
-  product: Product | null
-  categories: CategoryRaw[]
-}) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
@@ -135,9 +91,6 @@ product,
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     product?.categories?.map(c => c._id) || []
   )
-
-
-
 
 // Build the category tree from flat array
 const buildCategoryTree = (cats: CategoryRaw[] = []): CategoryNode[] => {
@@ -400,19 +353,13 @@ const isProductChanged = useMemo(() => {
 
 // --- Update Handler ---
 const handleSubmit = async () => {
-  if (!product?._id) {
-    setModalMessage('Missing product ID');
-    setShowUpdateModal(true);
-    return;
-  }
-
   setIsProcessing(true);   // show processing in modal
   setLoading(true);
 
   try {
     let defaultAssetId = defaultImageId;
 
-    // Upload default image if changed
+    // Upload default image if chosen
     if (defaultImageFile) {
       const formData = new FormData();
       formData.append('file', defaultImageFile);
@@ -458,12 +405,11 @@ const handleSubmit = async () => {
       )
     );
 
-    // Update product API call
-    const res = await fetch('/api/products/update', {
-      method: 'PUT',
+    // Create product API call
+    const res = await fetch('/api/products/create', {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        id: product._id,
         title,
         price: Number(price),
         description,
@@ -473,21 +419,20 @@ const handleSubmit = async () => {
         colorImages,
         variants,
         categories: selectedCategories.map(id => ({
-  _key: uuidv4(),  // generate a unique key for each item
-  _type: 'reference',
-  _ref: id,
-})),
+          _key: uuidv4(),
+          _type: 'reference',
+          _ref: id,
+        })),
       }),
     });
     const result = await res.json();
-    if (!res.ok) throw new Error(result.error || 'Failed to update product');
+    if (!res.ok) throw new Error(result.error || 'Failed to create product');
 
-    setModalMessage('Product updated successfully.');
-    // Keep modal open showing processing
-    setTimeout(() => router.push('/admin'), 500); // slight delay before redirect
+    setModalMessage('Product created successfully.');
+    setTimeout(() => router.push('/admin'), 500); // redirect to dashboard
   } catch (err: any) {
     setModalMessage(err.message);
-    setIsProcessing(false); // show modal with buttons again
+    setIsProcessing(false);
   } finally {
     setLoading(false);
   }
@@ -752,7 +697,7 @@ const handleSubmit = async () => {
     className={`${styles.button} ${!isProductChanged ? styles.disabledButton : ''}`}
     onClick={() => setShowUpdateModal(true)}
   >
-    {loading ? "Creating..." : "Update Product"}
+    {loading ? "Creating..." : "Create Product"}
   </button>
 
 </div>
