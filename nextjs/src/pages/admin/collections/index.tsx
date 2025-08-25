@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
-import styles from '../../../styles/admincat.module.css'
+import styles from '../../../styles/admincoll.module.css'
 import AdminHeader from '../../components/AdminHeader'
 
 const client = createClient({
@@ -35,59 +35,52 @@ export default function CollectionsListPage({ collections }: Props) {
 
   return (
 <>
- <AdminHeader title="Admin Dashboard" titleHref="/admin" />
-    <div className={styles.container}>
+  <AdminHeader title="Admin Dashboard" titleHref="/admin" />
+
+  <div className={styles.container}>
+    <div className={styles.header}>
       <h1 className={styles.pageTitle}>Collections</h1>
+      <Link href="/admin/collections/create">
+        <button className={styles.createButton}>+ Create Collection</button>
+      </Link>
+    </div>
 
-      <div style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-        <Link href="/admin/collections/create">
-          <button className={styles.controlsButton}>Create New Collection</button>
-        </Link>
-      </div>
-
-      <div className={styles.treeWrapper}>
+    {collections.length === 0 ? (
+      <p className={styles.emptyMessage}>
+        No collections found. Start by creating a new collection.
+      </p>
+    ) : (
+      <div className={styles.grid}>
         {collections.map((col) => (
           <Link
             key={col._id}
             href={`/admin/collections/edit/${col._id}`}
-            className={`${styles.item} ${styles.collectionItem}`}
+            className={styles.card}
           >
-            <div className={styles.itemContent}>
+            <div className={styles.imageWrapper}>
               {col.image ? (
                 <Image
                   src={urlFor(col.image).url()}
                   alt={col.name}
-                  width={80}
-                  height={80}
-                  className={styles.collectionImage}
-                  style={{
-                    borderRadius: '6px',
-                    objectFit: 'cover',
-                  }}
+                  width={120}
+                  height={120}
+                  className={styles.image}
                 />
               ) : (
-                <div
-                  style={{
-                    width: 80,
-                    height: 80,
-                    background: '#eee',
-                    borderRadius: '6px',
-                  }}
-                />
+                <div className={styles.placeholder} />
               )}
-              <div style={{ marginLeft: '0.75rem' }}>
-                <span className={styles.title}>{col.name}</span>
-                <p style={{ fontSize: '0.85rem', color: '#666', margin: 0 }}>
-                  {col.description || 'No description'}
-                </p>
-              </div>
+            </div>
+            <div className={styles.cardContent}>
+              <h3 className={styles.title}>{col.name}</h3>
+              <p className={styles.description}>
+                {col.description || 'No description'}
+              </p>
             </div>
           </Link>
         ))}
-
-        {collections.length === 0 && <div>No collections found. Create one to get started.</div>}
       </div>
-    </div>
+    )}
+  </div>
 </>
   )
 }
