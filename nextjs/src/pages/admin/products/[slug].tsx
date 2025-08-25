@@ -797,7 +797,7 @@ const handleDelete = async () => {
   </button>
 </div>
   </form>
-</div>
+
 {/* Update Confirmation Modal */}
 {showUpdateModal && (
   <div className={styles.modalOverlay}>
@@ -906,7 +906,7 @@ const handleDelete = async () => {
         </button>
       </div>
     </div>
-  
+  </div>
 )}
 </>
   )
