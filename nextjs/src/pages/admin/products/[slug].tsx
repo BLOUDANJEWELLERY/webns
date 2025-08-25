@@ -485,7 +485,7 @@ const handleSubmit = async () => {
 
     setModalMessage('Product updated successfully.');
     // Keep modal open showing processing
-    setTimeout(() => router.push('/admin'), 500); // slight delay before redirect
+    setTimeout(() => router.push('/admin/products'), 500); // slight delay before redirect
   } catch (err: any) {
     setModalMessage(err.message);
     setIsProcessing(false); // show modal with buttons again
@@ -516,7 +516,7 @@ const handleDelete = async () => {
     if (!res.ok) throw new Error(result.error || 'Failed to delete product');
 
     setModalMessage('Product deleted successfully.');
-    setTimeout(() => router.push('/admin'), 500); // redirect after brief delay
+    setTimeout(() => router.push('/admin/products'), 500); // redirect after brief delay
   } catch (err: any) {
     setModalMessage(err.message);
     setIsProcessing(false); // show modal with buttons again
