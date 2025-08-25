@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import styles from '../../styles/adminHeader.module.css'
+import styles from '../../styles/header.module.css'
 
 export default function AdminHeader() {
   return (
