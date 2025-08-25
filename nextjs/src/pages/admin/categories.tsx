@@ -283,7 +283,7 @@ export default function CategoriesPage({ categories }: Props) {
 
   return (
 <>
-<AdminHeader title="Admin Panel" titleHref="../" />
+<AdminHeader title="Admin Panel" titleHref="/admin" />
     <div className={styles.container} ref={containerRef}>
       <h1 className={styles.pageTitle}>Categories</h1>
       {isProcessing && <div>Processing...</div>}
