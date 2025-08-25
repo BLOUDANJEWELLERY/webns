@@ -179,40 +179,6 @@ const CategoryNodeItem: React.FC<CategoryNodeItemProps> = ({
   );
 };
 
-  // Colors & Variants
-  const [colors, setColors] = useState<ColorOption[]>(() => {
-    const colorMap: Record<string, ColorOption> = {}
-    product?.variants?.forEach(v => {
-      if (!colorMap[v.color]) {
-        colorMap[v.color] = {
-          color: v.color,
-          imageFile: null,
-          imagePreview: null,
-          existingImageId: undefined,
-          variants: [],
-          _key: v._key || Math.random().toString(36).substr(2, 9),
-        }
-      }
-      colorMap[v.color].variants.push({
-        ...v,
-        _key: v._key || Math.random().toString(36).substr(2, 9),
-        showPriceOverride: !!(v.priceOverride && v.priceOverride > 0),
-      })
-    })
-
-    const colorImages: ColorOption[] =
-      product?.colorImages?.map(ci => ({
-        color: ci.color,
-        imageFile: null,
-        imagePreview: ci.image ? urlFor(ci.image) : null,
-        existingImageId: ci.image?.asset?._ref,
-        variants: colorMap[ci.color]?.variants || [],
-        _key: ci._key || Math.random().toString(36).substr(2, 9),
-      })) || Object.values(colorMap)
-
-    return colorImages
-  })
-
   const [openColors, setOpenColors] = useState<boolean[]>(colors.map(() => true))
 
   // Modal controls
