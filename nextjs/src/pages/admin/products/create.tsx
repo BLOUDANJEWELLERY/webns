@@ -77,21 +77,6 @@ export default function AdminCreatePage({ categories }: { categories: CategoryRa
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
-  // Core product states
-  const [title, setTitle] = useState(product?.title || '')
-  const [price, setPrice] = useState(product?.price.toString() || '')
-  const [description, setDescription] = useState(product?.description || "")
-  const [defaultImageFile, setDefaultImageFile] = useState<File | null>(null)
-  const [defaultImagePreview, setDefaultImagePreview] = useState(
-    product?.defaultImage ? urlFor(product.defaultImage) : null
-  )
-  const [defaultImageId] = useState(product?.defaultImage?.asset?._ref)
-
-  // Categories (tags)
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    product?.categories?.map(c => c._id) || []
-  )
-
 // Build the category tree from flat array
 const buildCategoryTree = (cats: CategoryRaw[] = []): CategoryNode[] => {
   const map: Record<string, CategoryNode> = {};
@@ -122,18 +107,17 @@ const buildCategoryTree = (cats: CategoryRaw[] = []): CategoryNode[] => {
 
 // Usage: build tree from fetched categories
 const categoryTree = useMemo(() => buildCategoryTree(categories || []), [categories]);
+
+// Toggle selection of category
 const handleCategoryToggle = (id: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
-    )
-  }
+  setSelectedCategories(prev =>
+    prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+  );
+};
+
 // Recursive JSX render function
-const renderCategoryTree = (
-  nodes: CategoryNode[],
-  selectedCategories: string[],
-  handleCategoryToggle: (id: string) => void
-): React.ReactElement[] => {
-  return nodes.map((node) => (
+const renderCategoryTree = (nodes: CategoryNode[]): React.ReactElement[] => {
+  return nodes.map(node => (
     <CategoryNodeItem
       key={node._id}
       node={node}
@@ -154,15 +138,7 @@ const CategoryNodeItem: React.FC<CategoryNodeItemProps> = ({
   selectedCategories,
   handleCategoryToggle,
 }) => {
-  // auto-expand if this node or any descendant is selected
-  const hasSelectedDescendant = (n: CategoryNode): boolean => {
-    if (selectedCategories.includes(n._id)) return true;
-    return n.children.some((child) => hasSelectedDescendant(child));
-  };
-
-  const [expanded, setExpanded] = useState<boolean>(
-    hasSelectedDescendant(node) // open on load if selected
-  );
+  const [expanded, setExpanded] = useState(false); // collapsed by default
 
   return (
     <div>
@@ -171,7 +147,7 @@ const CategoryNodeItem: React.FC<CategoryNodeItemProps> = ({
           <button
             type="button"
             className={styles.toggleBtn}
-            onClick={() => setExpanded((prev) => !prev)}
+            onClick={() => setExpanded(prev => !prev)}
           >
             {expanded ? "▾" : "▸"}
           </button>
@@ -189,7 +165,7 @@ const CategoryNodeItem: React.FC<CategoryNodeItemProps> = ({
 
       {expanded && node.children.length > 0 && (
         <div className={styles.nested}>
-          {node.children.map((child) => (
+          {node.children.map(child => (
             <CategoryNodeItem
               key={child._id}
               node={child}
@@ -202,9 +178,6 @@ const CategoryNodeItem: React.FC<CategoryNodeItemProps> = ({
     </div>
   );
 };
-
-
-
 
   // Colors & Variants
   const [colors, setColors] = useState<ColorOption[]>(() => {
