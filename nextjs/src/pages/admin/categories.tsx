@@ -308,6 +308,7 @@ export default function CategoriesPage({ categories }: Props) {
         </div>
       </DndContext>
     </div>
+</>
   )
 }
 
