@@ -153,7 +153,7 @@ export default function CreateProduct() {
 <>
  <AdminHeader title="Products" titleHref="/admin/products" />
 
-    <div className={styles.mainContainer}>
+   {/* <div className={styles.mainContainer}>*/}
       <h1 className={styles.heading}>Create Product</h1>
       <form onSubmit={handleSubmit} className={styles.form}>
         {/* Title & Price */}
@@ -279,7 +279,6 @@ export default function CreateProduct() {
           {loading ? 'Saving...' : 'Create Product'}
         </button>
       </form>
-    </div>
 </>
   )
 }
