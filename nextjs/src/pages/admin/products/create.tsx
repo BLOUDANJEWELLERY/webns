@@ -1,14 +1,12 @@
 // src/pages/admin/products/create.tsx
-import { useState, useEffect, useMemo} from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/router'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import Image from 'next/image'
 import styles from '../../../styles/adminEdit.module.css'
 import { v4 as uuidv4 } from 'uuid'
-import React from "react"
 import AdminHeader from '../../components/AdminHeader'
-
 
 const client = createClient({
   projectId: '3jc8hsku',
@@ -24,9 +22,9 @@ interface Variant {
   size: string
   quantity: number
   priceOverride?: number
-  sku?: string
+  sku: string
   color: string
-  _key?: string
+  _key: string
   showPriceOverride?: boolean
 }
 
@@ -34,12 +32,11 @@ interface ColorOption {
   color: string
   imageFile: File | null
   imagePreview: string | null
-  existingImageId?: string
   variants: Variant[]
-  _key?: string
+  _key: string
 }
 
-// Define the raw category type fetched from Sanity
+// Raw category type from Sanity
 interface CategoryRaw {
   _id: string
   title: string
@@ -47,7 +44,7 @@ interface CategoryRaw {
   order?: number
 }
 
-// Define the tree node structure (optional, if you want nested categories)
+// Category tree node
 interface CategoryNode {
   _id: string
   title: string
@@ -65,187 +62,158 @@ export async function getServerSideProps() {
       order
     } | order(order asc)
   `)
-
-  return {
-    props: { categories: categories || [] },
-  }
+  return { props: { categories: categories || [] } }
 }
 
-// No need for product prop
 export default function AdminCreatePage({ categories }: { categories: CategoryRaw[] }) {
-
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
-// Build the category tree from flat array
-const buildCategoryTree = (cats: CategoryRaw[] = []): CategoryNode[] => {
-  const map: Record<string, CategoryNode> = {};
-  const roots: CategoryNode[] = [];
-
-  cats.forEach(cat => {
-    map[cat._id] = { ...cat, children: [] };
-  });
-
-  cats.forEach(cat => {
-    if (cat.parent?._id) {
-      map[cat.parent._id].children.push(map[cat._id]);
-    } else {
-      roots.push(map[cat._id]);
-    }
-  });
-
-  // Sort children recursively by order
-  const sortTree = (nodes: CategoryNode[]) => {
-    nodes.sort((a, b) => (a.order || 0) - (b.order || 0));
-    nodes.forEach(n => sortTree(n.children));
-  };
-
-  sortTree(roots);
-
-  return roots;
-};
-
-// Usage: build tree from fetched categories
-const categoryTree = useMemo(() => buildCategoryTree(categories || []), [categories]);
-
-// Toggle selection of category
-// Selected categories state
-const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-
-// Toggle a category on or off
-const handleCategoryToggle = (id: string) => {
-  setSelectedCategories(prev =>
-    prev.includes(id)
-      ? prev.filter(catId => catId !== id) // remove if already selected
-      : [...prev, id] // add if not selected
-  );
-};
-
-// Recursive JSX render function
-const renderCategoryTree = (nodes: CategoryNode[]): React.ReactElement[] => {
-  return nodes.map(node => (
-    <CategoryNodeItem
-      key={node._id}
-      node={node}
-      selectedCategories={selectedCategories}
-      handleCategoryToggle={handleCategoryToggle}
-    />
-  ));
-};
-
-type CategoryNodeItemProps = {
-  node: CategoryNode;
-  selectedCategories: string[];
-  handleCategoryToggle: (id: string) => void;
-};
-
-const CategoryNodeItem: React.FC<CategoryNodeItemProps> = ({
-  node,
-  selectedCategories,
-  handleCategoryToggle,
-}) => {
-  const [expanded, setExpanded] = useState(false); // collapsed by default
-
-  return (
-    <div>
-      <div className={styles.categoryRow}>
-        {node.children.length > 0 && (
-          <button
-            type="button"
-            className={styles.toggleBtn}
-            onClick={() => setExpanded(prev => !prev)}
-          >
-            {expanded ? "▾" : "▸"}
-          </button>
-        )}
-
-        <label>
-          <input
-            type="checkbox"
-            checked={selectedCategories.includes(node._id)}
-            onChange={() => handleCategoryToggle(node._id)}
-          />
-          {node.title}
-        </label>
-      </div>
-
-      {expanded && node.children.length > 0 && (
-        <div className={styles.nested}>
-          {node.children.map(child => (
-            <CategoryNodeItem
-              key={child._id}
-              node={child}
-              selectedCategories={selectedCategories}
-              handleCategoryToggle={handleCategoryToggle}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-  const [openColors, setOpenColors] = useState<boolean[]>(colors.map(() => true))
+  // Product fields
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [price, setPrice] = useState<number | ''>('')
+  const [defaultImageFile, setDefaultImageFile] = useState<File | null>(null)
+  const [defaultImagePreview, setDefaultImagePreview] = useState<string | null>(null)
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [colors, setColors] = useState<ColorOption[]>([])
 
   // Modal controls
-  const [showUpdateModal, setShowUpdateModal] = useState(false)
+  const [showModal, setShowModal] = useState(false)
   const [modalMessage, setModalMessage] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
-// For color & variant removal
-const [showRemoveColorModal, setShowRemoveColorModal] = useState(false)
-const [showRemoveVariantModal, setShowRemoveVariantModal] = useState(false)
-const [pendingRemoveColorIndex, setPendingRemoveColorIndex] = useState<number | null>(null)
-const [pendingRemoveVariant, setPendingRemoveVariant] = useState<{ ci: number, vi: number } | null>(null)
 
+  // ----------- Category tree logic ----------
+  const buildCategoryTree = (cats: CategoryRaw[] = []): CategoryNode[] => {
+    const map: Record<string, CategoryNode> = {}
+    const roots: CategoryNode[] = []
 
-  // Handlers
-  const handleDefaultImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null
-    setDefaultImageFile(file)
+    cats.forEach(cat => { map[cat._id] = { ...cat, children: [] } })
+    cats.forEach(cat => {
+      if (cat.parent?._id) map[cat.parent._id].children.push(map[cat._id])
+      else roots.push(map[cat._id])
+    })
+
+    const sortTree = (nodes: CategoryNode[]) => {
+      nodes.sort((a, b) => (a.order || 0) - (b.order || 0))
+      nodes.forEach(n => sortTree(n.children))
+    }
+    sortTree(roots)
+    return roots
   }
 
+  const categoryTree = useMemo(() => buildCategoryTree(categories), [categories])
+  const handleCategoryToggle = (id: string) => {
+    setSelectedCategories(prev =>
+      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+    )
+  }
+
+  const renderCategoryTree = (nodes: CategoryNode[]): React.ReactElement[] => {
+    return nodes.map(node => (
+      <CategoryNodeItem
+        key={node._id}
+        node={node}
+        selectedCategories={selectedCategories}
+        handleCategoryToggle={handleCategoryToggle}
+      />
+    ))
+  }
+
+  const CategoryNodeItem: React.FC<{
+    node: CategoryNode
+    selectedCategories: string[]
+    handleCategoryToggle: (id: string) => void
+  }> = ({ node, selectedCategories, handleCategoryToggle }) => {
+    const [expanded, setExpanded] = useState(false)
+    return (
+      <div>
+        <div className={styles.categoryRow}>
+          {node.children.length > 0 && (
+            <button
+              type="button"
+              className={styles.toggleBtn}
+              onClick={() => setExpanded(prev => !prev)}
+            >
+              {expanded ? '▾' : '▸'}
+            </button>
+          )}
+          <label>
+            <input
+              type="checkbox"
+              checked={selectedCategories.includes(node._id)}
+              onChange={() => handleCategoryToggle(node._id)}
+            />
+            {node.title}
+          </label>
+        </div>
+        {expanded && node.children.length > 0 && (
+          <div className={styles.nested}>
+            {node.children.map(child => (
+              <CategoryNodeItem
+                key={child._id}
+                node={child}
+                selectedCategories={selectedCategories}
+                handleCategoryToggle={handleCategoryToggle}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // ----------- Colors & Variants logic ----------
   const addColor = () => {
-    setColors([
-      ...colors,
-      {
-        color: '',
-        imageFile: null,
-        imagePreview: null,
-        variants: [],
-        _key: Math.random().toString(36).substr(2, 9),
-      },
+    setColors(prev => [
+      ...prev,
+      { color: '', imageFile: null, imagePreview: null, variants: [], _key: uuidv4() },
     ])
-    setOpenColors([...openColors, true])
   }
 
-  const removeColor = (i: number) => {
-    setColors(colors.filter((_, idx) => idx !== i))
-    setOpenColors(openColors.filter((_, idx) => idx !== i))
+  const removeColor = (index: number) => {
+    setColors(prev => prev.filter((_, i) => i !== index))
   }
 
   const handleColorImageChange = (index: number, file: File) => {
-    const updated = [...colors]
-    updated[index].imageFile = file
-    updated[index].imagePreview = URL.createObjectURL(file)
-    setColors(updated)
+    setColors(prev => {
+      const updated = [...prev]
+      updated[index].imageFile = file
+      updated[index].imagePreview = URL.createObjectURL(file)
+      return updated
+    })
   }
 
   const addVariant = (colorIndex: number) => {
-    const updated = [...colors]
-    updated[colorIndex].variants.push({
-      size: '',
-      quantity: 1,
-      color: colors[colorIndex].color,
-      _key: Math.random().toString(36).substr(2, 9),
-      showPriceOverride: false,
+    setColors(prev => {
+      const updated = [...prev]
+      const color = updated[colorIndex]
+      color.variants.push({
+        size: '',
+        quantity: 1,
+        color: color.color,
+        priceOverride: undefined,
+        sku: `${color.color}-NEW-${Math.floor(Math.random() * 1000000)}`,
+        _key: uuidv4(),
+        showPriceOverride: false,
+      })
+      return updated
     })
-    setColors(updated)
   }
 
   const removeVariant = (colorIndex: number, variantIndex: number) => {
-    const updated = [...colors]
-    updated[colorIndex].variants.splice(variantIndex, 1)
-    setColors(updated)
+    setColors(prev => {
+      const updated = [...prev]
+      updated[colorIndex].variants.splice(variantIndex, 1)
+      return updated
+    })
+  }
+
+  // ----------- Default Image change ----------
+  const handleDefaultImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null
+    setDefaultImageFile(file)
+    if (file) setDefaultImagePreview(URL.createObjectURL(file))
   }
 
 // --- Update Handler ---
