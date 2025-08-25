@@ -1,6 +1,6 @@
 // src/pages/admin/index.tsx
 import Link from 'next/link'
-import AdminHeader from '@/components/adminHeader'
+import AdminHeader from '../components/adminHeader'
 import styles from '../../styles/adminDashboard.module.css'
 
 export default function AdminDashboard() {
