@@ -527,7 +527,7 @@ const handleDelete = async () => {
 
   return (
 <>
- <AdminHeader title="Admin Dashboard" titleHref="/admin" />
+ <AdminHeader title="Products" titleHref="/admin/products" />
 
     <div className={styles.mainContainer}>
   <h1 className={styles.heading}>Edit Product</h1>
