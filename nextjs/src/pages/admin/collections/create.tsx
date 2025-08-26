@@ -227,11 +227,11 @@ const handleApplyFilters = (filters: any) => {
       <button onClick={() => setFilterOpen(true)}>Filter & Sort</button>
 
       <FilterSortModal
-        categories={categories}
-        isOpen={filterOpen}
-        onClose={() => setFilterOpen(false)}
-        onApply={handleApplyFilters}
-      />
+  categories={categories} // ✅ full CategoryRaw objects
+  isOpen={filterOpen}
+  onClose={() => setFilterOpen(false)}
+  onApply={handleApplyFilters}
+/>
     </div>
 
 {/* Product List */}
