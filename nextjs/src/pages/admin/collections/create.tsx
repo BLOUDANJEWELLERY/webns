@@ -1,4 +1,5 @@
 // src/admin/collections/create.tsx
+import Head from "next/head"
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
@@ -110,6 +111,12 @@ export default function CreateCollectionPage({ products }: Props) {
 
   return (
 <>
+
+<Head>
+        <title>Create Collections | Admin Panel</title>
+        <meta name="description" content="Manage and create collections in your admin dashboard." />
+      </Head>
+
   <AdminHeader title="Collections" titleHref="/admin/collections" />
 
   <div className={styles.mainContainer}>
