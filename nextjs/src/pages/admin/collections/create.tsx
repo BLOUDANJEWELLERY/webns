@@ -45,13 +45,6 @@ export default function CreateCollectionPage({ products, categories = [] }: Prop
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
 
-const [filterOpen, setFilterOpen] = useState(false);
-
-const handleApplyFilters = (filters: any) => {
-    console.log("Applied Filters:", filters);
-  };
-
-
   // Handle image selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -65,19 +58,6 @@ const handleApplyFilters = (filters: any) => {
       prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
     );
   };
-
-  // Filter and sort products (memoized)
-  const filteredProducts = useMemo(() => {
-    return products
-      .filter((p) => {
-        const matchesSearch = p.title.toLowerCase().includes(search.toLowerCase());
-        const matchesCategory = selectedCategory
-          ? p.category === selectedCategory || p.categories?.includes(selectedCategory)
-          : true;
-        return matchesSearch && matchesCategory;
-      })
-      .sort((a, b) => a.title.localeCompare(b.title));
-  }, [products, search, selectedCategory]);
 
   // Submit handler
   const handleSubmit = async () => {
@@ -222,17 +202,6 @@ const handleApplyFilters = (filters: any) => {
   onChange={(e) => setSearch(e.target.value)}
   className={styles.input}
 />
-
-<div>
-      <button onClick={() => setFilterOpen(true)}>Filter & Sort</button>
-
-      <FilterSortModal
-  categories={categories} // ✅ full CategoryRaw objects
-  isOpen={filterOpen}
-  onClose={() => setFilterOpen(false)}
-  onApply={handleApplyFilters}
-/>
-    </div>
 
 {/* Product List */}
 <div className={styles.productList}>
