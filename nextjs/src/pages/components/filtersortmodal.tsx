@@ -1,33 +1,39 @@
 // src/pages/components/FilterSortModal.tsx
-import React, { useState, useMemo } from "react"
-import styles from "../../styles/adminEdit.module.css"
+import React, { useState, useMemo } from "react";
+import styles from "../../styles/adminEdit.module.css";
+import { createClient } from "next-sanity";
+import Image from "next/image";
 
+// ------------------- Types -------------------
 interface CategoryRaw {
-  _id: string
-  title: string
-  parent?: { _id: string; title: string }
-  order?: number
+  _id: string;
+  title: string;
+  parent?: { _id: string; title: string };
+  order?: number;
 }
 
 interface CategoryNode extends CategoryRaw {
-  children: CategoryNode[]
+  children: CategoryNode[];
 }
+
+type SortOption = "alphabetical" | "priceAsc" | "priceDesc";
 
 type Props = {
-  isOpen: boolean
-  categories: CategoryRaw[]
-  initialMinPrice?: number | ""
-  initialMaxPrice?: number | ""
-  initialSort?: "alphabetical" | "priceAsc" | "priceDesc"
-  onClose: () => void
+  isOpen: boolean;
+  categories: CategoryRaw[];
+  initialMinPrice?: number | "";
+  initialMaxPrice?: number | "";
+  initialSort?: SortOption;
+  onClose: () => void;
   onApply: (filters: {
-    selectedCategories: string[]
-    minPrice: number | ""
-    maxPrice: number | ""
-    sort: "alphabetical" | "priceAsc" | "priceDesc"
-  }) => void
-}
+    selectedCategories: string[];
+    minPrice: number | "";
+    maxPrice: number | "";
+    sort: SortOption;
+  }) => void;
+};
 
+// ------------------- Component -------------------
 const FilterSortModal: React.FC<Props> = ({
   isOpen,
   categories,
@@ -37,49 +43,51 @@ const FilterSortModal: React.FC<Props> = ({
   onClose,
   onApply,
 }) => {
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
-  const [minPrice, setMinPrice] = useState<number | "">(initialMinPrice)
-  const [maxPrice, setMaxPrice] = useState<number | "">(initialMaxPrice)
-  const [sort, setSort] = useState<typeof initialSort>(initialSort)
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
+    new Set()
+  );
+  const [minPrice, setMinPrice] = useState<number | "">(initialMinPrice);
+  const [maxPrice, setMaxPrice] = useState<number | "">(initialMaxPrice);
+  const [sort, setSort] = useState<SortOption>(initialSort);
 
+  // ------------------- Category Tree -------------------
   const toggleCategoryExpand = (id: string) => {
-    setExpandedCategories(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
+    setExpandedCategories((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
 
   const handleCategoryToggle = (id: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
-    )
-  }
+    setSelectedCategories((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
+    );
+  };
 
   const buildCategoryTree = (cats: CategoryRaw[] = []): CategoryNode[] => {
-    const map: Record<string, CategoryNode> = {}
-    const roots: CategoryNode[] = []
+    const map: Record<string, CategoryNode> = {};
+    const roots: CategoryNode[] = [];
 
-    cats.forEach(cat => { map[cat._id] = { ...cat, children: [] } })
-    cats.forEach(cat => {
-      if (cat.parent?._id) map[cat.parent._id].children.push(map[cat._id])
-      else roots.push(map[cat._id])
-    })
+    cats.forEach((cat) => (map[cat._id] = { ...cat, children: [] }));
+    cats.forEach((cat) => {
+      if (cat.parent?._id) map[cat.parent._id].children.push(map[cat._id]);
+      else roots.push(map[cat._id]);
+    });
 
     const sortTree = (nodes: CategoryNode[]) => {
-      nodes.sort((a, b) => (a.order || 0) - (b.order || 0))
-      nodes.forEach(n => sortTree(n.children))
-    }
-    sortTree(roots)
-    return roots
-  }
+      nodes.sort((a, b) => (a.order || 0) - (b.order || 0));
+      nodes.forEach((n) => sortTree(n.children));
+    };
+    sortTree(roots);
+    return roots;
+  };
 
-  const categoryTree = useMemo(() => buildCategoryTree(categories), [categories])
+  const categoryTree = useMemo(() => buildCategoryTree(categories), [categories]);
 
   const renderCategoryNode = (node: CategoryNode): React.ReactElement => {
-    const isExpanded = expandedCategories.has(node._id)
+    const isExpanded = expandedCategories.has(node._id);
     return (
       <div key={node._id}>
         <div className={styles.categoryRow}>
@@ -89,7 +97,7 @@ const FilterSortModal: React.FC<Props> = ({
               className={styles.toggleBtn}
               onClick={() => toggleCategoryExpand(node._id)}
             >
-              {isExpanded ? '▾' : '▸'}
+              {isExpanded ? "▾" : "▸"}
             </button>
           )}
           <label>
@@ -103,29 +111,30 @@ const FilterSortModal: React.FC<Props> = ({
         </div>
         {isExpanded && node.children.length > 0 && (
           <div className={styles.nested}>
-            {node.children.map(child => renderCategoryNode(child))}
+            {node.children.map((child) => renderCategoryNode(child))}
           </div>
         )}
       </div>
-    )
-  }
+    );
+  };
 
-  if (!isOpen) return null
-
+  // ------------------- Apply Filters -------------------
   const handleApply = () => {
-    onApply({ selectedCategories, minPrice, maxPrice, sort })
-    onClose()
-  }
+    onApply({ selectedCategories, minPrice, maxPrice, sort });
+    onClose();
+  };
+
+  if (!isOpen) return null;
 
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modal}>
         <h2>Filter & Sort</h2>
 
-        {/* Category Tree */}
+        {/* Categories */}
         <div className={styles.checkboxGroup}>
           <p style={{ fontWeight: 600, marginBottom: "0.5rem" }}>Categories</p>
-          {categoryTree.map(node => renderCategoryNode(node))}
+          {categoryTree.map((node) => renderCategoryNode(node))}
         </div>
 
         {/* Price Range */}
@@ -135,7 +144,7 @@ const FilterSortModal: React.FC<Props> = ({
             placeholder="Min"
             className={styles.input}
             value={minPrice}
-            onChange={e =>
+            onChange={(e) =>
               setMinPrice(e.target.value === "" ? "" : Number(e.target.value))
             }
           />
@@ -144,7 +153,7 @@ const FilterSortModal: React.FC<Props> = ({
             placeholder="Max"
             className={styles.input}
             value={maxPrice}
-            onChange={e =>
+            onChange={(e) =>
               setMaxPrice(e.target.value === "" ? "" : Number(e.target.value))
             }
           />
@@ -198,7 +207,7 @@ const FilterSortModal: React.FC<Props> = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default FilterSortModal
+export default FilterSortModal;
