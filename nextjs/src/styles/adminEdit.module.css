@@ -1,45 +1,51 @@
 /* src/styles/adminEdit.module.css */
+
+/* Product List Container */
 .productList {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* reduced width per item */
   gap: 14px;
   max-height: 320px;
-  overflow-y: auto;       /* vertical scroll */
-  overflow-x: hidden;     /* block horizontal scroll */
+  overflow-y: auto;        /* vertical scroll only */
+  overflow-x: hidden;
   padding: 0.75rem;
   border: 1px solid #d2b48c; /* warm brown border */
   border-radius: 8px;
-  background: #fdfbf7; /* soft warm background */
+  background: #fdfbf7;     /* soft warm background */
   scrollbar-width: thin;
   scrollbar-color: #d4af37 #fdfbf7;
 }
 
-/* Each product item */
+/* Each Product Item */
 .productItem {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px;
+  gap: 10px;
+  padding: 8px;
   background: #fffdfa;
   border: 1px solid #e7d9b9;
   border-radius: 8px;
-  transition: all 0.25s ease;
   cursor: pointer;
+  transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .productItem:hover {
-  border-color: #d4af37; /* golden accent */
-  background: #fff9e6;   /* subtle gold-tinted background */
+  border-color: #d4af37;   /* golden accent */
+  background: #fff9e6;     /* subtle gold-tinted background */
   box-shadow: 0 2px 6px rgba(212, 175, 55, 0.15);
 }
 
+/* Checkbox Styling */
 .productItem input[type="checkbox"] {
   margin: 0;
-  accent-color: #d4af37; /* gold highlight */
+  accent-color: #d4af37;   /* gold highlight */
+  transition: none;        /* prevents flicker */
 }
 
 /* Product Image */
 .productImage {
+  width: 40px;
+  height: 40px;
   border-radius: 6px;
   object-fit: cover;
   border: 1px solid #e0c78a; /* subtle golden border */
@@ -47,23 +53,23 @@
 
 /* Placeholder if no image */
 .productPlaceholder {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   background: #f1e4c6;
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #8b6f3d;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   border: 1px dashed #d4af37;
 }
 
 /* Product Title */
 .productTitle {
-  font-size: 0.95rem;
+  font-size: 0.85rem;  /* compact */
   font-weight: 500;
-  color: #5a4632; /* warm brown */
+  color: #5a4632;      /* warm brown */
   flex: 1;
   white-space: nowrap;
   overflow: hidden;
