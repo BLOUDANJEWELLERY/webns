@@ -1,102 +1,92 @@
 // src/admin/collections/create.tsx
-import Head from "next/head";
-import { useState, useMemo } from "react";
-import { useRouter } from "next/router";
-import Image from "next/image";
-import { createClient } from "next-sanity";
-import styles from "../../../styles/adminEdit.module.css";
-import AdminHeader from "../../components/AdminHeader";
-import FilterSortModal from "../../components/filtersortmodal";
+import Head from "next/head"
+import { useState } from 'react'
+import { useRouter } from 'next/router'
+import Image from 'next/image'
+import { createClient } from 'next-sanity'
+import styles from '../../../styles/adminEdit.module.css'
+import AdminHeader from '../../components/AdminHeader'
+
 
 type Product = {
-  _id: string;
-  title: string;
-  category?: string;          // optional category
-  categories?: string[];      // optional multiple categories
-  defaultImage?: { _id: string; url: string };
-};
+  _id: string
+  title: string
+  defaultImage?: { _id: string; url: string }
+}
 
 type Props = {
-  products: Product[];
-  categories?: string[];      // list of all categories for filter dropdown
-};
+  products: Product[]
+}
 
 const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
-  apiVersion: "2023-08-01",
+  apiVersion: '2023-08-01',
   useCdn: false,
-});
+})
 
-export default function CreateCollectionPage({ products, categories = [] }: Props) {
-  const router = useRouter();
+export default function CreateCollectionPage({ products }: Props) {
+  const router = useRouter()
 
-  // Form state
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [linkTarget, setLinkTarget] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [linkTarget, setLinkTarget] = useState('')
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [isProcessing, setIsProcessing] = useState(false)
 
-  // Product selection / filter state
-  const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(""); // "" = all
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [search, setSearch] = useState('')
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([])
 
-
-  // Handle image selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setImageFile(file);
-    if (file) setImagePreview(URL.createObjectURL(file));
-  };
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0])
+      setImagePreview(URL.createObjectURL(e.target.files[0]))
+    }
+  }
 
-  // Toggle product selection
   const toggleProductSelection = (id: string) => {
-    setSelectedProducts((prev) =>
-      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
-    );
-  };
+    setSelectedProducts(prev =>
+      prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
+    )
+  }
 
-  // Submit handler
   const handleSubmit = async () => {
-    if (!name.trim()) return alert("Name is required");
+    if (!name.trim()) {
+      alert('Name is required')
+      return
+    }
 
-    setIsProcessing(true);
+    setIsProcessing(true)
 
-    let imageAsset: any = null;
-
+    let imageAsset: any = null
     if (imageFile) {
-      const formData = new FormData();
-      formData.append("file", imageFile);
-      formData.append("type", "image");
+      const formData = new FormData()
+      formData.append('file', imageFile)
+      formData.append('type', 'image')
 
       try {
-        const res = await fetch("/api/products/uploadImage", {
-          method: "POST",
+        const res = await fetch('/api/products/uploadImage', {
+          method: 'POST',
           body: formData,
-        });
-        const data = await res.json();
-        if (!res.ok || !data.assetId) throw new Error(data.error || "Upload failed");
-        imageAsset = {
-          _type: "image",
-          asset: { _ref: data.assetId, _type: "reference" },
-        };
+        })
+        const data = await res.json()
+        if (!res.ok || !data.assetId) throw new Error(data.error || 'Upload failed')
+        imageAsset = { _type: 'image', asset: { _ref: data.assetId, _type: 'reference' } }
       } catch (err) {
-        console.error(err);
-        alert("Image upload failed");
-        setIsProcessing(false);
-        return;
+        console.error(err)
+        alert('Image upload failed')
+        setIsProcessing(false)
+        return
       }
     }
 
-    const productsPayload = selectedProducts.map((id) => ({ _ref: id }));
+    const productsPayload = selectedProducts.map(id => ({ _ref: id }))
 
     try {
-      const res = await fetch("/api/collections/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/collections/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name,
           description,
@@ -104,16 +94,20 @@ export default function CreateCollectionPage({ products, categories = [] }: Prop
           image: imageAsset,
           products: productsPayload,
         }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Collection creation failed");
-      router.push("/admin/collections");
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Collection creation failed')
+      router.push('/admin/collections')
     } catch (err: any) {
-      console.error(err);
-      alert(err.message || "Collection creation failed");
-      setIsProcessing(false);
+      console.error(err)
+      alert(err.message || 'Collection creation failed')
+      setIsProcessing(false)
     }
-  };
+  }
+
+  const filteredProducts = products.filter(p =>
+    p.title.toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
 <>
@@ -194,19 +188,18 @@ export default function CreateCollectionPage({ products, categories = [] }: Prop
       {/* Product Selection */}
       <h3 className={styles.label}>Select Products</h3>
 
-{/* Product Search */}
-<input
-  type="text"
-  placeholder="Search products..."
-  value={search}
-  onChange={(e) => setSearch(e.target.value)}
-  className={styles.input}
-/>
+      {/* Product Search */}
+      <input
+        type="text"
+        placeholder="Search products..."
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        className={styles.input}
+      />
 
-{/* Product List */}
-<div className={styles.productList}>
+ <div className={styles.productList}>
   {filteredProducts.length > 0 ? (
-    filteredProducts.map((product) => (
+    filteredProducts.map(product => (
       <label key={product._id} className={styles.productItem}>
         <input
           type="checkbox"
