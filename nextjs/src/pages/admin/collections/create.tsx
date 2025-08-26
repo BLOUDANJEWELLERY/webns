@@ -112,68 +112,74 @@ export default function CreateCollectionPage({ products }: Props) {
 <>
   <AdminHeader title="Collections" titleHref="/admin/collections" />
 
-  <div className={styles.container}>
-    <h1 className={styles.pageTitle}>Create New Collection</h1>
+  <div className={styles.mainContainer}>
+    <h1 className={styles.heading}>Create New Collection</h1>
 
-    <form className={styles.controls} onSubmit={e => { e.preventDefault(); handleSubmit(); }}>
+    <form
+      className={styles.form}
+      onSubmit={e => {
+        e.preventDefault()
+        handleSubmit()
+      }}
+    >
       {/* Collection Name */}
+      <label className={styles.label}>Collection Name</label>
       <input
         type="text"
         placeholder="Collection Name"
         value={name}
         onChange={e => setName(e.target.value)}
-        className={styles.controlsInput}
+        className={styles.input}
         required
       />
 
       {/* Description */}
+      <label className={styles.label}>Description</label>
       <textarea
         placeholder="Description"
         rows={3}
         value={description}
         onChange={e => setDescription(e.target.value)}
-        className={styles.controlsTextarea}
+        className={styles.textarea}
       />
 
       {/* Link Target */}
+      <label className={styles.label}>Link Target</label>
       <input
         type="text"
-        placeholder="Link Target (e.g. /products?category=men)"
+        placeholder="e.g. /products?category=men"
         value={linkTarget}
         onChange={e => setLinkTarget(e.target.value)}
-        className={styles.controlsInput}
+        className={styles.input}
       />
 
- {/* Image Upload */}
-<div className={styles.formGroup}>
-  <label className={styles.label}>Collection Image</label>
+      {/* Image Upload */}
+      <label className={styles.label}>Collection Image</label>
+      <label className={styles.fileLabel}>
+        Upload Image
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className={styles.hiddenFileInput}
+        />
+      </label>
 
-  <label className={styles.fileLabel}>
-    Upload Image
-    <input
-      type="file"
-      accept="image/*"
-      onChange={handleFileChange}
-      className={styles.hiddenFileInput}
-    />
-  </label>
-
-  {/* Image Preview */}
-  {imagePreview && (
-    <div className={styles.previewWrapper}>
-      <Image
-        src={imagePreview}
-        alt="Preview"
-        width={150}
-        height={150}
-        className={styles.previewImage}
-      />
-    </div>
-  )}
-</div>
+      {/* Image Preview */}
+      {imagePreview && (
+        <div className={styles.previewWrapper}>
+          <Image
+            src={imagePreview}
+            alt="Preview"
+            width={150}
+            height={150}
+            className={styles.previewImage}
+          />
+        </div>
+      )}
 
       {/* Product Selection */}
-      <h3>Select Products</h3>
+      <h3 className={styles.label}>Select Products</h3>
 
       {/* Product Search */}
       <input
@@ -181,14 +187,14 @@ export default function CreateCollectionPage({ products }: Props) {
         placeholder="Search products..."
         value={search}
         onChange={e => setSearch(e.target.value)}
-        className={styles.controlsInput}
+        className={styles.input}
       />
 
       {/* Product List */}
-      <div className={styles.productList}>
+      <div className={styles.checkboxGroup}>
         {filteredProducts.length > 0 ? (
           filteredProducts.map(product => (
-            <label key={product._id} className={styles.productItem}>
+            <label key={product._id}>
               <input
                 type="checkbox"
                 checked={selectedProducts.includes(product._id)}
@@ -211,14 +217,16 @@ export default function CreateCollectionPage({ products }: Props) {
             </label>
           ))
         ) : (
-          <p style={{ color: "#777", fontSize: "0.9rem" }}>
-            No products found.
-          </p>
+          <p style={{ color: "#777", fontSize: "0.9rem" }}>No products found.</p>
         )}
       </div>
 
       {/* Submit Button */}
-      <button type="submit" className={styles.button} disabled={isProcessing || !name.trim()}>
+      <button
+        type="submit"
+        className={styles.button}
+        disabled={isProcessing || !name.trim()}
+      >
         {isProcessing ? "Creating..." : "Create Collection"}
       </button>
     </form>
