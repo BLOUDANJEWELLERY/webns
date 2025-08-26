@@ -223,7 +223,7 @@ export default function CreateCollectionPage({ products }: Props) {
 
       {/* Submit Button */}
       <button
-        type="submit"
+        type="button"
         className={styles.button}
         disabled={isProcessing || !name.trim()}
       >
