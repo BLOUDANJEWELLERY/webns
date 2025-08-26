@@ -6,6 +6,7 @@ import Image from "next/image";
 import { createClient } from "next-sanity";
 import styles from "../../../styles/adminEdit.module.css";
 import AdminHeader from "../../components/AdminHeader";
+import FilterSortModal from "../../components/filtersortmodal";
 
 type Product = {
   _id: string;
@@ -42,6 +43,14 @@ export default function CreateCollectionPage({ products, categories = [] }: Prop
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(""); // "" = all
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+
+
+const [filterOpen, setFilterOpen] = useState(false);
+
+const handleApplyFilters = (filters: any) => {
+    console.log("Applied Filters:", filters);
+  };
+
 
   // Handle image selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -214,17 +223,16 @@ export default function CreateCollectionPage({ products, categories = [] }: Prop
   className={styles.input}
 />
 
-{/* Category Filter */}
-<select
-  value={selectedCategory}
-  onChange={(e) => setSelectedCategory(e.target.value)}
-  className={styles.input}
->
-  <option value="">All Categories</option>
-  {categories.map((cat) => (
-    <option key={cat} value={cat}>{cat}</option>
-  ))}
-</select>
+<div>
+      <button onClick={() => setFilterOpen(true)}>Filter & Sort</button>
+
+      <FilterSortModal
+        categories={categories}
+        isOpen={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        onApply={handleApplyFilters}
+      />
+    </div>
 
 {/* Product List */}
 <div className={styles.productList}>
