@@ -11,6 +11,7 @@
   padding: 0.75rem;
   border: 1px solid #d2b48c; /* warm brown border */
   border-radius: 8px;
+  box-sizing:border-box;
   background: #fdfbf7;     /* soft warm background */
   scrollbar-width: thin;
   scrollbar-color: #d4af37 #fdfbf7;
