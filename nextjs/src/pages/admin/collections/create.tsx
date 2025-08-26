@@ -210,7 +210,7 @@ export default function CreateCollectionPage({ products }: Props) {
       </div>
 
       {/* Submit Button */}
-      <button type="submit" disabled={isProcessing || !name.trim()}>
+      <button type="submit" className={styles.button} disabled={isProcessing || !name.trim()}>
         {isProcessing ? "Creating..." : "Create Collection"}
       </button>
     </form>
