@@ -1,8 +1,7 @@
 // src/pages/components/FilterSortModal.tsx
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import styles from "../../styles/adminEdit.module.css";
 import { createClient } from "next-sanity";
-import Image from "next/image";
 
 // ------------------- Types -------------------
 interface CategoryRaw {
@@ -20,7 +19,6 @@ type SortOption = "alphabetical" | "priceAsc" | "priceDesc";
 
 type Props = {
   isOpen: boolean;
-  categories: CategoryRaw[];
   initialMinPrice?: number | "";
   initialMaxPrice?: number | "";
   initialSort?: SortOption;
@@ -33,16 +31,24 @@ type Props = {
   }) => void;
 };
 
+// ------------------- Sanity Client -------------------
+const client = createClient({
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
+  apiVersion: "2023-08-01",
+  useCdn: false,
+});
+
 // ------------------- Component -------------------
 const FilterSortModal: React.FC<Props> = ({
   isOpen,
-  categories,
   initialMinPrice = "",
   initialMaxPrice = "",
   initialSort = "alphabetical",
   onClose,
   onApply,
 }) => {
+  const [categories, setCategories] = useState<CategoryRaw[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set()
@@ -50,6 +56,27 @@ const FilterSortModal: React.FC<Props> = ({
   const [minPrice, setMinPrice] = useState<number | "">(initialMinPrice);
   const [maxPrice, setMaxPrice] = useState<number | "">(initialMaxPrice);
   const [sort, setSort] = useState<SortOption>(initialSort);
+
+  // ------------------- Fetch Categories -------------------
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const cats: CategoryRaw[] = await client.fetch(`
+          *[_type=="category"]{
+            _id,
+            title,
+            parent->{_id, title},
+            order
+          } | order(order asc)
+        `);
+        setCategories(cats);
+      } catch (err) {
+        console.error("Failed to fetch categories:", err);
+      }
+    }
+
+    if (isOpen) fetchCategories(); // fetch only when modal opens
+  }, [isOpen]);
 
   // ------------------- Category Tree -------------------
   const toggleCategoryExpand = (id: string) => {
@@ -134,7 +161,11 @@ const FilterSortModal: React.FC<Props> = ({
         {/* Categories */}
         <div className={styles.checkboxGroup}>
           <p style={{ fontWeight: 600, marginBottom: "0.5rem" }}>Categories</p>
-          {categoryTree.map((node) => renderCategoryNode(node))}
+          {categoryTree.length === 0 ? (
+            <p>Loading categories...</p>
+          ) : (
+            categoryTree.map((node) => renderCategoryNode(node))
+          )}
         </div>
 
         {/* Price Range */}
