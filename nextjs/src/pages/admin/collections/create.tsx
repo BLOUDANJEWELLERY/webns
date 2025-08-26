@@ -144,25 +144,33 @@ export default function CreateCollectionPage({ products }: Props) {
         className={styles.controlsInput}
       />
 
-      {/* Image Upload */}
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleFileChange}
-        className={styles.controlsInput}
-      />
+ {/* Image Upload */}
+<div className={styles.formGroup}>
+  <label className={styles.label}>Collection Image</label>
 
-      {/* Image Preview */}
-      {imagePreview && (
-        <div className={styles.imagePreview}>
-          <Image
-            src={imagePreview}
-            alt="Preview"
-            width={150}
-            height={150}
-          />
-        </div>
-      )}
+  <label className={styles.fileLabel}>
+    Upload Image
+    <input
+      type="file"
+      accept="image/*"
+      onChange={handleFileChange}
+      className={styles.hiddenFileInput}
+    />
+  </label>
+
+  {/* Image Preview */}
+  {imagePreview && (
+    <div className={styles.previewWrapper}>
+      <Image
+        src={imagePreview}
+        alt="Preview"
+        width={150}
+        height={150}
+        className={styles.previewImage}
+      />
+    </div>
+  )}
+</div>
 
       {/* Product Selection */}
       <h3>Select Products</h3>
