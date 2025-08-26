@@ -1,11 +1,11 @@
 /* src/styles/adminEdit.module.css */
-
 .productList {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 14px;
   max-height: 320px;
-  overflow-y: auto;
+  overflow-y: auto;       /* vertical scroll */
+  overflow-x: hidden;     /* block horizontal scroll */
   padding: 0.75rem;
   border: 1px solid #d2b48c; /* warm brown border */
   border-radius: 8px;
