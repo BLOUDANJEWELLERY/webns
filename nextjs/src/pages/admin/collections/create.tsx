@@ -190,36 +190,35 @@ export default function CreateCollectionPage({ products }: Props) {
         className={styles.input}
       />
 
-      {/* Product List */}
-      <div className={styles.checkboxGroup}>
-        {filteredProducts.length > 0 ? (
-          filteredProducts.map(product => (
-            <label key={product._id}>
-              <input
-                type="checkbox"
-                checked={selectedProducts.includes(product._id)}
-                onChange={() => toggleProductSelection(product._id)}
-              />
+ <div className={styles.productList}>
+  {filteredProducts.length > 0 ? (
+    filteredProducts.map(product => (
+      <label key={product._id} className={styles.productItem}>
+        <input
+          type="checkbox"
+          checked={selectedProducts.includes(product._id)}
+          onChange={() => toggleProductSelection(product._id)}
+        />
 
-              {product.defaultImage?.url ? (
-                <Image
-                  src={product.defaultImage.url}
-                  alt={product.title}
-                  width={50}
-                  height={50}
-                  className={styles.productImage}
-                />
-              ) : (
-                <div className={styles.productPlaceholder} />
-              )}
-
-              <span>{product.title}</span>
-            </label>
-          ))
+        {product.defaultImage?.url ? (
+          <Image
+            src={product.defaultImage.url}
+            alt={product.title}
+            width={50}
+            height={50}
+            className={styles.productImage}
+          />
         ) : (
-          <p style={{ color: "#777", fontSize: "0.9rem" }}>No products found.</p>
+          <div className={styles.productPlaceholder}>No Image</div>
         )}
-      </div>
+
+        <span className={styles.productTitle}>{product.title}</span>
+      </label>
+    ))
+  ) : (
+    <p style={{ color: "#777", fontSize: "0.9rem" }}>No products found.</p>
+  )}
+</div>
 
       {/* Submit Button */}
       <button
