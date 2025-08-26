@@ -1,15 +1,21 @@
 // src/pages/components/FilterSortModal.tsx
-import React, { useState } from "react"
+import React, { useState, useMemo } from "react"
 import styles from "../../styles/adminEdit.module.css"
 
-type Category = {
+interface CategoryRaw {
   _id: string
   title: string
+  parent?: { _id: string; title: string }
+  order?: number
+}
+
+interface CategoryNode extends CategoryRaw {
+  children: CategoryNode[]
 }
 
 type Props = {
   isOpen: boolean
-  categories: Category[]
+  categories: CategoryRaw[]
   initialMinPrice?: number | ""
   initialMaxPrice?: number | ""
   initialSort?: "alphabetical" | "priceAsc" | "priceDesc"
@@ -32,17 +38,79 @@ const FilterSortModal: React.FC<Props> = ({
   onApply,
 }) => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
   const [minPrice, setMinPrice] = useState<number | "">(initialMinPrice)
   const [maxPrice, setMaxPrice] = useState<number | "">(initialMaxPrice)
   const [sort, setSort] = useState<typeof initialSort>(initialSort)
 
-  if (!isOpen) return null
+  const toggleCategoryExpand = (id: string) => {
+    setExpandedCategories(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
-  const toggleCategory = (id: string) => {
+  const handleCategoryToggle = (id: string) => {
     setSelectedCategories(prev =>
       prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
     )
   }
+
+  const buildCategoryTree = (cats: CategoryRaw[] = []): CategoryNode[] => {
+    const map: Record<string, CategoryNode> = {}
+    const roots: CategoryNode[] = []
+
+    cats.forEach(cat => { map[cat._id] = { ...cat, children: [] } })
+    cats.forEach(cat => {
+      if (cat.parent?._id) map[cat.parent._id].children.push(map[cat._id])
+      else roots.push(map[cat._id])
+    })
+
+    const sortTree = (nodes: CategoryNode[]) => {
+      nodes.sort((a, b) => (a.order || 0) - (b.order || 0))
+      nodes.forEach(n => sortTree(n.children))
+    }
+    sortTree(roots)
+    return roots
+  }
+
+  const categoryTree = useMemo(() => buildCategoryTree(categories), [categories])
+
+  const renderCategoryNode = (node: CategoryNode): React.ReactElement => {
+    const isExpanded = expandedCategories.has(node._id)
+    return (
+      <div key={node._id}>
+        <div className={styles.categoryRow}>
+          {node.children.length > 0 && (
+            <button
+              type="button"
+              className={styles.toggleBtn}
+              onClick={() => toggleCategoryExpand(node._id)}
+            >
+              {isExpanded ? '▾' : '▸'}
+            </button>
+          )}
+          <label>
+            <input
+              type="checkbox"
+              checked={selectedCategories.includes(node._id)}
+              onChange={() => handleCategoryToggle(node._id)}
+            />
+            {node.title}
+          </label>
+        </div>
+        {isExpanded && node.children.length > 0 && (
+          <div className={styles.nested}>
+            {node.children.map(child => renderCategoryNode(child))}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  if (!isOpen) return null
 
   const handleApply = () => {
     onApply({ selectedCategories, minPrice, maxPrice, sort })
@@ -54,19 +122,10 @@ const FilterSortModal: React.FC<Props> = ({
       <div className={styles.modal}>
         <h2>Filter & Sort</h2>
 
-        {/* Categories */}
+        {/* Category Tree */}
         <div className={styles.checkboxGroup}>
           <p style={{ fontWeight: 600, marginBottom: "0.5rem" }}>Categories</p>
-          {categories.map(cat => (
-            <label key={cat._id}>
-              <input
-                type="checkbox"
-                checked={selectedCategories.includes(cat._id)}
-                onChange={() => toggleCategory(cat._id)}
-              />
-              {cat.title}
-            </label>
-          ))}
+          {categoryTree.map(node => renderCategoryNode(node))}
         </div>
 
         {/* Price Range */}
