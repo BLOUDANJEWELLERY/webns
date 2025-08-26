@@ -38,6 +38,29 @@ export default function CreateCollectionPage({ products }: Props) {
   const [search, setSearch] = useState('')
   const [selectedProducts, setSelectedProducts] = useState<string[]>([])
 
+
+
+
+// state for search and selected category
+const [search, setSearch] = useState("");
+const [selectedCategory, setSelectedCategory] = useState(""); // "" = all
+// assuming products is your array of products
+// each product has: title, defaultImage, _id, category (or categories array)
+const filteredProducts = useMemo(() => {
+  return products
+    .filter((p) => {
+      const matchesSearch = p.title.toLowerCase().includes(search.toLowerCase());
+      const matchesCategory = selectedCategory
+        ? p.category === selectedCategory || p.categories?.includes(selectedCategory)
+        : true;
+      return matchesSearch && matchesCategory;
+    })
+    .sort((a, b) => a.title.localeCompare(b.title)); // alphabetical
+}, [products, search, selectedCategory]);
+
+
+
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setImageFile(e.target.files[0])
@@ -188,18 +211,31 @@ export default function CreateCollectionPage({ products }: Props) {
       {/* Product Selection */}
       <h3 className={styles.label}>Select Products</h3>
 
-      {/* Product Search */}
-      <input
-        type="text"
-        placeholder="Search products..."
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-        className={styles.input}
-      />
+{/* Product Search */}
+<input
+  type="text"
+  placeholder="Search products..."
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+  className={styles.input}
+/>
 
- <div className={styles.productList}>
+{/* Category Filter */}
+<select
+  value={selectedCategory}
+  onChange={(e) => setSelectedCategory(e.target.value)}
+  className={styles.input}
+>
+  <option value="">All Categories</option>
+  {categories.map((cat) => (
+    <option key={cat} value={cat}>{cat}</option>
+  ))}
+</select>
+
+{/* Product List */}
+<div className={styles.productList}>
   {filteredProducts.length > 0 ? (
-    filteredProducts.map(product => (
+    filteredProducts.map((product) => (
       <label key={product._id} className={styles.productItem}>
         <input
           type="checkbox"
