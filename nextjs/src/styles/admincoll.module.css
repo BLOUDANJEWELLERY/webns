@@ -32,6 +32,7 @@
   border: 1px solid #d4c2a8;
   border-radius: 6px;
   font-size: 1rem;
+  box-sizing: border-box;
   font-family: inherit;
   transition: border 0.2s, box-shadow 0.2s;
 }
