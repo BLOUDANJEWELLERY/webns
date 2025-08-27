@@ -1,0 +1,91 @@
+/* Overlay */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 60px;
+  z-index: 9999;
+}
+
+/* Modal */
+.modal {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  font-family: sans-serif;
+}
+
+/* Section Titles */
+.sectionTitle {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+/* Category tree */
+.categoryRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.toggleBtn {
+  margin-right: 0.25rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.nested {
+  margin-left: 1.5rem;
+}
+
+/* Price range */
+.priceRange input {
+  width: 45%;
+  margin-right: 5%;
+  padding: 0.3rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Sort options */
+.sortOptions label {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+/* Buttons */
+.modalButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.cancelBtn {
+  background: #ccc;
+  color: #000;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.confirmBtn {
+  background: #a57c00;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+}
