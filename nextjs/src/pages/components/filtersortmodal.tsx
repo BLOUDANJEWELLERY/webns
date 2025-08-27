@@ -103,6 +103,15 @@ export default function FilterSortModal({
     setSelected(selected.includes(value) ? selected.filter(v => v!==value) : [...selected, value])
   }
 
+  const handleReset = () => {
+    setSelectedCategories([])
+    setSelectedColors([])
+    setSelectedSizes([])
+    setMinPrice(initialMinPrice)
+    setMaxPrice(initialMaxPrice)
+    setSort(initialSort)
+  }
+
   const handleApply = () => {
     onApply?.({
       categories: selectedCategories,
@@ -144,13 +153,32 @@ export default function FilterSortModal({
     )
   }
 
+  // ----- Calculate slider track width -----
+  const minPercent = (minPrice/10000)*100
+  const maxPercent = (maxPrice/10000)*100
+
   return (
     <div className={styles.modal}>
       <h3 className={styles.modalTitle}>Filter & Sort</h3>
 
+      {/* Reset */}
+      <div style={{textAlign:'right', marginBottom:'0.75rem'}}>
+        <button className={styles.closeBtn} onClick={handleReset}>Reset</button>
+      </div>
+
       {/* Categories */}
       <section className={styles.section}>
         <h4 className={styles.sectionTitle}>Categories</h4>
+        <div className={styles.categoryNode}>
+          <label style={{fontWeight:600}}>
+            <input
+              type="checkbox"
+              checked={selectedCategories.length===0}
+              onChange={()=>setSelectedCategories([])}
+            />
+            All Categories
+          </label>
+        </div>
         {categoryTree.length===0 ? <p>No categories found.</p> :
           categoryTree.map(node=><CategoryNodeItem key={node._id} node={node}/>)}
       </section>
@@ -160,6 +188,7 @@ export default function FilterSortModal({
         <h4 className={styles.sectionTitle}>Price Range</h4>
         <div className={styles.sliderContainer}>
           <div className={styles.rangeTrack}></div>
+          <div className={styles.rangeTrackActive} style={{left:`${minPercent}%`, right:`${100-maxPercent}%`}}></div>
           <input
             type="range"
             min={0} max={10000}
@@ -185,6 +214,11 @@ export default function FilterSortModal({
       <section className={styles.section}>
         <h4 className={styles.sectionTitle}>Colors</h4>
         <div className={styles.circleGrid}>
+          <button
+            className={`${styles.colorCircle} ${(selectedColors.length===0)?styles.activeCircle:''}`}
+            onClick={()=>setSelectedColors([])}
+            title="All Colors"
+          >All</button>
           {HARD_CODED_COLORS.map(color=>(
             <button
               key={color}
@@ -202,6 +236,10 @@ export default function FilterSortModal({
       <section className={styles.section}>
         <h4 className={styles.sectionTitle}>Sizes</h4>
         <div className={styles.circleGrid}>
+          <button
+            className={`${styles.sizeCircle} ${(selectedSizes.length===0)?styles.activeCircle:''}`}
+            onClick={()=>setSelectedSizes([])}
+          >All</button>
           {HARD_CODED_SIZES.map(size=>(
             <button
               key={size}
