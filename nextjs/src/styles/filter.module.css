@@ -1,27 +1,19 @@
-/* ----- Modal Container ----- */
+/* ----- Modal Base ----- */
 .modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: #fffdfb; /* warm cream */
+  background-color: #fffdfb; /* light warm background */
   border: 2px solid #d7ccc8;
-  border-radius: 16px;
-  padding: 2rem;
-  width: 90%;
+  border-radius: 12px;
+  padding: 1.5rem;
   max-width: 480px;
-  max-height: 90vh;
-  overflow-y: auto;
-  z-index: 1001;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  margin: 2rem auto;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   font-family: 'Arial', sans-serif;
+  color: #4e342e;
 }
 
-/* ----- Modal Title ----- */
 .modalTitle {
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  color: #4e342e; /* dark brown */
   margin-bottom: 1rem;
   text-align: center;
 }
@@ -32,184 +24,181 @@
 }
 
 .sectionTitle {
-  font-size: 1.2rem;
   font-weight: 600;
-  color: #5d4037; /* medium brown */
   margin-bottom: 0.5rem;
 }
 
-/* ----- Category Tree ----- */
+/* ----- Categories ----- */
 .categoryNode {
-  margin-left: 0.5rem;
+  margin-left: 1rem;
 }
 
 .categoryRow {
   display: flex;
   align-items: center;
   margin-bottom: 0.25rem;
-  gap: 0.5rem;
 }
 
 .toggleBtn {
-  background-color: #c89b3c; /* golden */
-  color: #fffdfb;
+  background: none;
   border: none;
-  border-radius: 4px;
-  padding: 0 6px;
   cursor: pointer;
   font-size: 0.9rem;
-}
-
-.toggleBtn:hover {
-  background-color: #d4af37;
+  margin-right: 0.25rem;
 }
 
 .nested {
   margin-left: 1.5rem;
 }
 
-/* ----- Connected Dual Range Slider ----- */
+/* ----- Slider ----- */
 .sliderContainer {
+  position: relative;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  position: relative;
+  align-items: center;
 }
 
 .rangeSlider {
   -webkit-appearance: none;
   width: 100%;
   height: 6px;
-  border-radius: 4px;
-  outline: none;
+  background: transparent;
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none; /* disable direct interaction on the background track */
+  pointer-events: none;
 }
 
 .rangeSlider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background: #c89b3c; /* golden */
+  background-color: #c89b3c; /* golden thumb */
+  border: 2px solid #5d4037; /* brown border */
   cursor: pointer;
+  pointer-events: all;
+  position: relative;
+  z-index: 3;
+}
+
+.rangeSlider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #c89b3c;
   border: 2px solid #5d4037;
-  pointer-events: auto;
+  cursor: pointer;
   position: relative;
-  z-index: 2;
-  transition: transform 0.2s ease;
+  z-index: 3;
 }
 
-.rangeSlider::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-}
-
-/* Track for the active range */
-.sliderTrack {
-  position: relative;
+.rangeTrack {
+  position: absolute;
   height: 6px;
-  border-radius: 4px;
-  background: linear-gradient(
-    to right,
-    #d7ccc8 0%,
-    #d7ccc8 var(--min),
-    #c89b3c var(--min),
-    #c89b3c var(--max),
-    #d7ccc8 var(--max),
-    #d7ccc8 100%
-  );
+  width: 100%;
+  background: #d7ccc8;
+  border-radius: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
 }
 
-/* Values */
 .sliderValues {
   display: flex;
   justify-content: space-between;
+  width: 100%;
+  margin-top: 1.2rem;
   font-weight: 600;
+}
+
+/* ----- Colors & Sizes ----- */
+.circleGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.colorCircle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #5d4037;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.sizeCircle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #5d4037;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+  background-color: #fffdfb;
   color: #4e342e;
 }
 
-/* ----- Checkbox Grids for Colors & Sizes ----- */
-.filterGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-  gap: 0.5rem;
-}
-
-.checkboxLabel {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-  padding: 0.3rem 0.5rem;
-  border: 1px solid #d7ccc8;
-  border-radius: 8px;
-  background: #fffdfb;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: center;
-}
-
-.checkboxLabel:hover {
-  background-color: #fbe9e7;
+.activeCircle {
   border-color: #c89b3c;
+  transform: scale(1.15);
 }
 
 /* ----- Sort Select ----- */
 .sortSelect {
   width: 100%;
-  padding: 0.5rem;
-  font-size: 1rem;
+  padding: 0.5rem 0.75rem;
   border: 2px solid #d7ccc8;
   border-radius: 8px;
-  background: #fffdfb;
+  font-size: 1rem;
   color: #4e342e;
+  background-color: #fffdfb;
   cursor: pointer;
 }
 
-.sortSelect:hover {
+.sortSelect:focus {
+  outline: none;
   border-color: #c89b3c;
 }
 
 /* ----- Buttons ----- */
 .buttons {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
+  gap: 0.75rem;
   margin-top: 1.5rem;
-  gap: 1rem;
+}
+
+.applyBtn, .closeBtn {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.2s, background 0.2s;
 }
 
 .applyBtn {
-  flex: 1;
-  padding: 0.6rem 0;
   background-color: #c89b3c;
   color: #fffdfb;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .applyBtn:hover {
-  background-color: #d4af37;
+  background-color: #b3872f;
+  transform: translateY(-2px);
 }
 
 .closeBtn {
-  flex: 1;
-  padding: 0.6rem 0;
   background-color: #fffdfb;
-  color: #5d4037;
   border: 2px solid #d7ccc8;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  color: #4e342e;
 }
 
 .closeBtn:hover {
   background-color: #fbe9e7;
-  border-color: #c89b3c;
+  transform: translateY(-2px);
 }
