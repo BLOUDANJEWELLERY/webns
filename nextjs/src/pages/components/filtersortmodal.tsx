@@ -1,5 +1,4 @@
-import { useState, useEffect, useMemo } from "react"
-import { client } from "../../lib/sanityClient"
+import { useState, useMemo } from "react"
 import styles from "../../styles/header.module.css"
 
 // Raw category type from Sanity
@@ -15,38 +14,13 @@ interface CategoryNode extends CategoryRaw {
   children: CategoryNode[]
 }
 
-const FilterSortModal = () => {
-  const [categories, setCategories] = useState<CategoryRaw[]>([])
+interface FilterSortModalProps {
+  initialCategories: CategoryRaw[]
+}
+
+const FilterSortModal: React.FC<FilterSortModalProps> = ({ initialCategories }) => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
-  const [logs, setLogs] = useState<string[]>([]) // 👈 to show logs on screen
-
-  // Helper to log on screen
-  const addLog = (msg: string) => {
-    setLogs(prev => [...prev, msg])
-  }
-
-  // Fetch categories on mount
-  useEffect(() => {
-    async function fetchCategories() {
-      try {
-        addLog("Fetching categories...")
-        const data: CategoryRaw[] = await client.fetch(`
-          *[_type=="category"]{
-            _id,
-            title,
-            parent->{_id, title},
-            order
-          } | order(order asc)
-        `)
-        addLog("Fetched categories: " + JSON.stringify(data, null, 2))
-        setCategories(data || [])
-      } catch (err: any) {
-        addLog("Error fetching categories: " + err.message)
-      }
-    }
-    fetchCategories()
-  }, [])
 
   // Build category tree
   const buildCategoryTree = (cats: CategoryRaw[]): CategoryNode[] => {
@@ -67,7 +41,7 @@ const FilterSortModal = () => {
     return roots
   }
 
-  const categoryTree = useMemo(() => buildCategoryTree(categories), [categories])
+  const categoryTree = useMemo(() => buildCategoryTree(initialCategories), [initialCategories])
 
   // Handlers
   const toggleCategoryExpand = (id: string) => {
@@ -123,18 +97,12 @@ const FilterSortModal = () => {
     <div className={styles.modal}>
       <h3>Filter by Category</h3>
       {categoryTree.length === 0 ? (
-        <p>Loading categories...</p>
+        <p>No categories found.</p>
       ) : (
         categoryTree.map(node => (
           <CategoryNodeItem key={node._id} node={node} />
         ))
       )}
-
-      {/* Debug Logs on Page */}
-      <div style={{ marginTop: "1rem", padding: "0.5rem", background: "#111", color: "#0f0", fontSize: "0.8rem", maxHeight: "200px", overflow: "auto" }}>
-        <strong>Debug Logs:</strong>
-        <pre>{logs.join("\n")}</pre>
-      </div>
     </div>
   )
 }
