@@ -21,18 +21,16 @@ type SortOption =
   | 'priceLowHigh'
   | 'priceHighLow'
   | 'relevance'
-  | 'others'
 
 interface FilterSortModalProps {
   initialCategories: CategoryRaw[]
   initialMinPrice?: number
   initialMaxPrice?: number
   initialSort?: SortOption
-  maxPriceLimit?: number
   onApply?: (filters: {
     categories: string[]
-    minPrice: number
-    maxPrice: number
+    minPrice: number | ''
+    maxPrice: number | ''
     sort: SortOption
   }) => void
   onClose?: () => void
@@ -43,7 +41,6 @@ export default function FilterSortModal({
   initialCategories,
   initialMinPrice = 0,
   initialMaxPrice = 1000,
-  maxPriceLimit = 1000,
   initialSort = 'alphabeticalAZ',
   onApply,
   onClose,
@@ -57,18 +54,19 @@ export default function FilterSortModal({
   // ----- Build category tree -----
   const categoryTree = useMemo(() => {
     if (!initialCategories) return []
-
     const map: Record<string, CategoryNode> = {}
     const roots: CategoryNode[] = []
 
-    initialCategories.forEach(cat => { map[cat._id] = { ...cat, children: [] } })
+    initialCategories.forEach(cat => {
+      map[cat._id] = { ...cat, children: [] }
+    })
     initialCategories.forEach(cat => {
       if (cat.parent?._id) map[cat.parent._id]?.children.push(map[cat._id])
       else roots.push(map[cat._id])
     })
 
     const sortTree = (nodes: CategoryNode[]) => {
-      nodes.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      nodes.sort((a, b) => (a.order || 0) - (b.order || 0))
       nodes.forEach(n => sortTree(n.children))
     }
     sortTree(roots)
@@ -100,7 +98,7 @@ export default function FilterSortModal({
     onClose?.()
   }
 
-  // ----- Recursive renderer -----
+  // ----- Render tree recursively -----
   const CategoryNodeItem = ({ node }: { node: CategoryNode }) => {
     const isExpanded = expandedCategories.has(node._id)
     return (
@@ -149,33 +147,40 @@ export default function FilterSortModal({
         )}
       </section>
 
-      {/* Price Range Sliders */}
+      {/* Price Range */}
       <section className={styles.section}>
         <h4 className={styles.sectionTitle}>Price Range</h4>
         <div className={styles.sliderContainer}>
           <input
             type="range"
             min={0}
-            max={maxPriceLimit}
+            max={10000}
             value={minPrice}
-            onChange={e => setMinPrice(Number(e.target.value))}
+            onChange={e => {
+              const val = Number(e.target.value)
+              setMinPrice(val > maxPrice ? maxPrice : val)
+            }}
             className={styles.rangeSlider}
           />
           <input
             type="range"
             min={0}
-            max={maxPriceLimit}
+            max={10000}
             value={maxPrice}
-            onChange={e => setMaxPrice(Number(e.target.value))}
+            onChange={e => {
+              const val = Number(e.target.value)
+              setMaxPrice(val < minPrice ? minPrice : val)
+            }}
             className={styles.rangeSlider}
           />
           <div className={styles.sliderValues}>
-            <span>{minPrice}</span> - <span>{maxPrice}</span>
+            <span>{minPrice} KWD</span>
+            <span>{maxPrice} KWD</span>
           </div>
         </div>
       </section>
 
-      {/* Sorting */}
+      {/* Sort */}
       <section className={styles.section}>
         <h4 className={styles.sectionTitle}>Sort By</h4>
         <select
@@ -183,19 +188,22 @@ export default function FilterSortModal({
           value={sort}
           onChange={e => setSort(e.target.value as SortOption)}
         >
-          <option value="alphabeticalAZ">A → Z</option>
-          <option value="alphabeticalZA">Z → A</option>
-          <option value="priceLowHigh">Price: Low → High</option>
-          <option value="priceHighLow">Price: High → Low</option>
+          <option value="alphabeticalAZ">A-Z</option>
+          <option value="alphabeticalZA">Z-A</option>
+          <option value="priceLowHigh">Price: Low to High</option>
+          <option value="priceHighLow">Price: High to Low</option>
           <option value="relevance">Relevance</option>
-          <option value="others">Others</option>
         </select>
       </section>
 
       {/* Buttons */}
       <div className={styles.buttons}>
-        <button className={styles.applyBtn} onClick={handleApply}>Apply</button>
-        <button className={styles.closeBtn} onClick={onClose}>Close</button>
+        <button className={styles.applyBtn} onClick={handleApply}>
+          Apply
+        </button>
+        <button className={styles.closeBtn} onClick={onClose}>
+          Close
+        </button>
       </div>
     </div>
   )
