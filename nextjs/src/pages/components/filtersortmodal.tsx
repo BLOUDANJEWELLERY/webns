@@ -17,15 +17,37 @@ interface CategoryNode extends CategoryRaw {
   children: CategoryNode[]
 }
 
+type SortOption = 'alphabetical' | 'priceAsc' | 'priceDesc'
+
 interface FilterSortModalProps {
   initialCategories: CategoryRaw[]
+  initialMinPrice?: number
+  initialMaxPrice?: number
+  initialSort?: SortOption
+  onApply?: (filters: {
+    selectedCategories: string[]
+    minPrice: number | ''
+    maxPrice: number | ''
+    sort: SortOption
+  }) => void
+  onClose?: () => void
 }
 
-export default function FilterSortModal({ initialCategories }: FilterSortModalProps) {
+export default function FilterSortModal({
+  initialCategories,
+  initialMinPrice = '',
+  initialMaxPrice = '',
+  initialSort = 'alphabetical',
+  onApply,
+  onClose,
+}: FilterSortModalProps) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
+  const [minPrice, setMinPrice] = useState<number | ''>(initialMinPrice)
+  const [maxPrice, setMaxPrice] = useState<number | ''>(initialMaxPrice)
+  const [sort, setSort] = useState<SortOption>(initialSort)
 
-  // Build tree once
+  // Build category tree
   const categoryTree = useMemo(() => {
     if (!initialCategories) return []
 
@@ -60,7 +82,12 @@ export default function FilterSortModal({ initialCategories }: FilterSortModalPr
     )
   }
 
-  // Recursive node renderer
+  const handleApply = () => {
+    onApply?.({ selectedCategories, minPrice, maxPrice, sort })
+    onClose?.()
+  }
+
+  // Recursive renderer
   const CategoryNodeItem = ({ node }: { node: CategoryNode }) => {
     const isExpanded = expandedCategories.has(node._id)
     return (
@@ -96,13 +123,78 @@ export default function FilterSortModal({ initialCategories }: FilterSortModalPr
   }
 
   return (
-    <div className={styles.modal}>
-      <h3>Filter by Category</h3>
-      {categoryTree.length === 0 ? (
-        <p>No categories found.</p>
-      ) : (
-        categoryTree.map(node => <CategoryNodeItem key={node._id} node={node} />)
-      )}
+    <div className={styles.modalOverlay}>
+      <div className={styles.modal}>
+        <h3>Filter & Sort</h3>
+
+        {/* Categories */}
+        <div className={styles.checkboxGroup}>
+          <p className={styles.sectionTitle}>Categories</p>
+          {categoryTree.length === 0 ? (
+            <p>No categories found.</p>
+          ) : (
+            categoryTree.map(node => <CategoryNodeItem key={node._id} node={node} />)
+          )}
+        </div>
+
+        {/* Price Range */}
+        <div className={styles.priceRange}>
+          <p className={styles.sectionTitle}>Price Range</p>
+          <input
+            type="number"
+            placeholder="Min"
+            value={minPrice}
+            onChange={e => setMinPrice(e.target.value === '' ? '' : Number(e.target.value))}
+          />
+          <input
+            type="number"
+            placeholder="Max"
+            value={maxPrice}
+            onChange={e => setMaxPrice(e.target.value === '' ? '' : Number(e.target.value))}
+          />
+        </div>
+
+        {/* Sort Options */}
+        <div className={styles.sortOptions}>
+          <p className={styles.sectionTitle}>Sort By</p>
+          <label>
+            <input
+              type="radio"
+              name="sort"
+              value="alphabetical"
+              checked={sort === 'alphabetical'}
+              onChange={() => setSort('alphabetical')}
+            />
+            Alphabetical
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="sort"
+              value="priceAsc"
+              checked={sort === 'priceAsc'}
+              onChange={() => setSort('priceAsc')}
+            />
+            Price: Low → High
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="sort"
+              value="priceDesc"
+              checked={sort === 'priceDesc'}
+              onChange={() => setSort('priceDesc')}
+            />
+            Price: High → Low
+          </label>
+        </div>
+
+        {/* Buttons */}
+        <div className={styles.modalButtons}>
+          <button className={styles.cancelBtn} onClick={onClose}>Cancel</button>
+          <button className={styles.confirmBtn} onClick={handleApply}>Apply</button>
+        </div>
+      </div>
     </div>
   )
 }
