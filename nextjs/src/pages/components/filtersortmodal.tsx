@@ -125,7 +125,7 @@ export default function FilterSortModal({
   const CategoryNodeItem = ({ node }: { node: CategoryNode }) => {
     const isExpanded = expandedCategories.has(node._id)
     return (
-      <div className={styles.categoryNode}>
+      <div>
         <div className={styles.categoryRow}>
           {node.children.length > 0 && (
             <button type="button" className={styles.toggleBtn} onClick={() => toggleCategoryExpand(node._id)}>
@@ -165,7 +165,7 @@ export default function FilterSortModal({
       {/* Categories */}
       <section className={styles.section}>
         <h4 className={styles.sectionTitle}>Categories</h4>
-        <div className={styles.categoryNode}>
+        <div className={styles.checkboxGroup}>
           <label className={styles.customCheckboxLabel}>
             <input
               type="checkbox"
@@ -174,9 +174,9 @@ export default function FilterSortModal({
             />
             <span>All Categories</span>
           </label>
+          {categoryTree.length === 0 ? <p>No categories found.</p> :
+            categoryTree.map(node => <CategoryNodeItem key={node._id} node={node} />)}
         </div>
-        {categoryTree.length === 0 ? <p>No categories found.</p> :
-          categoryTree.map(node => <CategoryNodeItem key={node._id} node={node} />)}
       </section>
 
       {/* Price Slider */}
