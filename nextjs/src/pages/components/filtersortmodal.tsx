@@ -1,14 +1,7 @@
 import { useState, useEffect, useMemo } from "react"
 import { createClient } from "next-sanity"
 import styles from "../../styles/header.module.css"
-
-// Sanity client
-const client = createClient({
-  projectId: "YOUR_PROJECT_ID",
-  dataset: "production",
-  apiVersion: "2023-01-01",
-  useCdn: true,
-})
+import { client } from '../../lib/sanityClient'
 
 // Raw category type from Sanity
 interface CategoryRaw {
