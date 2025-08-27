@@ -1,10 +1,9 @@
-// src/components/FilterSortModal.tsx
 'use client'
 
 import { useState, useMemo } from 'react'
 import styles from '../../styles/filter.module.css'
 
-// Raw category type from Sanity
+// ----- Types -----
 interface CategoryRaw {
   _id: string
   title: string
@@ -12,12 +11,11 @@ interface CategoryRaw {
   order?: number
 }
 
-// Category tree node
 interface CategoryNode extends CategoryRaw {
   children: CategoryNode[]
 }
 
-type SortOption = 'alphabetical' | 'priceAsc' | 'priceDesc'
+type SortOption = 'alphabetical' | 'priceLowHigh' | 'priceHighLow'
 
 interface FilterSortModalProps {
   initialCategories: CategoryRaw[]
@@ -25,7 +23,7 @@ interface FilterSortModalProps {
   initialMaxPrice?: number
   initialSort?: SortOption
   onApply?: (filters: {
-    selectedCategories: string[]
+    categories: string[]
     minPrice: number | ''
     maxPrice: number | ''
     sort: SortOption
@@ -33,21 +31,22 @@ interface FilterSortModalProps {
   onClose?: () => void
 }
 
+// ----- Component -----
 export default function FilterSortModal({
   initialCategories,
-  initialMinPrice = '',
-  initialMaxPrice = '',
+  initialMinPrice = undefined,
+  initialMaxPrice = undefined,
   initialSort = 'alphabetical',
   onApply,
   onClose,
 }: FilterSortModalProps) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
-  const [minPrice, setMinPrice] = useState<number | ''>(initialMinPrice)
-  const [maxPrice, setMaxPrice] = useState<number | ''>(initialMaxPrice)
+  const [minPrice, setMinPrice] = useState<number | ''>(initialMinPrice ?? '')
+  const [maxPrice, setMaxPrice] = useState<number | ''>(initialMaxPrice ?? '')
   const [sort, setSort] = useState<SortOption>(initialSort)
 
-  // Build category tree
+  // ----- Build category tree -----
   const categoryTree = useMemo(() => {
     if (!initialCategories) return []
 
@@ -68,6 +67,7 @@ export default function FilterSortModal({
     return roots
   }, [initialCategories])
 
+  // ----- Handlers -----
   const toggleCategoryExpand = (id: string) => {
     setExpandedCategories(prev => {
       const next = new Set(prev)
@@ -83,15 +83,20 @@ export default function FilterSortModal({
   }
 
   const handleApply = () => {
-    onApply?.({ selectedCategories, minPrice, maxPrice, sort })
+    onApply?.({
+      categories: selectedCategories,
+      minPrice,
+      maxPrice,
+      sort,
+    })
     onClose?.()
   }
 
-  // Recursive renderer
+  // ----- Render tree recursively -----
   const CategoryNodeItem = ({ node }: { node: CategoryNode }) => {
     const isExpanded = expandedCategories.has(node._id)
     return (
-      <div>
+      <div className={styles.categoryNode}>
         <div className={styles.categoryRow}>
           {node.children.length > 0 && (
             <button
@@ -123,29 +128,30 @@ export default function FilterSortModal({
   }
 
   return (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modal}>
-        <h3>Filter & Sort</h3>
+    <div className={styles.modal}>
+      <h3>Filter & Sort</h3>
 
-        {/* Categories */}
-        <div className={styles.checkboxGroup}>
-          <p className={styles.sectionTitle}>Categories</p>
-          {categoryTree.length === 0 ? (
-            <p>No categories found.</p>
-          ) : (
-            categoryTree.map(node => <CategoryNodeItem key={node._id} node={node} />)
-          )}
-        </div>
+      {/* Categories */}
+      <section className={styles.section}>
+        <h4>Categories</h4>
+        {categoryTree.length === 0 ? (
+          <p>No categories found.</p>
+        ) : (
+          categoryTree.map(node => <CategoryNodeItem key={node._id} node={node} />)
+        )}
+      </section>
 
-        {/* Price Range */}
+      {/* Price Range */}
+      <section className={styles.section}>
+        <h4>Price Range</h4>
         <div className={styles.priceRange}>
-          <p className={styles.sectionTitle}>Price Range</p>
           <input
             type="number"
             placeholder="Min"
             value={minPrice}
             onChange={e => setMinPrice(e.target.value === '' ? '' : Number(e.target.value))}
           />
+          <span>-</span>
           <input
             type="number"
             placeholder="Max"
@@ -153,47 +159,22 @@ export default function FilterSortModal({
             onChange={e => setMaxPrice(e.target.value === '' ? '' : Number(e.target.value))}
           />
         </div>
+      </section>
 
-        {/* Sort Options */}
-        <div className={styles.sortOptions}>
-          <p className={styles.sectionTitle}>Sort By</p>
-          <label>
-            <input
-              type="radio"
-              name="sort"
-              value="alphabetical"
-              checked={sort === 'alphabetical'}
-              onChange={() => setSort('alphabetical')}
-            />
-            Alphabetical
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="sort"
-              value="priceAsc"
-              checked={sort === 'priceAsc'}
-              onChange={() => setSort('priceAsc')}
-            />
-            Price: Low → High
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="sort"
-              value="priceDesc"
-              checked={sort === 'priceDesc'}
-              onChange={() => setSort('priceDesc')}
-            />
-            Price: High → Low
-          </label>
-        </div>
+      {/* Sort */}
+      <section className={styles.section}>
+        <h4>Sort By</h4>
+        <select value={sort} onChange={e => setSort(e.target.value as SortOption)}>
+          <option value="alphabetical">Alphabetical</option>
+          <option value="priceLowHigh">Price: Low to High</option>
+          <option value="priceHighLow">Price: High to Low</option>
+        </select>
+      </section>
 
-        {/* Buttons */}
-        <div className={styles.modalButtons}>
-          <button className={styles.cancelBtn} onClick={onClose}>Cancel</button>
-          <button className={styles.confirmBtn} onClick={handleApply}>Apply</button>
-        </div>
+      {/* Buttons */}
+      <div className={styles.buttons}>
+        <button className={styles.applyBtn} onClick={handleApply}>Apply</button>
+        <button className={styles.closeBtn} onClick={onClose}>Close</button>
       </div>
     </div>
   )
