@@ -179,32 +179,45 @@ export default function FilterSortModal({
         </div>
       </section>
 
-      {/* Price Slider */}
-      <section className={styles.section}>
-        <h4 className={styles.sectionTitle}>Price Range</h4>
-        <div className={styles.sliderContainer}>
-          <div className={styles.rangeTrack}></div>
-          <div className={styles.rangeTrackActive} style={{ left: `${minPercent}%`, right: `${100 - maxPercent}%` }} />
-          <input
-            type="range"
-            min={0} max={10000}
-            value={minPrice}
-            onChange={e => setMinPrice(Math.min(Number(e.target.value), maxPrice))}
-            className={`${styles.rangeSlider} ${styles.minSlider}`}
-          />
-          <input
-            type="range"
-            min={0} max={10000}
-            value={maxPrice}
-            onChange={e => setMaxPrice(Math.max(Number(e.target.value), minPrice))}
-            className={`${styles.rangeSlider} ${styles.maxSlider}`}
-          />
-          <div className={styles.sliderValues}>
-            <span>{minPrice} KWD</span>
-            <span>{maxPrice} KWD</span>
-          </div>
-        </div>
-      </section>
+{/* Price Slider */}
+<section className={styles.section}>
+  <h4 className={styles.sectionTitle}>Price Range</h4>
+  <div className={styles.sliderContainer}>
+    {/* Full track */}
+    <div className={styles.rangeTrack}></div>
+
+    {/* Active range track */}
+    <div
+      className={styles.rangeTrackActive}
+      style={{ left: `${(minPrice / 10000) * 100}%`, right: `${100 - (maxPrice / 10000) * 100}%` }}
+    />
+
+    {/* Min slider */}
+    <input
+      type="range"
+      min={0}
+      max={10000}
+      value={minPrice}
+      onChange={e => setMinPrice(Math.min(Number(e.target.value), maxPrice))}
+      className={`${styles.rangeSlider} ${styles.minSlider}`}
+    />
+
+    {/* Max slider */}
+    <input
+      type="range"
+      min={0}
+      max={10000}
+      value={maxPrice}
+      onChange={e => setMaxPrice(Math.max(Number(e.target.value), minPrice))}
+      className={`${styles.rangeSlider} ${styles.maxSlider}`}
+    />
+
+    <div className={styles.sliderValues}>
+      <span>{minPrice} KWD</span>
+      <span>{maxPrice} KWD</span>
+    </div>
+  </div>
+</section>
 
       {/* Colors */}
       <section className={styles.section}>
