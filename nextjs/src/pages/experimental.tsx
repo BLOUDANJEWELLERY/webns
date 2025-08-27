@@ -1,5 +1,5 @@
 // pages/somepage.tsx
-import FilterSortModal from "/components/FilterSortModal"
+import FilterSortModal from "/components/filtersortmodal"
 import { client } from "../lib/sanityClient"
 
 export async function getServerSideProps() {
