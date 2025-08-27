@@ -1,122 +1,90 @@
-// src/pages/components/FilterSortModal.tsx
-import React, { useState, useEffect, useMemo } from "react";
-import styles from "../../styles/adminEdit.module.css";
-import { createClient } from "next-sanity";
+import { useState, useEffect, useMemo } from "react"
+import { createClient } from "next-sanity"
+import styles from "./filtersortmodal.module.css"
 
-// ------------------- Types -------------------
-interface CategoryRaw {
-  _id: string;
-  title: string;
-  parent?: { _id: string; title: string };
-  order?: number;
-}
-
-interface CategoryNode extends CategoryRaw {
-  children: CategoryNode[];
-}
-
-type SortOption = "alphabetical" | "priceAsc" | "priceDesc";
-
-type Props = {
-  isOpen: boolean;
-  initialMinPrice?: number | "";
-  initialMaxPrice?: number | "";
-  initialSort?: SortOption;
-  onClose: () => void;
-  onApply: (filters: {
-    selectedCategories: string[];
-    minPrice: number | "";
-    maxPrice: number | "";
-    sort: SortOption;
-  }) => void;
-};
-
-// ------------------- Sanity Client -------------------
+// Sanity client
 const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
-  useCdn: false,
-});
+  projectId: "YOUR_PROJECT_ID",
+  dataset: "production",
+  apiVersion: "2023-01-01",
+  useCdn: true,
+})
 
-// ------------------- Component -------------------
-const FilterSortModal: React.FC<Props> = ({
-  isOpen,
-  initialMinPrice = "",
-  initialMaxPrice = "",
-  initialSort = "alphabetical",
-  onClose,
-  onApply,
-}) => {
-  const [categories, setCategories] = useState<CategoryRaw[]>([]);
-  const [loading, setLoading] = useState(true);
+// Raw category type from Sanity
+interface CategoryRaw {
+  _id: string
+  title: string
+  parent?: { _id: string; title: string }
+  order?: number
+}
 
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
-  const [minPrice, setMinPrice] = useState<number | "">(initialMinPrice);
-  const [maxPrice, setMaxPrice] = useState<number | "">(initialMaxPrice);
-  const [sort, setSort] = useState<SortOption>(initialSort);
+// Category tree node
+interface CategoryNode extends CategoryRaw {
+  children: CategoryNode[]
+}
 
-  // ------------------- Fetch Categories -------------------
+const FilterSortModal = () => {
+  const [categories, setCategories] = useState<CategoryRaw[]>([])
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
+
+  // Fetch categories on mount
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const cats: CategoryRaw[] = await client.fetch(`
-          *[_type=="category"]{
-            _id,
-            title,
-            parent->{_id, title},
-            order
-          } | order(order asc)
-        `);
-        setCategories(cats || []);
-      } catch (err) {
-        console.error("Failed to fetch categories:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCategories();
-  }, []);
+    async function fetchCategories() {
+      const data: CategoryRaw[] = await client.fetch(`
+        *[_type=="category"]{
+          _id,
+          title,
+          parent->{_id, title},
+          order
+        } | order(order asc)
+      `)
+      setCategories(data || [])
+    }
+    fetchCategories()
+  }, [])
 
-  // ------------------- Category Tree Logic -------------------
-  const toggleCategoryExpand = (id: string) => {
-    setExpandedCategories((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
+  // Build category tree
+  const buildCategoryTree = (cats: CategoryRaw[]): CategoryNode[] => {
+    const map: Record<string, CategoryNode> = {}
+    const roots: CategoryNode[] = []
 
-  const handleCategoryToggle = (id: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
-    );
-  };
-
-  const buildCategoryTree = (cats: CategoryRaw[] = []): CategoryNode[] => {
-    const map: Record<string, CategoryNode> = {};
-    const roots: CategoryNode[] = [];
-
-    cats.forEach((cat) => (map[cat._id] = { ...cat, children: [] }));
-    cats.forEach((cat) => {
-      if (cat.parent?._id) map[cat.parent._id].children.push(map[cat._id]);
-      else roots.push(map[cat._id]);
-    });
+    cats.forEach(cat => { map[cat._id] = { ...cat, children: [] } })
+    cats.forEach(cat => {
+      if (cat.parent?._id) map[cat.parent._id]?.children.push(map[cat._id])
+      else roots.push(map[cat._id])
+    })
 
     const sortTree = (nodes: CategoryNode[]) => {
-      nodes.sort((a, b) => (a.order || 0) - (b.order || 0));
-      nodes.forEach((n) => sortTree(n.children));
-    };
-    sortTree(roots);
-    return roots;
-  };
+      nodes.sort((a, b) => (a.order || 0) - (b.order || 0))
+      nodes.forEach(n => sortTree(n.children))
+    }
+    sortTree(roots)
+    return roots
+  }
 
-  const categoryTree = useMemo(() => buildCategoryTree(categories), [categories]);
+  const categoryTree = useMemo(() => buildCategoryTree(categories), [categories])
 
-  const renderCategoryNode = (node: CategoryNode): React.ReactElement => {
-    const isExpanded = expandedCategories.has(node._id);
+  // Handlers
+  const toggleCategoryExpand = (id: string) => {
+    setExpandedCategories(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  const handleCategoryToggle = (id: string) => {
+    setSelectedCategories(prev =>
+      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+    )
+  }
+
+  // Render tree
+  const CategoryNodeItem: React.FC<{ node: CategoryNode }> = ({ node }) => {
+    const isExpanded = expandedCategories.has(node._id)
     return (
-      <div key={node._id}>
+      <div>
         <div className={styles.categoryRow}>
           {node.children.length > 0 && (
             <button
@@ -138,105 +106,27 @@ const FilterSortModal: React.FC<Props> = ({
         </div>
         {isExpanded && node.children.length > 0 && (
           <div className={styles.nested}>
-            {node.children.map((child) => renderCategoryNode(child))}
+            {node.children.map(child => (
+              <CategoryNodeItem key={child._id} node={child} />
+            ))}
           </div>
         )}
       </div>
-    );
-  };
-
-  // ------------------- Apply Filters -------------------
-  const handleApply = () => {
-    onApply({ selectedCategories, minPrice, maxPrice, sort });
-    onClose();
-  };
-
-  if (!isOpen) return null;
+    )
+  }
 
   return (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modal}>
-        <h2>Filter & Sort</h2>
-
-        {/* Categories */}
-        <div className={styles.checkboxGroup}>
-          <p style={{ fontWeight: 600, marginBottom: "0.5rem" }}>Categories</p>
-          {loading ? (
-            <p>Loading categories…</p>
-          ) : categoryTree.length === 0 ? (
-            <p>No categories found.</p>
-          ) : (
-            categoryTree.map((node) => renderCategoryNode(node))
-          )}
-        </div>
-
-        {/* Price Range */}
-        <div style={{ display: "flex", gap: "0.75rem", marginTop: "1rem" }}>
-          <input
-            type="number"
-            placeholder="Min"
-            className={styles.input}
-            value={minPrice}
-            onChange={(e) => setMinPrice(e.target.value === "" ? "" : Number(e.target.value))}
-          />
-          <input
-            type="number"
-            placeholder="Max"
-            className={styles.input}
-            value={maxPrice}
-            onChange={(e) => setMaxPrice(e.target.value === "" ? "" : Number(e.target.value))}
-          />
-        </div>
-
-        {/* Sort Options */}
-        <div style={{ marginTop: "1rem" }}>
-          <p style={{ fontWeight: 600, marginBottom: "0.5rem" }}>Sort By</p>
-          <label>
-            <input
-              type="radio"
-              name="sort"
-              value="alphabetical"
-              checked={sort === "alphabetical"}
-              onChange={() => setSort("alphabetical")}
-            />
-            Alphabetical
-          </label>
-          <br />
-          <label>
-            <input
-              type="radio"
-              name="sort"
-              value="priceAsc"
-              checked={sort === "priceAsc"}
-              onChange={() => setSort("priceAsc")}
-            />
-            Price: Low → High
-          </label>
-          <br />
-          <label>
-            <input
-              type="radio"
-              name="sort"
-              value="priceDesc"
-              checked={sort === "priceDesc"}
-              onChange={() => setSort("priceDesc")}
-            />
-            Price: High → Low
-          </label>
-        </div>
-
-        {/* Buttons */}
-        <div className={styles.modalButtons}>
-          <button className={styles.cancelBtn} onClick={onClose}>
-            Cancel
-          </button>
-          <button className={styles.confirmBtn} onClick={handleApply}>
-            Apply
-          </button>
-        </div>
-      </div>
+    <div className={styles.modal}>
+      <h3>Filter by Category</h3>
+      {categoryTree.length === 0 ? (
+        <p>Loading categories...</p>
+      ) : (
+        categoryTree.map(node => (
+          <CategoryNodeItem key={node._id} node={node} />
+        ))
+      )}
     </div>
-  );
-};
+  )
+}
 
-export default FilterSortModal;
+export default FilterSortModal
