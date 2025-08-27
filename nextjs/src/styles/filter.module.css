@@ -1,12 +1,12 @@
 .modal {
-  background-color: #fdf6f0;
+  background-color: #fffdfb;
   border-radius: 14px;
   padding: 20px;
   width: 360px;
   max-width: 95%;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
   font-family: 'Arial', sans-serif;
-  color: #4b2e2b;
+  color: #4e342e;
 }
 
 .modalTitle {
@@ -14,7 +14,7 @@
   font-weight: bold;
   margin-bottom: 18px;
   text-align: center;
-  color: #8c5c2c;
+  color: #5d4037;
 }
 
 .section {
@@ -25,7 +25,7 @@
   font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 10px;
-  color: #5e3a2e;
+  color: #4e342e;
 }
 
 .categoryNode {
@@ -44,7 +44,7 @@
   border: none;
   font-size: 0.85rem;
   cursor: pointer;
-  color: #a87c50;
+  color: #a1887f;
   padding: 0;
   width: 20px;
 }
@@ -65,7 +65,7 @@
   width: 100%;
   height: 6px;
   border-radius: 4px;
-  background: #d6c1a1;
+  background: linear-gradient(to right, #efebe9, #d7ccc8);
   outline: none;
   transition: background 0.2s;
 }
@@ -76,9 +76,9 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #b8860b;
+  background: #c89b3c;
   cursor: pointer;
-  border: 2px solid #fff;
+  border: 2px solid #fffdfb;
   box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
 }
 
@@ -86,27 +86,34 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #b8860b;
+  background: #c89b3c;
   cursor: pointer;
-  border: 2px solid #fff;
+  border: 2px solid #fffdfb;
 }
 
 .sliderValues {
   display: flex;
   justify-content: space-between;
   font-size: 0.9rem;
-  color: #4b2e2b;
+  color: #4e342e;
 }
 
 .sortSelect {
   width: 100%;
   padding: 6px 8px;
-  border-radius: 6px;
-  border: 1px solid #b8860b;
-  background-color: #fdf6f0;
-  color: #4b2e2b;
+  border-radius: 10px;
+  border: 1px solid #a1887f;
+  background-color: #fffdfb;
+  color: #4e342e;
   font-size: 0.95rem;
   cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.sortSelect:hover {
+  background: linear-gradient(to right, #efebe9, #d7ccc8);
+  color: #3e2723;
 }
 
 .buttons {
@@ -119,33 +126,33 @@
 .applyBtn {
   flex: 1;
   padding: 8px 0;
-  background-color: #b8860b;
-  color: #fff;
+  background-color: #c89b3c;
+  color: #fffdfb;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
 }
 
 .applyBtn:hover {
-  background-color: #996b06;
+  background: linear-gradient(to right, #bc9b36, #a07c2a);
 }
 
 .closeBtn {
   flex: 1;
   padding: 8px 0;
-  background-color: #d6c1a1;
-  color: #4b2e2b;
+  background-color: #efebe9;
+  color: #4e342e;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
 }
 
 .closeBtn:hover {
-  background-color: #c4a67c;
+  background: linear-gradient(to right, #d7ccc8, #bcaaa4);
 }
 
 @media (max-width: 400px) {
