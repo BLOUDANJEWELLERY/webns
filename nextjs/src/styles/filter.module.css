@@ -1,6 +1,6 @@
 /* ----- Modal Base ----- */
 .modal {
-  background-color: #fffdfb; /* light warm background */
+  background-color: #fffdfb;
   border: 2px solid #d7ccc8;
   border-radius: 12px;
   padding: 1.5rem;
@@ -78,8 +78,6 @@
   transition: all 0.2s ease;
 }
 
-.categoryRow input[type="checkbox"]:checked + span::before,
-.categoryRow input[type="checkbox"]:checked + span,
 .categoryRow input[type="checkbox"]:checked + *::before {
   background-color: #c89b3c;
   border-color: #5d4037;
@@ -115,6 +113,7 @@
   top: 50%;
   transform: translateY(-50%);
   z-index: 2;
+  transition: left 0.2s ease, right 0.2s ease;
 }
 
 .rangeSlider {
@@ -136,7 +135,7 @@
   border: 2px solid #5d4037;
   cursor: pointer;
   margin-top: -6px;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .rangeSlider::-moz-range-thumb {
@@ -146,15 +145,13 @@
   background-color: #c89b3c;
   border: 2px solid #5d4037;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.rangeSlider:hover::-webkit-slider-thumb {
-  transform: scale(1.2);
-}
-
+.rangeSlider:hover::-webkit-slider-thumb,
 .rangeSlider:hover::-moz-range-thumb {
   transform: scale(1.2);
+  box-shadow: 0 0 6px rgba(200, 155, 60, 0.6);
 }
 
 .sliderValues {
@@ -177,7 +174,13 @@
   border-radius: 50%;
   border: 2px solid #5d4037;
   cursor: pointer;
-  transition: transform 0.2s, border-color 0.2s;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.colorCircle.activeCircle {
+  border-color: #c89b3c;
+  transform: scale(1.15);
+  box-shadow: 0 0 6px rgba(200, 155, 60, 0.6);
 }
 
 .sizeCircle {
@@ -190,14 +193,15 @@
   align-items: center;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s, border-color 0.2s;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
   background-color: #fffdfb;
   color: #4e342e;
 }
 
-.activeCircle {
+.sizeCircle.activeCircle {
   border-color: #c89b3c;
   transform: scale(1.15);
+  box-shadow: 0 0 6px rgba(200, 155, 60, 0.6);
 }
 
 /* ----- Sort Select ----- */
@@ -225,7 +229,7 @@
   margin-top: 1.5rem;
 }
 
-.applyBtn, .closeBtn {
+.applyBtn, .closeBtn, .resetBtn {
   padding: 0.5rem 1rem;
   border-radius: 8px;
   border: none;
@@ -252,5 +256,16 @@
 
 .closeBtn:hover {
   background-color: #fbe9e7;
+  transform: translateY(-2px);
+}
+
+.resetBtn {
+  background-color: #fffdfb;
+  border: 2px solid #c89b3c;
+  color: #c89b3c;
+}
+
+.resetBtn:hover {
+  background-color: #fdf6e3;
   transform: translateY(-2px);
 }
