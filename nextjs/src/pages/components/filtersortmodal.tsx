@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from "react"
-import { createClient } from "next-sanity"
+import { client } from "../../lib/sanityClient"
 import styles from "../../styles/header.module.css"
-import { client } from '../../lib/sanityClient'
 
 // Raw category type from Sanity
 interface CategoryRaw {
@@ -20,19 +19,31 @@ const FilterSortModal = () => {
   const [categories, setCategories] = useState<CategoryRaw[]>([])
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
+  const [logs, setLogs] = useState<string[]>([]) // 👈 to show logs on screen
+
+  // Helper to log on screen
+  const addLog = (msg: string) => {
+    setLogs(prev => [...prev, msg])
+  }
 
   // Fetch categories on mount
   useEffect(() => {
     async function fetchCategories() {
-      const data: CategoryRaw[] = await client.fetch(`
-        *[_type=="category"]{
-          _id,
-          title,
-          parent->{_id, title},
-          order
-        } | order(order asc)
-      `)
-      setCategories(data || [])
+      try {
+        addLog("Fetching categories...")
+        const data: CategoryRaw[] = await client.fetch(`
+          *[_type=="category"]{
+            _id,
+            title,
+            parent->{_id, title},
+            order
+          } | order(order asc)
+        `)
+        addLog("Fetched categories: " + JSON.stringify(data, null, 2))
+        setCategories(data || [])
+      } catch (err: any) {
+        addLog("Error fetching categories: " + err.message)
+      }
     }
     fetchCategories()
   }, [])
@@ -118,6 +129,12 @@ const FilterSortModal = () => {
           <CategoryNodeItem key={node._id} node={node} />
         ))
       )}
+
+      {/* Debug Logs on Page */}
+      <div style={{ marginTop: "1rem", padding: "0.5rem", background: "#111", color: "#0f0", fontSize: "0.8rem", maxHeight: "200px", overflow: "auto" }}>
+        <strong>Debug Logs:</strong>
+        <pre>{logs.join("\n")}</pre>
+      </div>
     </div>
   )
 }
