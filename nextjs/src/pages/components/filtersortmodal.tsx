@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react"
 import { createClient } from "next-sanity"
-import styles from "../../header.module.css"
+import styles from "../../styles/header.module.css"
 
 // Sanity client
 const client = createClient({
