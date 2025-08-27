@@ -29,12 +29,24 @@ interface FilterSortModalProps {
   initialSort?: SortOption
   onApply?: (filters: {
     categories: string[]
-    minPrice: number | ''
-    maxPrice: number | ''
+    colors: string[]
+    sizes: string[]
+    minPrice: number
+    maxPrice: number
     sort: SortOption
   }) => void
   onClose?: () => void
 }
+
+// Hardcoded colors and sizes
+const HARD_CODED_COLORS = [
+  'Red', 'Green', 'Blue', 'Yellow', 'White', 'Black',
+  'Brown', 'Orange', 'Purple', 'Pink', 'Gray', 'Beige'
+]
+
+const HARD_CODED_SIZES = [
+  'XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'
+]
 
 // ----- Component -----
 export default function FilterSortModal({
@@ -46,6 +58,8 @@ export default function FilterSortModal({
   onClose,
 }: FilterSortModalProps) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [selectedColors, setSelectedColors] = useState<string[]>([])
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([])
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
   const [minPrice, setMinPrice] = useState<number>(initialMinPrice)
   const [maxPrice, setMaxPrice] = useState<number>(initialMaxPrice)
@@ -57,9 +71,7 @@ export default function FilterSortModal({
     const map: Record<string, CategoryNode> = {}
     const roots: CategoryNode[] = []
 
-    initialCategories.forEach(cat => {
-      map[cat._id] = { ...cat, children: [] }
-    })
+    initialCategories.forEach(cat => { map[cat._id] = { ...cat, children: [] } })
     initialCategories.forEach(cat => {
       if (cat.parent?._id) map[cat.parent._id]?.children.push(map[cat._id])
       else roots.push(map[cat._id])
@@ -82,15 +94,19 @@ export default function FilterSortModal({
     })
   }
 
-  const handleCategoryToggle = (id: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
-    )
+  const handleToggle = (
+    value: string,
+    selected: string[],
+    setSelected: React.Dispatch<React.SetStateAction<string[]>>
+  ) => {
+    setSelected(selected.includes(value) ? selected.filter(v => v !== value) : [...selected, value])
   }
 
   const handleApply = () => {
     onApply?.({
       categories: selectedCategories,
+      colors: selectedColors,
+      sizes: selectedSizes,
       minPrice,
       maxPrice,
       sort,
@@ -117,7 +133,7 @@ export default function FilterSortModal({
             <input
               type="checkbox"
               checked={selectedCategories.includes(node._id)}
-              onChange={() => handleCategoryToggle(node._id)}
+              onChange={() => handleToggle(node._id, selectedCategories, setSelectedCategories)}
             />
             {node.title}
           </label>
@@ -140,11 +156,8 @@ export default function FilterSortModal({
       {/* Categories */}
       <section className={styles.section}>
         <h4 className={styles.sectionTitle}>Categories</h4>
-        {categoryTree.length === 0 ? (
-          <p>No categories found.</p>
-        ) : (
-          categoryTree.map(node => <CategoryNodeItem key={node._id} node={node} />)
-        )}
+        {categoryTree.length === 0 ? <p>No categories found.</p> :
+          categoryTree.map(node => <CategoryNodeItem key={node._id} node={node} />)}
       </section>
 
       {/* Price Range */}
@@ -156,10 +169,7 @@ export default function FilterSortModal({
             min={0}
             max={10000}
             value={minPrice}
-            onChange={e => {
-              const val = Number(e.target.value)
-              setMinPrice(val > maxPrice ? maxPrice : val)
-            }}
+            onChange={e => setMinPrice(Math.min(Number(e.target.value), maxPrice))}
             className={styles.rangeSlider}
           />
           <input
@@ -167,16 +177,47 @@ export default function FilterSortModal({
             min={0}
             max={10000}
             value={maxPrice}
-            onChange={e => {
-              const val = Number(e.target.value)
-              setMaxPrice(val < minPrice ? minPrice : val)
-            }}
+            onChange={e => setMaxPrice(Math.max(Number(e.target.value), minPrice))}
             className={styles.rangeSlider}
           />
           <div className={styles.sliderValues}>
             <span>{minPrice} KWD</span>
             <span>{maxPrice} KWD</span>
           </div>
+        </div>
+      </section>
+
+      {/* Colors */}
+      <section className={styles.section}>
+        <h4 className={styles.sectionTitle}>Colors</h4>
+        <div className={styles.filterGrid}>
+          {HARD_CODED_COLORS.map(color => (
+            <label key={color} className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={selectedColors.includes(color)}
+                onChange={() => handleToggle(color, selectedColors, setSelectedColors)}
+              />
+              {color}
+            </label>
+          ))}
+        </div>
+      </section>
+
+      {/* Sizes */}
+      <section className={styles.section}>
+        <h4 className={styles.sectionTitle}>Sizes</h4>
+        <div className={styles.filterGrid}>
+          {HARD_CODED_SIZES.map(size => (
+            <label key={size} className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={selectedSizes.includes(size)}
+                onChange={() => handleToggle(size, selectedSizes, setSelectedSizes)}
+              />
+              {size}
+            </label>
+          ))}
         </div>
       </section>
 
@@ -198,12 +239,8 @@ export default function FilterSortModal({
 
       {/* Buttons */}
       <div className={styles.buttons}>
-        <button className={styles.applyBtn} onClick={handleApply}>
-          Apply
-        </button>
-        <button className={styles.closeBtn} onClick={onClose}>
-          Close
-        </button>
+        <button className={styles.applyBtn} onClick={handleApply}>Apply</button>
+        <button className={styles.closeBtn} onClick={onClose}>Close</button>
       </div>
     </div>
   )
