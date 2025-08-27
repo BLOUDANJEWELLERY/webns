@@ -159,19 +159,20 @@ export default function FilterSortModal({
       <section className={styles.section}>
         <h4 className={styles.sectionTitle}>Price Range</h4>
         <div className={styles.sliderContainer}>
+          <div className={styles.rangeTrack}></div>
           <input
             type="range"
             min={0} max={10000}
             value={minPrice}
             onChange={e=>setMinPrice(Math.min(Number(e.target.value), maxPrice))}
-            className={styles.rangeSlider}
+            className={`${styles.rangeSlider} ${styles.minSlider}`}
           />
           <input
             type="range"
             min={0} max={10000}
             value={maxPrice}
             onChange={e=>setMaxPrice(Math.max(Number(e.target.value), minPrice))}
-            className={styles.rangeSlider}
+            className={`${styles.rangeSlider} ${styles.maxSlider}`}
           />
           <div className={styles.sliderValues}>
             <span>{minPrice} KWD</span>
@@ -183,16 +184,16 @@ export default function FilterSortModal({
       {/* Colors */}
       <section className={styles.section}>
         <h4 className={styles.sectionTitle}>Colors</h4>
-        <div className={styles.filterGrid}>
+        <div className={styles.circleGrid}>
           {HARD_CODED_COLORS.map(color=>(
-            <label key={color} className={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                checked={selectedColors.includes(color)}
-                onChange={()=>handleToggle(color, selectedColors, setSelectedColors)}
-              />
-              {color}
-            </label>
+            <button
+              key={color}
+              type="button"
+              className={`${styles.colorCircle} ${selectedColors.includes(color)?styles.activeCircle:''}`}
+              style={{backgroundColor: color.toLowerCase()}}
+              onClick={()=>handleToggle(color, selectedColors, setSelectedColors)}
+              title={color}
+            />
           ))}
         </div>
       </section>
@@ -200,16 +201,16 @@ export default function FilterSortModal({
       {/* Sizes */}
       <section className={styles.section}>
         <h4 className={styles.sectionTitle}>Sizes</h4>
-        <div className={styles.filterGrid}>
+        <div className={styles.circleGrid}>
           {HARD_CODED_SIZES.map(size=>(
-            <label key={size} className={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                checked={selectedSizes.includes(size)}
-                onChange={()=>handleToggle(size, selectedSizes, setSelectedSizes)}
-              />
+            <button
+              key={size}
+              type="button"
+              className={`${styles.sizeCircle} ${selectedSizes.includes(size)?styles.activeCircle:''}`}
+              onClick={()=>handleToggle(size, selectedSizes, setSelectedSizes)}
+            >
               {size}
-            </label>
+            </button>
           ))}
         </div>
       </section>
