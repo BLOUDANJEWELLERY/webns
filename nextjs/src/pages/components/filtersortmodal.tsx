@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import styles from '../../styles/filter.module.css'
+import styles from '../../styles/filtersortmodal.module.css'
 
 // ----- Types -----
 interface CategoryRaw {
@@ -38,14 +38,14 @@ interface FilterSortModalProps {
   onClose?: () => void
 }
 
-// Hardcoded colors and sizes
+// ----- Hardcoded Filters -----
 const HARD_CODED_COLORS = [
-  'Red', 'Green', 'Blue', 'Yellow', 'White', 'Black',
-  'Brown', 'Orange', 'Purple', 'Pink', 'Gray', 'Beige'
+  'Red','Green','Blue','Yellow','White','Black',
+  'Brown','Orange','Purple','Pink','Gray','Beige'
 ]
 
 const HARD_CODED_SIZES = [
-  'XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'
+  'XXS','XS','S','M','L','XL','XXL','XXXL'
 ]
 
 // ----- Component -----
@@ -57,6 +57,7 @@ export default function FilterSortModal({
   onApply,
   onClose,
 }: FilterSortModalProps) {
+
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [selectedColors, setSelectedColors] = useState<string[]>([])
   const [selectedSizes, setSelectedSizes] = useState<string[]>([])
@@ -65,20 +66,20 @@ export default function FilterSortModal({
   const [maxPrice, setMaxPrice] = useState<number>(initialMaxPrice)
   const [sort, setSort] = useState<SortOption>(initialSort)
 
-  // ----- Build category tree -----
+  // ----- Build Category Tree -----
   const categoryTree = useMemo(() => {
     if (!initialCategories) return []
     const map: Record<string, CategoryNode> = {}
     const roots: CategoryNode[] = []
 
-    initialCategories.forEach(cat => { map[cat._id] = { ...cat, children: [] } })
+    initialCategories.forEach(cat => map[cat._id] = {...cat, children: []})
     initialCategories.forEach(cat => {
       if (cat.parent?._id) map[cat.parent._id]?.children.push(map[cat._id])
       else roots.push(map[cat._id])
     })
 
     const sortTree = (nodes: CategoryNode[]) => {
-      nodes.sort((a, b) => (a.order || 0) - (b.order || 0))
+      nodes.sort((a,b) => (a.order||0) - (b.order||0))
       nodes.forEach(n => sortTree(n.children))
     }
     sortTree(roots)
@@ -99,7 +100,7 @@ export default function FilterSortModal({
     selected: string[],
     setSelected: React.Dispatch<React.SetStateAction<string[]>>
   ) => {
-    setSelected(selected.includes(value) ? selected.filter(v => v !== value) : [...selected, value])
+    setSelected(selected.includes(value) ? selected.filter(v => v!==value) : [...selected, value])
   }
 
   const handleApply = () => {
@@ -109,23 +110,19 @@ export default function FilterSortModal({
       sizes: selectedSizes,
       minPrice,
       maxPrice,
-      sort,
+      sort
     })
     onClose?.()
   }
 
-  // ----- Render tree recursively -----
-  const CategoryNodeItem = ({ node }: { node: CategoryNode }) => {
+  // ----- Recursive Category Renderer -----
+  const CategoryNodeItem = ({node}: {node: CategoryNode}) => {
     const isExpanded = expandedCategories.has(node._id)
     return (
       <div className={styles.categoryNode}>
         <div className={styles.categoryRow}>
-          {node.children.length > 0 && (
-            <button
-              type="button"
-              className={styles.toggleBtn}
-              onClick={() => toggleCategoryExpand(node._id)}
-            >
+          {node.children.length>0 && (
+            <button type="button" className={styles.toggleBtn} onClick={()=>toggleCategoryExpand(node._id)}>
               {isExpanded ? '▾' : '▸'}
             </button>
           )}
@@ -133,16 +130,14 @@ export default function FilterSortModal({
             <input
               type="checkbox"
               checked={selectedCategories.includes(node._id)}
-              onChange={() => handleToggle(node._id, selectedCategories, setSelectedCategories)}
+              onChange={()=>handleToggle(node._id, selectedCategories, setSelectedCategories)}
             />
             {node.title}
           </label>
         </div>
-        {isExpanded && node.children.length > 0 && (
+        {isExpanded && node.children.length>0 && (
           <div className={styles.nested}>
-            {node.children.map(child => (
-              <CategoryNodeItem key={child._id} node={child} />
-            ))}
+            {node.children.map(child=><CategoryNodeItem key={child._id} node={child}/>)}
           </div>
         )}
       </div>
@@ -156,28 +151,26 @@ export default function FilterSortModal({
       {/* Categories */}
       <section className={styles.section}>
         <h4 className={styles.sectionTitle}>Categories</h4>
-        {categoryTree.length === 0 ? <p>No categories found.</p> :
-          categoryTree.map(node => <CategoryNodeItem key={node._id} node={node} />)}
+        {categoryTree.length===0 ? <p>No categories found.</p> :
+          categoryTree.map(node=><CategoryNodeItem key={node._id} node={node}/>)}
       </section>
 
-      {/* Price Range */}
+      {/* Price Slider */}
       <section className={styles.section}>
         <h4 className={styles.sectionTitle}>Price Range</h4>
         <div className={styles.sliderContainer}>
           <input
             type="range"
-            min={0}
-            max={10000}
+            min={0} max={10000}
             value={minPrice}
-            onChange={e => setMinPrice(Math.min(Number(e.target.value), maxPrice))}
+            onChange={e=>setMinPrice(Math.min(Number(e.target.value), maxPrice))}
             className={styles.rangeSlider}
           />
           <input
             type="range"
-            min={0}
-            max={10000}
+            min={0} max={10000}
             value={maxPrice}
-            onChange={e => setMaxPrice(Math.max(Number(e.target.value), minPrice))}
+            onChange={e=>setMaxPrice(Math.max(Number(e.target.value), minPrice))}
             className={styles.rangeSlider}
           />
           <div className={styles.sliderValues}>
@@ -191,12 +184,12 @@ export default function FilterSortModal({
       <section className={styles.section}>
         <h4 className={styles.sectionTitle}>Colors</h4>
         <div className={styles.filterGrid}>
-          {HARD_CODED_COLORS.map(color => (
+          {HARD_CODED_COLORS.map(color=>(
             <label key={color} className={styles.checkboxLabel}>
               <input
                 type="checkbox"
                 checked={selectedColors.includes(color)}
-                onChange={() => handleToggle(color, selectedColors, setSelectedColors)}
+                onChange={()=>handleToggle(color, selectedColors, setSelectedColors)}
               />
               {color}
             </label>
@@ -208,12 +201,12 @@ export default function FilterSortModal({
       <section className={styles.section}>
         <h4 className={styles.sectionTitle}>Sizes</h4>
         <div className={styles.filterGrid}>
-          {HARD_CODED_SIZES.map(size => (
+          {HARD_CODED_SIZES.map(size=>(
             <label key={size} className={styles.checkboxLabel}>
               <input
                 type="checkbox"
                 checked={selectedSizes.includes(size)}
-                onChange={() => handleToggle(size, selectedSizes, setSelectedSizes)}
+                onChange={()=>handleToggle(size, selectedSizes, setSelectedSizes)}
               />
               {size}
             </label>
@@ -227,7 +220,7 @@ export default function FilterSortModal({
         <select
           className={styles.sortSelect}
           value={sort}
-          onChange={e => setSort(e.target.value as SortOption)}
+          onChange={e=>setSort(e.target.value as SortOption)}
         >
           <option value="alphabeticalAZ">A-Z</option>
           <option value="alphabeticalZA">Z-A</option>
