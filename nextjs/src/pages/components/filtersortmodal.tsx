@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react'
 import styles from '../../styles/filter.module.css'
 
-// ----- Types -----
 interface CategoryRaw {
   _id: string
   title: string
@@ -38,7 +37,6 @@ interface FilterSortModalProps {
   onClose?: () => void
 }
 
-// ----- Hardcoded Filters -----
 const HARD_CODED_COLORS = [
   'Red','Green','Blue','Yellow','White','Black',
   'Brown','Orange','Purple','Pink','Gray','Beige'
@@ -48,7 +46,6 @@ const HARD_CODED_SIZES = [
   'XXS','XS','S','M','L','XL','XXL','XXXL'
 ]
 
-// ----- Component -----
 export default function FilterSortModal({
   initialCategories,
   initialMinPrice = 0,
@@ -66,7 +63,7 @@ export default function FilterSortModal({
   const [maxPrice, setMaxPrice] = useState<number>(initialMaxPrice)
   const [sort, setSort] = useState<SortOption>(initialSort)
 
-  // ----- Build Category Tree -----
+  // ----- Category Tree -----
   const categoryTree = useMemo(() => {
     if (!initialCategories) return []
     const map: Record<string, CategoryNode> = {}
@@ -100,7 +97,7 @@ export default function FilterSortModal({
     selected: string[],
     setSelected: React.Dispatch<React.SetStateAction<string[]>>
   ) => {
-    setSelected(selected.includes(value) ? selected.filter(v => v!==value) : [...selected, value])
+    setSelected(selected.includes(value) ? selected.filter(v => v !== value) : [...selected, value])
   }
 
   const handleReset = () => {
@@ -124,63 +121,62 @@ export default function FilterSortModal({
     onClose?.()
   }
 
-  // ----- Recursive Category Renderer -----
-  const CategoryNodeItem = ({node}: {node: CategoryNode}) => {
+  // ----- Recursive Category -----
+  const CategoryNodeItem = ({ node }: { node: CategoryNode }) => {
     const isExpanded = expandedCategories.has(node._id)
     return (
       <div className={styles.categoryNode}>
         <div className={styles.categoryRow}>
-          {node.children.length>0 && (
-            <button type="button" className={styles.toggleBtn} onClick={()=>toggleCategoryExpand(node._id)}>
+          {node.children.length > 0 && (
+            <button type="button" className={styles.toggleBtn} onClick={() => toggleCategoryExpand(node._id)}>
               {isExpanded ? '▾' : '▸'}
             </button>
           )}
-          <label>
+          <label className={styles.customCheckboxLabel}>
             <input
               type="checkbox"
               checked={selectedCategories.includes(node._id)}
-              onChange={()=>handleToggle(node._id, selectedCategories, setSelectedCategories)}
+              onChange={() => handleToggle(node._id, selectedCategories, setSelectedCategories)}
             />
-            {node.title}
+            <span>{node.title}</span>
           </label>
         </div>
-        {isExpanded && node.children.length>0 && (
+        {isExpanded && node.children.length > 0 && (
           <div className={styles.nested}>
-            {node.children.map(child=><CategoryNodeItem key={child._id} node={child}/>)}
+            {node.children.map(child => <CategoryNodeItem key={child._id} node={child} />)}
           </div>
         )}
       </div>
     )
   }
 
-  // ----- Calculate slider track width -----
-  const minPercent = (minPrice/10000)*100
-  const maxPercent = (maxPrice/10000)*100
+  // Slider percentages
+  const minPercent = (minPrice / 10000) * 100
+  const maxPercent = (maxPrice / 10000) * 100
 
   return (
     <div className={styles.modal}>
       <h3 className={styles.modalTitle}>Filter & Sort</h3>
 
-      {/* Reset */}
       <div style={{textAlign:'right', marginBottom:'0.75rem'}}>
-        <button className={styles.closeBtn} onClick={handleReset}>Reset</button>
+        <button className={styles.resetBtn} onClick={handleReset}>Reset</button>
       </div>
 
       {/* Categories */}
       <section className={styles.section}>
         <h4 className={styles.sectionTitle}>Categories</h4>
         <div className={styles.categoryNode}>
-          <label style={{fontWeight:600}}>
+          <label className={styles.customCheckboxLabel}>
             <input
               type="checkbox"
-              checked={selectedCategories.length===0}
-              onChange={()=>setSelectedCategories([])}
+              checked={selectedCategories.length === 0}
+              onChange={() => setSelectedCategories([])}
             />
-            All Categories
+            <span>All Categories</span>
           </label>
         </div>
-        {categoryTree.length===0 ? <p>No categories found.</p> :
-          categoryTree.map(node=><CategoryNodeItem key={node._id} node={node}/>)}
+        {categoryTree.length === 0 ? <p>No categories found.</p> :
+          categoryTree.map(node => <CategoryNodeItem key={node._id} node={node} />)}
       </section>
 
       {/* Price Slider */}
@@ -188,19 +184,19 @@ export default function FilterSortModal({
         <h4 className={styles.sectionTitle}>Price Range</h4>
         <div className={styles.sliderContainer}>
           <div className={styles.rangeTrack}></div>
-          <div className={styles.rangeTrackActive} style={{left:`${minPercent}%`, right:`${100-maxPercent}%`}}></div>
+          <div className={styles.rangeTrackActive} style={{ left: `${minPercent}%`, right: `${100 - maxPercent}%` }} />
           <input
             type="range"
             min={0} max={10000}
             value={minPrice}
-            onChange={e=>setMinPrice(Math.min(Number(e.target.value), maxPrice))}
+            onChange={e => setMinPrice(Math.min(Number(e.target.value), maxPrice))}
             className={`${styles.rangeSlider} ${styles.minSlider}`}
           />
           <input
             type="range"
             min={0} max={10000}
             value={maxPrice}
-            onChange={e=>setMaxPrice(Math.max(Number(e.target.value), minPrice))}
+            onChange={e => setMaxPrice(Math.max(Number(e.target.value), minPrice))}
             className={`${styles.rangeSlider} ${styles.maxSlider}`}
           />
           <div className={styles.sliderValues}>
@@ -215,17 +211,17 @@ export default function FilterSortModal({
         <h4 className={styles.sectionTitle}>Colors</h4>
         <div className={styles.circleGrid}>
           <button
-            className={`${styles.colorCircle} ${(selectedColors.length===0)?styles.activeCircle:''}`}
-            onClick={()=>setSelectedColors([])}
+            className={`${styles.colorCircle} ${selectedColors.length === 0 ? styles.activeCircle : ''}`}
+            onClick={() => setSelectedColors([])}
             title="All Colors"
           >All</button>
-          {HARD_CODED_COLORS.map(color=>(
+          {HARD_CODED_COLORS.map(color => (
             <button
               key={color}
               type="button"
-              className={`${styles.colorCircle} ${selectedColors.includes(color)?styles.activeCircle:''}`}
-              style={{backgroundColor: color.toLowerCase()}}
-              onClick={()=>handleToggle(color, selectedColors, setSelectedColors)}
+              className={`${styles.colorCircle} ${selectedColors.includes(color) ? styles.activeCircle : ''}`}
+              style={{ backgroundColor: color.toLowerCase() }}
+              onClick={() => handleToggle(color, selectedColors, setSelectedColors)}
               title={color}
             />
           ))}
@@ -237,15 +233,15 @@ export default function FilterSortModal({
         <h4 className={styles.sectionTitle}>Sizes</h4>
         <div className={styles.circleGrid}>
           <button
-            className={`${styles.sizeCircle} ${(selectedSizes.length===0)?styles.activeCircle:''}`}
-            onClick={()=>setSelectedSizes([])}
+            className={`${styles.sizeCircle} ${selectedSizes.length === 0 ? styles.activeCircle : ''}`}
+            onClick={() => setSelectedSizes([])}
           >All</button>
-          {HARD_CODED_SIZES.map(size=>(
+          {HARD_CODED_SIZES.map(size => (
             <button
               key={size}
               type="button"
-              className={`${styles.sizeCircle} ${selectedSizes.includes(size)?styles.activeCircle:''}`}
-              onClick={()=>handleToggle(size, selectedSizes, setSelectedSizes)}
+              className={`${styles.sizeCircle} ${selectedSizes.includes(size) ? styles.activeCircle : ''}`}
+              onClick={() => handleToggle(size, selectedSizes, setSelectedSizes)}
             >
               {size}
             </button>
@@ -259,7 +255,7 @@ export default function FilterSortModal({
         <select
           className={styles.sortSelect}
           value={sort}
-          onChange={e=>setSort(e.target.value as SortOption)}
+          onChange={e => setSort(e.target.value as SortOption)}
         >
           <option value="alphabeticalAZ">A-Z</option>
           <option value="alphabeticalZA">Z-A</option>
@@ -269,7 +265,6 @@ export default function FilterSortModal({
         </select>
       </section>
 
-      {/* Buttons */}
       <div className={styles.buttons}>
         <button className={styles.applyBtn} onClick={handleApply}>Apply</button>
         <button className={styles.closeBtn} onClick={onClose}>Close</button>
