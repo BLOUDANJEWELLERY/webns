@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import styles from '../../styles/filter.module.css'
+import styles from '../../styles/filtersortmodal.module.css'
 
 // ----- Types -----
 interface CategoryRaw {
@@ -34,16 +34,16 @@ interface FilterSortModalProps {
 // ----- Component -----
 export default function FilterSortModal({
   initialCategories,
-  initialMinPrice = undefined,
-  initialMaxPrice = undefined,
+  initialMinPrice = '',
+  initialMaxPrice = '',
   initialSort = 'alphabetical',
   onApply,
   onClose,
 }: FilterSortModalProps) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
-  const [minPrice, setMinPrice] = useState<number | ''>(initialMinPrice ?? '')
-  const [maxPrice, setMaxPrice] = useState<number | ''>(initialMaxPrice ?? '')
+  const [minPrice, setMinPrice] = useState<number | ''>(initialMinPrice)
+  const [maxPrice, setMaxPrice] = useState<number | ''>(initialMaxPrice)
   const [sort, setSort] = useState<SortOption>(initialSort)
 
   // ----- Build category tree -----
@@ -60,7 +60,7 @@ export default function FilterSortModal({
     })
 
     const sortTree = (nodes: CategoryNode[]) => {
-      nodes.sort((a, b) => (a.order || 0) - (b.order || 0))
+      nodes.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
       nodes.forEach(n => sortTree(n.children))
     }
     sortTree(roots)
@@ -92,7 +92,7 @@ export default function FilterSortModal({
     onClose?.()
   }
 
-  // ----- Render tree recursively -----
+  // ----- Recursive renderer -----
   const CategoryNodeItem = ({ node }: { node: CategoryNode }) => {
     const isExpanded = expandedCategories.has(node._id)
     return (
@@ -129,11 +129,11 @@ export default function FilterSortModal({
 
   return (
     <div className={styles.modal}>
-      <h3>Filter & Sort</h3>
+      <h3 className={styles.modalTitle}>Filter & Sort</h3>
 
       {/* Categories */}
       <section className={styles.section}>
-        <h4>Categories</h4>
+        <h4 className={styles.sectionTitle}>Categories</h4>
         {categoryTree.length === 0 ? (
           <p>No categories found.</p>
         ) : (
@@ -143,9 +143,10 @@ export default function FilterSortModal({
 
       {/* Price Range */}
       <section className={styles.section}>
-        <h4>Price Range</h4>
+        <h4 className={styles.sectionTitle}>Price Range</h4>
         <div className={styles.priceRange}>
           <input
+            className={styles.priceInput}
             type="number"
             placeholder="Min"
             value={minPrice}
@@ -153,6 +154,7 @@ export default function FilterSortModal({
           />
           <span>-</span>
           <input
+            className={styles.priceInput}
             type="number"
             placeholder="Max"
             value={maxPrice}
@@ -163,8 +165,12 @@ export default function FilterSortModal({
 
       {/* Sort */}
       <section className={styles.section}>
-        <h4>Sort By</h4>
-        <select value={sort} onChange={e => setSort(e.target.value as SortOption)}>
+        <h4 className={styles.sectionTitle}>Sort By</h4>
+        <select
+          className={styles.sortSelect}
+          value={sort}
+          onChange={e => setSort(e.target.value as SortOption)}
+        >
           <option value="alphabetical">Alphabetical</option>
           <option value="priceLowHigh">Price: Low to High</option>
           <option value="priceHighLow">Price: High to Low</option>
