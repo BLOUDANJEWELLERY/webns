@@ -6,7 +6,7 @@
   padding: 1.5rem;
   max-width: 480px;
   margin: 2rem auto;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
   font-family: 'Arial', sans-serif;
   color: #4e342e;
 }
@@ -28,7 +28,7 @@
   margin-bottom: 0.5rem;
 }
 
-/* ----- Categories ----- */
+/* ----- Categories & Custom Checkboxes ----- */
 .categoryNode {
   margin-left: 1rem;
 }
@@ -47,50 +47,53 @@
   margin-right: 0.25rem;
 }
 
+/* Custom checkbox */
+.categoryRow label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 500;
+  position: relative;
+  padding-left: 28px;
+}
+
+.categoryRow input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.categoryRow label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #5d4037;
+  border-radius: 4px;
+  background-color: #fffdfb;
+  transition: all 0.2s ease;
+}
+
+.categoryRow input[type="checkbox"]:checked + span::before,
+.categoryRow input[type="checkbox"]:checked + span,
+.categoryRow input[type="checkbox"]:checked + *::before {
+  background-color: #c89b3c;
+  border-color: #5d4037;
+}
+
 .nested {
   margin-left: 1.5rem;
 }
 
-/* ----- Slider ----- */
+/* ----- Price Slider ----- */
 .sliderContainer {
   position: relative;
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.rangeSlider {
-  -webkit-appearance: none;
-  width: 100%;
-  height: 6px;
-  background: transparent;
-  position: absolute;
-  pointer-events: none;
-}
-
-.rangeSlider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background-color: #c89b3c; /* golden thumb */
-  border: 2px solid #5d4037; /* brown border */
-  cursor: pointer;
-  pointer-events: all;
-  position: relative;
-  z-index: 3;
-}
-
-.rangeSlider::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background-color: #c89b3c;
-  border: 2px solid #5d4037;
-  cursor: pointer;
-  position: relative;
-  z-index: 3;
+  height: 36px;
 }
 
 .rangeTrack {
@@ -104,11 +107,60 @@
   z-index: 1;
 }
 
+.rangeTrackActive {
+  position: absolute;
+  height: 6px;
+  background: #c89b3c;
+  border-radius: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+}
+
+.rangeSlider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 36px;
+  background: transparent;
+  position: absolute;
+  pointer-events: all;
+  z-index: 3;
+}
+
+.rangeSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: #c89b3c;
+  border: 2px solid #5d4037;
+  cursor: pointer;
+  margin-top: -6px;
+  transition: transform 0.2s ease;
+}
+
+.rangeSlider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: #c89b3c;
+  border: 2px solid #5d4037;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.rangeSlider:hover::-webkit-slider-thumb {
+  transform: scale(1.2);
+}
+
+.rangeSlider:hover::-moz-range-thumb {
+  transform: scale(1.2);
+}
+
 .sliderValues {
   display: flex;
   justify-content: space-between;
-  width: 100%;
-  margin-top: 1.2rem;
+  margin-top: 1rem;
   font-weight: 600;
 }
 
