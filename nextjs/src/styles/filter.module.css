@@ -1,4 +1,46 @@
 /* ----- Modal Base ----- */
+
+/* Make min and max sliders draggable independently */
+.minSlider {
+  z-index: 3; /* below max slider so max thumb is always on top */
+}
+
+.maxSlider {
+  z-index: 4; /* topmost */
+}
+
+/* Optional: slightly increase thumb size for easier dragging */
+.rangeSlider::-webkit-slider-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #c89b3c;
+  border: 2px solid #5d4037;
+  cursor: pointer;
+  margin-top: -7px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rangeSlider:hover::-webkit-slider-thumb {
+  transform: scale(1.2);
+  box-shadow: 0 0 8px rgba(200, 155, 60, 0.6);
+}
+
+.rangeSlider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #c89b3c;
+  border: 2px solid #5d4037;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rangeSlider:hover::-moz-range-thumb {
+  transform: scale(1.2);
+  box-shadow: 0 0 8px rgba(200, 155, 60, 0.6);
+}
+
 .modal {
   background-color: #fffdfb;
   border: 2px solid #d7ccc8;
