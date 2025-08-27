@@ -1,90 +1,178 @@
+/* Modal container */
 .modal {
   background-color: #fff;
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 20px;
   width: 320px;
-  max-width: 90%;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-  font-family: Arial, sans-serif;
+  max-width: 95%;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  font-family: 'Arial', sans-serif;
 }
 
-.section {
-  margin-bottom: 16px;
-}
-
+/* Modal title */
 .modalTitle {
-  margin-bottom: 12px;
-  font-size: 18px;
+  font-size: 1.5rem;
+  margin-bottom: 16px;
   font-weight: bold;
+  color: #333;
+  text-align: center;
 }
 
+/* Section wrapper */
+.section {
+  margin-bottom: 20px;
+}
+
+/* Section title */
 .sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
   margin-bottom: 8px;
-  font-size: 14px;
-  font-weight: bold;
+  color: #555;
 }
 
+/* Category tree */
+.categoryNode {
+  margin-left: 8px;
+  margin-bottom: 6px;
+}
+
+/* Category row */
 .categoryRow {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
+  gap: 6px;
 }
 
+/* Toggle button for nested categories */
 .toggleBtn {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 0.85rem;
+  color: #666;
+  padding: 0;
+  width: 20px;
 }
 
+/* Nested children container */
 .nested {
-  margin-left: 16px;
-  border-left: 1px solid #ddd;
-  padding-left: 8px;
+  margin-left: 20px;
+  margin-top: 4px;
 }
 
-.priceRange {
+/* Range slider container */
+.sliderContainer {
   display: flex;
+  flex-direction: column;
   gap: 8px;
-  align-items: center;
 }
 
-.priceInput {
-  width: 100px;
-  padding: 4px 6px;
+/* Range input sliders */
+.rangeSlider {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 6px;
   border-radius: 4px;
-  border: 1px solid #ccc;
+  background: #ddd;
+  outline: none;
+  transition: background 0.2s;
 }
 
+.rangeSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #b8860b;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+.rangeSlider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #b8860b;
+  cursor: pointer;
+  border: 2px solid #fff;
+}
+
+/* Slider value display */
+.sliderValues {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+/* Sorting select dropdown */
 .sortSelect {
   width: 100%;
-  padding: 6px;
-  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 0.95rem;
+  border-radius: 6px;
   border: 1px solid #ccc;
+  outline: none;
+  background-color: #f9f9f9;
+  cursor: pointer;
 }
 
+/* Buttons container */
 .buttons {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 12px;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
 }
 
+/* Apply button */
 .applyBtn {
-  background-color: #8b5e3c;
+  flex: 1;
+  padding: 8px 0;
+  background-color: #b8860b;
   color: #fff;
-  padding: 6px 12px;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
+  font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s;
 }
 
+.applyBtn:hover {
+  background-color: #996b06;
+}
+
+/* Close button */
 .closeBtn {
-  background-color: #eee;
+  flex: 1;
+  padding: 8px 0;
+  background-color: #ddd;
   color: #333;
-  padding: 6px 12px;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
+  font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s;
+}
+
+.closeBtn:hover {
+  background-color: #bbb;
+}
+
+/* Responsive adjustments */
+@media (max-width: 400px) {
+  .modal {
+    padding: 16px;
+  }
+
+  .modalTitle {
+    font-size: 1.3rem;
+  }
+
+  .sectionTitle {
+    font-size: 1rem;
+  }
 }
