@@ -28,26 +28,61 @@
   margin-bottom: 0.5rem;
 }
 
-/* ----- Categories & Custom Checkboxes ----- */
-.categoryNode {
-  margin-left: 1rem;
+/* ----- Category Tree ----- */
+.checkboxGroup {
+  border: 1px solid #d6c6b2;
+  border-radius: 6px;
+  padding: 10px 14px;
+  background-color: #fdfaf6;
+  max-height: 250px;
+  overflow-y: auto;
+  font-size: 14px;
+  scrollbar-width: thin;
+  scrollbar-color: #b8860b #fdfaf6;
+}
+
+.checkboxGroup::-webkit-scrollbar {
+  width: 6px;
+}
+.checkboxGroup::-webkit-scrollbar-thumb {
+  background: #b8860b;
+  border-radius: 4px;
+}
+.checkboxGroup::-webkit-scrollbar-track {
+  background: #fdfaf6;
 }
 
 .categoryRow {
   display: flex;
   align-items: center;
-  margin-bottom: 0.25rem;
+  gap: 6px;
+  margin: 4px 0;
+  line-height: 1.4;
+  padding: 2px 0;
+  transition: background 0.2s ease;
+  border-radius: 4px;
+}
+
+.categoryRow:hover {
+  background: #f7f1e8;
 }
 
 .toggleBtn {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 0.9rem;
-  margin-right: 0.25rem;
+  font-size: 12px;
+  line-height: 1;
+  padding: 0;
+  color: #7a5a2e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
 }
 
-/* Custom Checkbox Label */
+/* Custom Checkbox */
 .customCheckboxLabel {
   position: relative;
   display: flex;
@@ -62,7 +97,6 @@
   opacity: 0;
   width: 0;
   height: 0;
-  cursor: pointer;
 }
 
 .customCheckboxLabel span::before {
@@ -83,9 +117,10 @@
   border-color: #5d4037;
 }
 
-/* Nested categories */
 .nested {
-  margin-left: 1.5rem;
+  margin-left: 18px;
+  border-left: 1px dashed #d6c6b2;
+  padding-left: 10px;
 }
 
 /* ----- Price Slider ----- */
@@ -129,19 +164,19 @@
 
 .rangeSlider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background-color: #c89b3c;
   border: 2px solid #5d4037;
   cursor: pointer;
-  margin-top: -6px;
+  margin-top: -7px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .rangeSlider::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background-color: #c89b3c;
   border: 2px solid #5d4037;
@@ -152,7 +187,7 @@
 .rangeSlider:hover::-webkit-slider-thumb,
 .rangeSlider:hover::-moz-range-thumb {
   transform: scale(1.2);
-  box-shadow: 0 0 6px rgba(200, 155, 60, 0.6);
+  box-shadow: 0 0 8px rgba(200, 155, 60, 0.6);
 }
 
 .sliderValues {
