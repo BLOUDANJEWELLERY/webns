@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import styles from '../../styles/header.module.css'
+import styles from '../../styles/filter.module.css'
 
 // Raw category type from Sanity
 interface CategoryRaw {
