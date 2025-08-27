@@ -4,7 +4,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: #fffdfb; /* warm cream background */
+  background-color: #fffdfb; /* warm cream */
   border: 2px solid #d7ccc8;
   border-radius: 16px;
   padding: 2rem;
@@ -68,20 +68,24 @@
   margin-left: 1.5rem;
 }
 
-/* ----- Slider Container ----- */
+/* ----- Connected Dual Range Slider ----- */
 .sliderContainer {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  position: relative;
 }
 
 .rangeSlider {
   -webkit-appearance: none;
   width: 100%;
   height: 6px;
-  background: #d7ccc8; /* light brown track */
   border-radius: 4px;
   outline: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none; /* disable direct interaction on the background track */
 }
 
 .rangeSlider::-webkit-slider-thumb {
@@ -89,9 +93,12 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #c89b3c; /* golden thumb */
+  background: #c89b3c; /* golden */
   cursor: pointer;
   border: 2px solid #5d4037;
+  pointer-events: auto;
+  position: relative;
+  z-index: 2;
   transition: transform 0.2s ease;
 }
 
@@ -99,6 +106,23 @@
   transform: scale(1.2);
 }
 
+/* Track for the active range */
+.sliderTrack {
+  position: relative;
+  height: 6px;
+  border-radius: 4px;
+  background: linear-gradient(
+    to right,
+    #d7ccc8 0%,
+    #d7ccc8 var(--min),
+    #c89b3c var(--min),
+    #c89b3c var(--max),
+    #d7ccc8 var(--max),
+    #d7ccc8 100%
+  );
+}
+
+/* Values */
 .sliderValues {
   display: flex;
   justify-content: space-between;
