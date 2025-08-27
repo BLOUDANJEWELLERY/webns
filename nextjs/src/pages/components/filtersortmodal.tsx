@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import styles from '../../styles/filtersortmodal.module.css'
+import styles from '../../styles/filter.module.css'
 
 // ----- Types -----
 interface CategoryRaw {
@@ -15,17 +15,24 @@ interface CategoryNode extends CategoryRaw {
   children: CategoryNode[]
 }
 
-type SortOption = 'alphabetical' | 'priceLowHigh' | 'priceHighLow'
+type SortOption =
+  | 'alphabeticalAZ'
+  | 'alphabeticalZA'
+  | 'priceLowHigh'
+  | 'priceHighLow'
+  | 'relevance'
+  | 'others'
 
 interface FilterSortModalProps {
   initialCategories: CategoryRaw[]
   initialMinPrice?: number
   initialMaxPrice?: number
   initialSort?: SortOption
+  maxPriceLimit?: number
   onApply?: (filters: {
     categories: string[]
-    minPrice: number | ''
-    maxPrice: number | ''
+    minPrice: number
+    maxPrice: number
     sort: SortOption
   }) => void
   onClose?: () => void
@@ -34,16 +41,17 @@ interface FilterSortModalProps {
 // ----- Component -----
 export default function FilterSortModal({
   initialCategories,
-  initialMinPrice = '',
-  initialMaxPrice = '',
-  initialSort = 'alphabetical',
+  initialMinPrice = 0,
+  initialMaxPrice = 1000,
+  maxPriceLimit = 1000,
+  initialSort = 'alphabeticalAZ',
   onApply,
   onClose,
 }: FilterSortModalProps) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
-  const [minPrice, setMinPrice] = useState<number | ''>(initialMinPrice)
-  const [maxPrice, setMaxPrice] = useState<number | ''>(initialMaxPrice)
+  const [minPrice, setMinPrice] = useState<number>(initialMinPrice)
+  const [maxPrice, setMaxPrice] = useState<number>(initialMaxPrice)
   const [sort, setSort] = useState<SortOption>(initialSort)
 
   // ----- Build category tree -----
@@ -141,29 +149,33 @@ export default function FilterSortModal({
         )}
       </section>
 
-      {/* Price Range */}
+      {/* Price Range Sliders */}
       <section className={styles.section}>
         <h4 className={styles.sectionTitle}>Price Range</h4>
-        <div className={styles.priceRange}>
+        <div className={styles.sliderContainer}>
           <input
-            className={styles.priceInput}
-            type="number"
-            placeholder="Min"
+            type="range"
+            min={0}
+            max={maxPriceLimit}
             value={minPrice}
-            onChange={e => setMinPrice(e.target.value === '' ? '' : Number(e.target.value))}
+            onChange={e => setMinPrice(Number(e.target.value))}
+            className={styles.rangeSlider}
           />
-          <span>-</span>
           <input
-            className={styles.priceInput}
-            type="number"
-            placeholder="Max"
+            type="range"
+            min={0}
+            max={maxPriceLimit}
             value={maxPrice}
-            onChange={e => setMaxPrice(e.target.value === '' ? '' : Number(e.target.value))}
+            onChange={e => setMaxPrice(Number(e.target.value))}
+            className={styles.rangeSlider}
           />
+          <div className={styles.sliderValues}>
+            <span>{minPrice}</span> - <span>{maxPrice}</span>
+          </div>
         </div>
       </section>
 
-      {/* Sort */}
+      {/* Sorting */}
       <section className={styles.section}>
         <h4 className={styles.sectionTitle}>Sort By</h4>
         <select
@@ -171,9 +183,12 @@ export default function FilterSortModal({
           value={sort}
           onChange={e => setSort(e.target.value as SortOption)}
         >
-          <option value="alphabetical">Alphabetical</option>
-          <option value="priceLowHigh">Price: Low to High</option>
-          <option value="priceHighLow">Price: High to Low</option>
+          <option value="alphabeticalAZ">A → Z</option>
+          <option value="alphabeticalZA">Z → A</option>
+          <option value="priceLowHigh">Price: Low → High</option>
+          <option value="priceHighLow">Price: High → Low</option>
+          <option value="relevance">Relevance</option>
+          <option value="others">Others</option>
         </select>
       </section>
 
