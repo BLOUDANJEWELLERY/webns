@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import styles from '../../styles/filtersortmodal.module.css'
+import styles from '../../styles/filter.module.css'
 
 // ----- Types -----
 interface CategoryRaw {
