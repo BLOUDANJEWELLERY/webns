@@ -9,7 +9,7 @@ interface CategoryRaw {
   order?: number
 }
 
-// Category tree node
+// Category tree node type
 interface CategoryNode extends CategoryRaw {
   children: CategoryNode[]
 }
@@ -22,25 +22,36 @@ const FilterSortModal: React.FC<FilterSortModalProps> = ({ initialCategories }) 
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
 
-  // Build category tree
+  // Build tree structure from flat categories
   const buildCategoryTree = (cats: CategoryRaw[]): CategoryNode[] => {
     const map: Record<string, CategoryNode> = {}
     const roots: CategoryNode[] = []
 
-    cats.forEach(cat => { map[cat._id] = { ...cat, children: [] } })
+    // Create nodes map
     cats.forEach(cat => {
-      if (cat.parent?._id) map[cat.parent._id]?.children.push(map[cat._id])
-      else roots.push(map[cat._id])
+      map[cat._id] = { ...cat, children: [] }
     })
 
+    // Link parents & children
+    cats.forEach(cat => {
+      if (cat.parent?._id && map[cat.parent._id]) {
+        map[cat.parent._id].children.push(map[cat._id])
+      } else {
+        roots.push(map[cat._id])
+      }
+    })
+
+    // Recursive sort by order
     const sortTree = (nodes: CategoryNode[]) => {
       nodes.sort((a, b) => (a.order || 0) - (b.order || 0))
       nodes.forEach(n => sortTree(n.children))
     }
     sortTree(roots)
+
     return roots
   }
 
+  // Memoize tree
   const categoryTree = useMemo(() => buildCategoryTree(initialCategories), [initialCategories])
 
   // Handlers
@@ -58,9 +69,10 @@ const FilterSortModal: React.FC<FilterSortModalProps> = ({ initialCategories }) 
     )
   }
 
-  // Render tree
+  // Recursive renderer
   const CategoryNodeItem: React.FC<{ node: CategoryNode }> = ({ node }) => {
     const isExpanded = expandedCategories.has(node._id)
+
     return (
       <div>
         <div className={styles.categoryRow}>
@@ -82,6 +94,7 @@ const FilterSortModal: React.FC<FilterSortModalProps> = ({ initialCategories }) 
             {node.title}
           </label>
         </div>
+
         {isExpanded && node.children.length > 0 && (
           <div className={styles.nested}>
             {node.children.map(child => (
@@ -96,6 +109,7 @@ const FilterSortModal: React.FC<FilterSortModalProps> = ({ initialCategories }) 
   return (
     <div className={styles.modal}>
       <h3>Filter by Category</h3>
+
       {categoryTree.length === 0 ? (
         <p>No categories found.</p>
       ) : (
@@ -103,6 +117,15 @@ const FilterSortModal: React.FC<FilterSortModalProps> = ({ initialCategories }) 
           <CategoryNodeItem key={node._id} node={node} />
         ))
       )}
+
+      <div className={styles.actions}>
+        <button
+          onClick={() => console.log("Applied filters:", selectedCategories)}
+          className={styles.applyBtn}
+        >
+          Apply
+        </button>
+      </div>
     </div>
   )
 }
