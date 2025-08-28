@@ -1,4 +1,3 @@
-// src/pages/admin/products/index.tsx
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
@@ -7,7 +6,6 @@ import imageUrlBuilder from '@sanity/image-url'
 import styles from '../../../styles/admin.module.css'
 import AdminHeader from '../../components/AdminHeader'
 import FilterSortModal from '../../components/filtersortmodal'
-import { GetServerSideProps } from 'next'
 
 const client = createClient({
   projectId: '3jc8hsku',
@@ -18,33 +16,12 @@ const client = createClient({
 
 const builder = imageUrlBuilder(client)
 const urlFor = (source: any) => builder.image(source)
- 
+
 interface CategoryRaw {
   _id: string
   title: string
   parent?: { _id: string; title: string }
   order?: number
-}
-
-interface ExperimentalPageProps {
-  categories: CategoryRaw[]
-}
-
-export const getServerSideProps: GetServerSideProps<ExperimentalPageProps> = async () => {
-  const categories: CategoryRaw[] = await client.fetch(`
-    *[_type=="category"]{
-      _id,
-      title,
-      parent->{_id, title},
-      order
-    } | order(order asc)
-  `)
-
-  return {
-    props: {
-      categories: categories || []
-    }
-  }
 }
 
 type Product = {
@@ -53,89 +30,85 @@ type Product = {
   price: number
   slug: string
   defaultImage?: any
-  categories: {
-    _id: string
-    title: string
-    parent?: { _id: string; title: string }
-    order?: number
-  }[]
+  categories: CategoryRaw[]
   colors: string[]
   sizes: string[]
 }
 
-export default function AdminPage({ products }: { products: Product[] }) {
-const [showModal, setShowModal] = useState(false)
+interface PageProps {
+  products: Product[]
+  categories: CategoryRaw[]
+}
+
+export default function AdminPage({ products, categories }: PageProps) {
+  const [showModal, setShowModal] = useState(false)
   const [appliedFilters, setAppliedFilters] = useState<any>(null)
 
   return (
-<>
-<AdminHeader title="Admin Panel" titleHref="/admin" />
-    <div className={styles.mainContainer}>
+    <>
+      <AdminHeader title="Admin Panel" titleHref="/admin" />
+      <div className={styles.mainContainer}>
+        <button onClick={() => setShowModal(true)}>Open Filters</button>
 
-  <button onClick={() => setShowModal(true)}>Open Filters</button>
+        {showModal && (
+          <FilterSortModal
+            initialCategories={categories}
+            initialMinPrice={10}
+            initialMaxPrice={1000}
+            initialSort="relevance"
+            onApply={(filters) => {
+              console.log('Applied Filters:', filters)
+              setAppliedFilters(filters)
+            }}
+            onClose={() => setShowModal(false)}
+          />
+        )}
 
-      {showModal && (
-        <FilterSortModal
-          initialCategories={categories}
-          initialMinPrice={10}
-          initialMaxPrice={1000}
-          initialSort="relevance"
-          onApply={(filters) => {
-            console.log('Applied Filters:', filters)
-            setAppliedFilters(filters)
-          }}
-          onClose={() => setShowModal(false)}
-        />
-      )}
+        <h1 className={styles.heading}>Products</h1>
 
-      {/* Page Heading */}
-      <h1 className={styles.heading}>Products</h1>
-
-      {/* Actions */}
-      <div className={styles.createWrapper}>
-        <Link href="/admin/products/create">
-          <button className={styles.actionButton}>Create Product</button>
-        </Link>
-      </div>
-
-      {/* Product List */}
-      <h2 className={styles.subHeading}>All Products</h2>
-
-      {products.length === 0 ? (
-        <p className={styles.message}>No products found.</p>
-      ) : (
-        <div className={styles.grid}>
-          {products.map((product) => (
-            <Link
-              key={product._id}
-              href={`/admin/products/${product.slug}`}
-              className={styles.card}
-            >
-              {product.defaultImage?.asset && (
-                <div className={styles.imageWrapper}>
-                  <Image
-                    src={urlFor(product.defaultImage)
-                      .width(300)
-                      .height(300)
-                      .fit('scale')
-                      .url()}
-                    alt={product.title}
-                    width={300}
-                    height={300}
-                    className={styles.image}
-                  />
-                </div>
-              )}
-              <div className={styles.cardContent}>
-                <h2 className={styles.title}>{product.title}</h2>
-                <p className={styles.price}>KWD {product.price.toFixed(2)}</p>
-              </div>
-            </Link>
-          ))}
+        <div className={styles.createWrapper}>
+          <Link href="/admin/products/create">
+            <button className={styles.actionButton}>Create Product</button>
+          </Link>
         </div>
-      )}
-    </div>
-</>
+
+        <h2 className={styles.subHeading}>All Products</h2>
+
+        {products.length === 0 ? (
+          <p className={styles.message}>No products found.</p>
+        ) : (
+          <div className={styles.grid}>
+            {products.map((product) => (
+              <Link
+                key={product._id}
+                href={`/admin/products/${product.slug}`}
+                className={styles.card}
+              >
+                {product.defaultImage?.asset && (
+                  <div className={styles.imageWrapper}>
+                    <Image
+                      src={urlFor(product.defaultImage)
+                        .width(300)
+                        .height(300)
+                        .fit('scale')
+                        .url()}
+                      alt={product.title}
+                      width={300}
+                      height={300}
+                      className={styles.image}
+                    />
+                  </div>
+                )}
+                <div className={styles.cardContent}>
+                  <h2 className={styles.title}>{product.title}</h2>
+                  <p className={styles.price}>KWD {product.price.toFixed(2)}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
   )
 }
 
@@ -159,9 +132,20 @@ export async function getStaticProps() {
 
   const products: Product[] = await client.fetch(productQuery)
 
+  // Fetch all categories
+  const categoryQuery = `*[_type=="category"]{
+    _id,
+    title,
+    parent->{_id, title},
+    order
+  } | order(order asc)`
+
+  const categories: CategoryRaw[] = await client.fetch(categoryQuery)
+
   return {
     props: {
-      products
+      products,
+      categories: categories || []
     }
   }
 }
