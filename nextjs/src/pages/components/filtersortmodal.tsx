@@ -262,7 +262,7 @@ const maxPercent = maxPrice
       max={maxPrice}
       value={minPrice}
       onChange={(e) => {
-        let val = Math.max(0, Math.min(Number(e.target.value), maxPrice))
+        const val = Math.max(0, Math.min(Number(e.target.value), maxPrice))
         setMinPrice(val)
       }}
     />
@@ -272,7 +272,7 @@ const maxPercent = maxPrice
       max={100}
       value={maxPrice}
       onChange={(e) => {
-        let val = Math.max(minPrice, Math.min(Number(e.target.value), 100))
+        const val = Math.max(minPrice, Math.min(Number(e.target.value), 100))
         setMaxPrice(val)
       }}
     />
