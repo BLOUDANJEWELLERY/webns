@@ -199,9 +199,10 @@ export default function FilterSortModal({
   value={minPrice}
   onChange={e => {
     const val = Number(e.target.value)
-    if (val <= maxPrice) setMinPrice(val)
+    setMinPrice(Math.min(val, maxPrice))
   }}
   className={styles.rangeSlider}
+  style={{ zIndex: minPrice > maxPrice - 1000 ? 5 : 4 }} // ensure min thumb is on top if near max
 />
 
 <input
@@ -211,9 +212,10 @@ export default function FilterSortModal({
   value={maxPrice}
   onChange={e => {
     const val = Number(e.target.value)
-    if (val >= minPrice) setMaxPrice(val)
+    setMaxPrice(Math.max(val, minPrice))
   }}
   className={styles.rangeSlider}
+  style={{ zIndex: maxPrice > minPrice + 1000 ? 5 : 3 }} // ensure max thumb is on top if needed
 />
 
     <div className={styles.sliderValues}>
