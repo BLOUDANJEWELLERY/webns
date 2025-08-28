@@ -1,5 +1,4 @@
 // src/pages/admin/products/index.tsx
-'use client'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
@@ -18,9 +17,6 @@ const client = createClient({
 
 const builder = imageUrlBuilder(client)
 const urlFor = (source: any) => builder.image(source)
-const [showModal, setShowModal] = useState(false)
-  const [appliedFilters, setAppliedFilters] = useState<any>(null)
-
  
 interface CategoryRaw {
   _id: string
