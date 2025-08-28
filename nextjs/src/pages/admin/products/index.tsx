@@ -53,6 +53,14 @@ type Product = {
   price: number
   slug: string
   defaultImage?: any
+  categories: {
+    _id: string
+    title: string
+    parent?: { _id: string; title: string }
+    order?: number
+  }[]
+  colors: string[]
+  sizes: string[]
 }
 
 export default function AdminPage({ products }: { products: Product[] }) {
