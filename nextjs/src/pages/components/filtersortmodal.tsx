@@ -151,8 +151,8 @@ export default function FilterSortModal({
   }
 
   // Slider percentages
-  const minPercent = (minPrice / 100) * 100
-  const maxPercent = (maxPrice / 100) * 100
+  const minPercent = (minPrice / 10000) * 100
+  const maxPercent = (maxPrice / 10000) * 100
 
   return (
     <div className={styles.modal}>
@@ -189,27 +189,27 @@ export default function FilterSortModal({
     {/* Active range track */}
     <div
       className={styles.rangeTrackActive}
-      style={{ left: `${(minPrice / 100) * 100}%`, right: `${100 - (maxPrice / 100) * 100}%` }}
+      style={{ left: `${(minPrice / 10000) * 100}%`, right: `${100 - (maxPrice / 10000) * 100}%` }}
     />
 
  <input
   type="range"
   min={0}
-  max={100}
+  max={10000}
   value={minPrice}
   onChange={e => setMinPrice(Math.min(Number(e.target.value), maxPrice))}
   className={`${styles.rangeSlider} ${styles.minSlider}`}
-  style={{ zIndex: minPrice > 100 - maxPrice ? 5 : 3 }} // dynamic
+  style={{ zIndex: minPrice > 10000 - maxPrice ? 5 : 3 }} // dynamic
 />
 
 <input
   type="range"
   min={0}
-  max={100}
+  max={10000}
   value={maxPrice}
   onChange={e => setMaxPrice(Math.max(Number(e.target.value), minPrice))}
   className={`${styles.rangeSlider} ${styles.maxSlider}`}
-  style={{ zIndex: maxPrice > 100 - minPrice ? 5 : 4 }}
+  style={{ zIndex: maxPrice > 10000 - minPrice ? 5 : 4 }}
 />
 
     <div className={styles.sliderValues}>
