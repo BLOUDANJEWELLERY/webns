@@ -151,22 +151,23 @@ export default function FilterSortModal({
   }
 
   // Slider percentages
-  const [activeThumb, setActiveThumb] = useState<'min' | 'max' | null>(null)
+const [activeThumb, setActiveThumb] = useState<'min' | 'max' | null>(null)
 
 const minPricePercent = (minPrice / 10000) * 100
 const maxPricePercent = (maxPrice / 10000) * 100
 
 const startDrag = (e: React.MouseEvent | React.TouchEvent, thumb: 'min' | 'max') => {
-  e.preventDefault()
+  e.preventDefault() // prevent text selection or scrolling
   setActiveThumb(thumb)
   window.addEventListener('mousemove', onDrag)
   window.addEventListener('mouseup', stopDrag)
-  window.addEventListener('touchmove', onDrag)
+  window.addEventListener('touchmove', onDrag, { passive: false })
   window.addEventListener('touchend', stopDrag)
 }
 
 const onDrag = (e: MouseEvent | TouchEvent) => {
   if (!activeThumb) return
+  e.preventDefault()
   const sliderRect = document.querySelector(`.${styles.sliderContainer}`)?.getBoundingClientRect()
   if (!sliderRect) return
   const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
@@ -186,13 +187,13 @@ const stopDrag = () => {
   window.removeEventListener('touchend', stopDrag)
 }
 
-// Optional: click on track to move nearest thumb
-const handleSliderPointer = (e: React.MouseEvent | React.TouchEvent) => {
+// click/tap anywhere to move nearest thumb
+const handleSliderClick = (e: React.MouseEvent | React.TouchEvent) => {
+  e.preventDefault()
   const sliderRect = e.currentTarget.getBoundingClientRect()
   const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
   const percent = ((clientX - sliderRect.left) / sliderRect.width) * 100
   const value = Math.round((percent / 100) * 10000)
-  // pick nearest thumb
   if (Math.abs(value - minPrice) < Math.abs(value - maxPrice)) setMinPrice(Math.min(value, maxPrice))
   else setMaxPrice(Math.max(value, minPrice))
 }
@@ -228,15 +229,17 @@ const handleSliderPointer = (e: React.MouseEvent | React.TouchEvent) => {
   <h4 className={styles.sectionTitle}>Price Range</h4>
   <div
     className={styles.sliderContainer}
-    onMouseDown={handleSliderPointer} // dynamic thumb selection
-    onTouchStart={handleSliderPointer}
+    onMouseDown={handleSliderClick}
+    onTouchStart={handleSliderClick}
   >
+    {/* Track */}
     <div className={styles.rangeTrack}></div>
     <div
       className={styles.rangeTrackActive}
       style={{ left: `${minPricePercent}%`, right: `${100 - maxPricePercent}%` }}
     ></div>
 
+    {/* Thumbs */}
     <div
       className={styles.thumb}
       style={{ left: `${minPricePercent}%` }}
