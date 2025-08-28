@@ -263,7 +263,7 @@ useEffect(() => setMaxInput(maxPrice), [maxPrice])
   />
 </div>
 
-
+<div className={styles.sliderValues}>
 <input
   type="number"
   min={0}
@@ -305,7 +305,7 @@ useEffect(() => setMaxInput(maxPrice), [maxPrice])
     if (e.key === "Enter") e.currentTarget.blur()
   }}
 />
-
+</div>
 
       {/* Colors */}
       <section className={styles.section}>
