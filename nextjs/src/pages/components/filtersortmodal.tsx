@@ -49,7 +49,7 @@ const HARD_CODED_SIZES = [
 export default function FilterSortModal({
   initialCategories,
   initialMinPrice = 0,
-  initialMaxPrice = 1000,
+  initialMaxPrice = 100,
   initialSort = 'alphabeticalAZ',
   onApply,
   onClose,
