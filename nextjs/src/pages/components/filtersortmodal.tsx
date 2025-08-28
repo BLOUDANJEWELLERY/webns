@@ -273,7 +273,7 @@ const maxPercent = maxPrice
     onTouchStart={e => e.stopPropagation()}
     onChange={(e) => setMinInput(Number(e.target.value))}
     onBlur={() => {
-      let val = Math.max(0, Math.min(minInput, maxPrice))
+      const val = Math.max(0, Math.min(minInput, maxPrice))
       setMinPrice(val)
       setMinInput(val)
     }}
@@ -293,7 +293,7 @@ const maxPercent = maxPrice
     onTouchStart={e => e.stopPropagation()}
     onChange={(e) => setMaxInput(Number(e.target.value))}
     onBlur={() => {
-      let val = Math.max(minPrice, Math.min(maxInput, 100))
+      const val = Math.max(minPrice, Math.min(maxInput, 100))
       setMaxPrice(val)
       setMaxInput(val)
     }}
