@@ -170,8 +170,8 @@ const onDrag = (e: MouseEvent | TouchEvent) => {
   const rect = slider.getBoundingClientRect()
   const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
   let percent = ((clientX - rect.left) / rect.width) * 100
-  percent = Math.max(0, Math.min(100, percent))
-  const value = Math.round(percent) // 1–100
+  percent = Math.max(0, Math.min(100, percent)) // clamp 0-100
+  const value = Math.round(percent) // rounded integer
 
   if (activeThumb === 'min') setMinPrice(Math.min(value, maxPrice))
   if (activeThumb === 'max') setMaxPrice(Math.max(value, minPrice))
@@ -191,8 +191,9 @@ const handleSliderClick = (e: React.MouseEvent | React.TouchEvent) => {
   const slider = e.currentTarget.getBoundingClientRect()
   const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
   const percent = ((clientX - slider.left) / slider.width) * 100
-  if (Math.abs(percent - minPrice) < Math.abs(percent - maxPrice)) setMinPrice(Math.min(percent, maxPrice))
-  else setMaxPrice(Math.max(percent, minPrice))
+  const value = Math.round(percent)
+  if (Math.abs(value - minPrice) < Math.abs(value - maxPrice)) setMinPrice(Math.min(value, maxPrice))
+  else setMaxPrice(Math.max(value, minPrice))
 }
 
 
@@ -229,10 +230,7 @@ const handleSliderClick = (e: React.MouseEvent | React.TouchEvent) => {
     onMouseDown={handleSliderClick}
     onTouchStart={handleSliderClick}
   >
-    {/* Full track */}
     <div className={styles.rangeTrack}></div>
-
-    {/* Active range */}
     <div
       className={styles.rangeTrackActive}
       style={{ left: `${minPrice}%`, right: `${100 - maxPrice}%` }}
@@ -255,8 +253,8 @@ const handleSliderClick = (e: React.MouseEvent | React.TouchEvent) => {
     />
 
     <div className={styles.sliderValues}>
-      <span>{minPrice}</span>
-      <span>{maxPrice}</span>
+      <span>{Math.round(minPrice)}</span>
+      <span>{Math.round(maxPrice)}</span>
     </div>
   </div>
 </section>
