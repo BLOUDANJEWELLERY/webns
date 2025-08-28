@@ -1,11 +1,11 @@
 /* ----- Modal Base ----- */
 
 /* ----- Price Slider ----- */
-/* ----- Slider Container ----- */
+/* Slider Container */
 .sliderContainer {
   position: relative;
   width: 100%;
-  height: 50px; /* slightly taller for thumbs */
+  height: 50px; /* space for thumbs */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -16,7 +16,7 @@
   position: absolute;
   height: 6px;
   width: 100%;
-  background-color: #d7ccc8; /* soft brown */
+  background-color: #d7ccc8;
   border-radius: 3px;
   top: 50%;
   transform: translateY(-50%);
@@ -27,7 +27,7 @@
 .rangeTrackActive {
   position: absolute;
   height: 6px;
-  background-color: #c89b3c; /* golden accent */
+  background-color: #c89b3c;
   border-radius: 3px;
   top: 50%;
   transform: translateY(-50%);
@@ -37,17 +37,18 @@
 
 /* Sliders */
 .rangeSlider {
-  pointer-events: auto;
   -webkit-appearance: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
   width: 100%;
   height: 50px;
   background: transparent;
-  position: absolute;
-  top: 0;
-  z-index: 3;
   margin: 0;
   padding: 0;
+  pointer-events: auto;
   cursor: pointer;
+  z-index: 3;
 }
 
 /* Webkit thumb */
@@ -59,7 +60,7 @@
   background-color: #c89b3c;
   border: 2px solid #5d4037;
   cursor: pointer;
-  margin-top: -8px; /* centers thumb on track */
+  margin-top: 0; /* use transform to center */
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -92,11 +93,6 @@
   margin-top: 12px;
   font-size: 0.95rem;
   color: #4e342e;
-}
-
-/* Optional: hover effect for track active */
-.rangeTrackActive:hover {
-  background-color: #d4a236;
 }
 
 /* ----- main ----- */
