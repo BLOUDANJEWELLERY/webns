@@ -59,8 +59,6 @@ export default function FilterSortModal({
   const [selectedColors, setSelectedColors] = useState<string[]>([])
   const [selectedSizes, setSelectedSizes] = useState<string[]>([])
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
-  const [minPrice, setMinPrice] = useState<number>(initialMinPrice)
-  const [maxPrice, setMaxPrice] = useState<number>(initialMaxPrice)
   const [sort, setSort] = useState<SortOption>(initialSort)
 
   // ----- Category Tree -----
