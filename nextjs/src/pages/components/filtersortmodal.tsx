@@ -151,8 +151,52 @@ export default function FilterSortModal({
   }
 
   // Slider percentages
-  const minPercent = (minPrice / 10000) * 100
-  const maxPercent = (maxPrice / 10000) * 100
+  const [activeThumb, setActiveThumb] = useState<'min' | 'max' | null>(null)
+
+const minPricePercent = (minPrice / 10000) * 100
+const maxPricePercent = (maxPrice / 10000) * 100
+
+const startDrag = (e: React.MouseEvent | React.TouchEvent, thumb: 'min' | 'max') => {
+  e.preventDefault()
+  setActiveThumb(thumb)
+  window.addEventListener('mousemove', onDrag)
+  window.addEventListener('mouseup', stopDrag)
+  window.addEventListener('touchmove', onDrag)
+  window.addEventListener('touchend', stopDrag)
+}
+
+const onDrag = (e: MouseEvent | TouchEvent) => {
+  if (!activeThumb) return
+  const sliderRect = document.querySelector(`.${styles.sliderContainer}`)?.getBoundingClientRect()
+  if (!sliderRect) return
+  const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+  let percent = ((clientX - sliderRect.left) / sliderRect.width) * 100
+  percent = Math.max(0, Math.min(100, percent))
+  const value = Math.round((percent / 100) * 10000)
+
+  if (activeThumb === 'min') setMinPrice(Math.min(value, maxPrice))
+  else setMaxPrice(Math.max(value, minPrice))
+}
+
+const stopDrag = () => {
+  setActiveThumb(null)
+  window.removeEventListener('mousemove', onDrag)
+  window.removeEventListener('mouseup', stopDrag)
+  window.removeEventListener('touchmove', onDrag)
+  window.removeEventListener('touchend', stopDrag)
+}
+
+// Optional: click on track to move nearest thumb
+const handleSliderPointer = (e: React.MouseEvent | React.TouchEvent) => {
+  const sliderRect = e.currentTarget.getBoundingClientRect()
+  const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+  const percent = ((clientX - sliderRect.left) / sliderRect.width) * 100
+  const value = Math.round((percent / 100) * 10000)
+  // pick nearest thumb
+  if (Math.abs(value - minPrice) < Math.abs(value - maxPrice)) setMinPrice(Math.min(value, maxPrice))
+  else setMaxPrice(Math.max(value, minPrice))
+}
+
 
   return (
     <div className={styles.modal}>
@@ -182,41 +226,29 @@ export default function FilterSortModal({
 {/* Price Slider */}
 <section className={styles.section}>
   <h4 className={styles.sectionTitle}>Price Range</h4>
-  <div className={styles.sliderContainer}>
-    {/* Full track */}
+  <div
+    className={styles.sliderContainer}
+    onMouseDown={handleSliderPointer} // dynamic thumb selection
+    onTouchStart={handleSliderPointer}
+  >
     <div className={styles.rangeTrack}></div>
-
-    {/* Active range track */}
     <div
       className={styles.rangeTrackActive}
-      style={{ left: `${(minPrice / 10000) * 100}%`, right: `${100 - (maxPrice / 10000) * 100}%` }}
+      style={{ left: `${minPricePercent}%`, right: `${100 - maxPricePercent}%` }}
+    ></div>
+
+    <div
+      className={styles.thumb}
+      style={{ left: `${minPricePercent}%` }}
+      onMouseDown={e => startDrag(e, 'min')}
+      onTouchStart={e => startDrag(e, 'min')}
     />
-
-<input
-  type="range"
-  min={0}
-  max={10000}
-  value={minPrice}
-  onChange={e => {
-    const val = Number(e.target.value)
-    setMinPrice(Math.min(val, maxPrice))
-  }}
-  className={styles.rangeSlider}
-  style={{ zIndex: minPrice > maxPrice - 1000 ? 5 : 4 }} // ensure min thumb is on top if near max
-/>
-
-<input
-  type="range"
-  min={0}
-  max={10000}
-  value={maxPrice}
-  onChange={e => {
-    const val = Number(e.target.value)
-    setMaxPrice(Math.max(val, minPrice))
-  }}
-  className={styles.rangeSlider}
-  style={{ zIndex: maxPrice > minPrice + 1000 ? 5 : 3 }} // ensure max thumb is on top if needed
-/>
+    <div
+      className={styles.thumb}
+      style={{ left: `${maxPricePercent}%` }}
+      onMouseDown={e => startDrag(e, 'max')}
+      onTouchStart={e => startDrag(e, 'max')}
+    />
 
     <div className={styles.sliderValues}>
       <span>{minPrice} KWD</span>
