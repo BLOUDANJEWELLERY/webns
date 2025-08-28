@@ -7,6 +7,7 @@ import imageUrlBuilder from '@sanity/image-url'
 import styles from '../../../styles/admin.module.css'
 import AdminHeader from '../../components/AdminHeader'
 import FilterSortModal from '../../components/filtersortmodal'
+import { GetServerSideProps } from 'next'
 
 const client = createClient({
   projectId: '3jc8hsku',
@@ -27,6 +28,23 @@ interface CategoryRaw {
 
 interface ExperimentalPageProps {
   categories: CategoryRaw[]
+}
+
+export const getServerSideProps: GetServerSideProps<ExperimentalPageProps> = async () => {
+  const categories: CategoryRaw[] = await client.fetch(`
+    *[_type=="category"]{
+      _id,
+      title,
+      parent->{_id, title},
+      order
+    } | order(order asc)
+  `)
+
+  return {
+    props: {
+      categories: categories || []
+    }
+  }
 }
 
 type Product = {
@@ -114,7 +132,7 @@ const [showModal, setShowModal] = useState(false)
 }
 
 export async function getStaticProps() {
-  // Fetch products with categories, colors, and sizes only
+  // Fetch products with categories, colors, and sizes
   const productQuery = `*[_type == "product"] | order(title asc){
     _id,
     title,
@@ -133,20 +151,9 @@ export async function getStaticProps() {
 
   const products: Product[] = await client.fetch(productQuery)
 
-  // Fetch all categories
-  const categoryQuery = `*[_type=="category"]{
-    _id,
-    title,
-    parent->{_id, title},
-    order
-  } | order(order asc)`
-
-  const categories: CategoryRaw[] = await client.fetch(categoryQuery)
-
   return {
     props: {
-      products,
-      categories: categories || []
+      products
     }
   }
 }
