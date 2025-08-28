@@ -192,25 +192,25 @@ export default function FilterSortModal({
       style={{ left: `${(minPrice / 10000) * 100}%`, right: `${100 - (maxPrice / 10000) * 100}%` }}
     />
 
-    {/* Min slider */}
-    <input
-      type="range"
-      min={0}
-      max={10000}
-      value={minPrice}
-      onChange={e => setMinPrice(Math.min(Number(e.target.value), maxPrice))}
-      className={`${styles.rangeSlider} ${styles.minSlider}`}
-    />
+ <input
+  type="range"
+  min={0}
+  max={100}
+  value={minPrice}
+  onChange={e => setMinPrice(Math.min(Number(e.target.value), maxPrice))}
+  className={`${styles.rangeSlider} ${styles.minSlider}`}
+  style={{ zIndex: minPrice > 10000 - maxPrice ? 5 : 3 }} // dynamic
+/>
 
-    {/* Max slider */}
-    <input
-      type="range"
-      min={0}
-      max={10000}
-      value={maxPrice}
-      onChange={e => setMaxPrice(Math.max(Number(e.target.value), minPrice))}
-      className={`${styles.rangeSlider} ${styles.maxSlider}`}
-    />
+<input
+  type="range"
+  min={0}
+  max={100}
+  value={maxPrice}
+  onChange={e => setMaxPrice(Math.max(Number(e.target.value), minPrice))}
+  className={`${styles.rangeSlider} ${styles.maxSlider}`}
+  style={{ zIndex: maxPrice > 10000 - minPrice ? 5 : 4 }}
+/>
 
     <div className={styles.sliderValues}>
       <span>{minPrice} KWD</span>
