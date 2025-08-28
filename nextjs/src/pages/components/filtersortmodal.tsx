@@ -154,6 +154,12 @@ const [minPrice, setMinPrice] = useState(1)
 const [maxPrice, setMaxPrice] = useState(100)
 const [activeThumb, setActiveThumb] = useState<'min' | 'max' | null>(null)
 
+// temporary values while typing
+const [minInput, setMinInput] = useState(minPrice)
+const [maxInput, setMaxInput] = useState(maxPrice)
+
+
+
 const startDrag = (e: React.MouseEvent | React.TouchEvent, thumb: 'min' | 'max') => {
   e.preventDefault()
   setActiveThumb(thumb)
@@ -256,32 +262,35 @@ const maxPercent = maxPrice
   />
 </div>
 
-{/* Inputs below the slider */}
 <div className={styles.sliderValues}>
   <input
     type="number"
     min={0}
     max={maxPrice}
-    value={minPrice}
+    value={minInput}
     onClick={e => e.stopPropagation()}
     onMouseDown={e => e.stopPropagation()}
     onTouchStart={e => e.stopPropagation()}
-    onChange={(e) => {
-      const val = Math.max(0, Math.min(Number(e.target.value), maxPrice))
-      setMinPrice(val)
+    onChange={(e) => setMinInput(Number(e.target.value))} // only update input state
+    onBlur={() => {
+      const val = Math.max(0, Math.min(minInput, maxPrice))
+      setMinPrice(val)   // commit to slider on blur
+      setMinInput(val)   // sync input with committed
     }}
   />
   <input
     type="number"
     min={minPrice}
     max={100}
-    value={maxPrice}
+    value={maxInput}
     onClick={e => e.stopPropagation()}
     onMouseDown={e => e.stopPropagation()}
     onTouchStart={e => e.stopPropagation()}
-    onChange={(e) => {
-      const val = Math.max(minPrice, Math.min(Number(e.target.value), 100))
+    onChange={(e) => setMaxInput(Number(e.target.value))}
+    onBlur={() => {
+      const val = Math.max(minPrice, Math.min(maxInput, 100))
       setMaxPrice(val)
+      setMaxInput(val)
     }}
   />
 </div>
