@@ -37,14 +37,12 @@
 
 /* Sliders */
 .rangeSlider {
-  -webkit-appearance: none;
+  pointer-events: auto;
+  position: absolute;
+  top: 0;
   width: 100%;
   height: 50px;
   background: transparent;
-  position: absolute;
-  top: 0;
-  pointer-events: all;
-  z-index: 3;
   margin: 0;
   padding: 0;
   cursor: pointer;
