@@ -227,6 +227,7 @@ const maxPercent = maxPrice
       </section>
 
 {/* Price Slider */}
+{/* Slider container */}
 <div
   className={styles.sliderContainer}
   onMouseDown={handleSliderClick}
@@ -253,30 +254,36 @@ const maxPercent = maxPrice
     onMouseDown={e => startDrag(e, 'max')}
     onTouchStart={e => startDrag(e, 'max')}
   />
+</div>
 
-  {/* Inputs instead of plain values */}
-  <div className={styles.sliderValues}>
-    <input
-      type="number"
-      min={0}
-      max={maxPrice}
-      value={minPrice}
-      onChange={(e) => {
-        const val = Math.max(0, Math.min(Number(e.target.value), maxPrice))
-        setMinPrice(val)
-      }}
-    />
-    <input
-      type="number"
-      min={minPrice}
-      max={100}
-      value={maxPrice}
-      onChange={(e) => {
-        const val = Math.max(minPrice, Math.min(Number(e.target.value), 100))
-        setMaxPrice(val)
-      }}
-    />
-  </div>
+{/* Inputs below the slider */}
+<div className={styles.sliderValues}>
+  <input
+    type="number"
+    min={0}
+    max={maxPrice}
+    value={minPrice}
+    onClick={e => e.stopPropagation()}
+    onMouseDown={e => e.stopPropagation()}
+    onTouchStart={e => e.stopPropagation()}
+    onChange={(e) => {
+      const val = Math.max(0, Math.min(Number(e.target.value), maxPrice))
+      setMinPrice(val)
+    }}
+  />
+  <input
+    type="number"
+    min={minPrice}
+    max={100}
+    value={maxPrice}
+    onClick={e => e.stopPropagation()}
+    onMouseDown={e => e.stopPropagation()}
+    onTouchStart={e => e.stopPropagation()}
+    onChange={(e) => {
+      const val = Math.max(minPrice, Math.min(Number(e.target.value), 100))
+      setMaxPrice(val)
+    }}
+  />
 </div>
 
 
