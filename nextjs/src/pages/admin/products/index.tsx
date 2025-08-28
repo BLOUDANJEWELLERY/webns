@@ -1,7 +1,7 @@
 // src/pages/admin/products/index.tsx
 import Link from 'next/link'
 import Image from 'next/image'
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import styles from '../../../styles/admin.module.css'
@@ -41,6 +41,9 @@ type Product = {
 }
 
 export default function AdminPage({ products }: { products: Product[] }) {
+const [showModal, setShowModal] = useState(false)
+  const [appliedFilters, setAppliedFilters] = useState<any>(null)
+
   return (
 <>
 <AdminHeader title="Admin Panel" titleHref="/admin" />
