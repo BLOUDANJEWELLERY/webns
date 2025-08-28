@@ -1,6 +1,29 @@
 /* ----- Modal Base ----- */
 
 /* ----- Price Slider ----- */
+.sliderInputs {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  gap: 10px;
+}
+
+.sliderInputs input {
+  width: 45%;
+  padding: 6px 10px;
+  border: 2px solid #d7ccc8;
+  border-radius: 6px;
+  font-weight: 600;
+  color: #4e342e;
+  text-align: center;
+  background-color: #fffdfb;
+}
+
+.sliderInputs input:focus {
+  outline: none;
+  border-color: #c89b3c;
+}
+
 .sliderContainer {
   position: relative;
   width: 100%;
