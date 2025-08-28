@@ -153,19 +153,26 @@ const [minPrice, setMinPrice] = useState(1)
 const [maxPrice, setMaxPrice] = useState(100)
 const [activeThumb, setActiveThumb] = useState<'min' | 'max' | null>(null)
 
+// Convert prices to percentages for rendering thumbs
+const minPercent = minPrice
+const maxPercent = maxPrice
+
+// Start dragging a thumb
 const startDrag = (e: React.MouseEvent | React.TouchEvent, thumb: 'min' | 'max') => {
   e.preventDefault()
   setActiveThumb(thumb)
 
   const move = (ev: MouseEvent | TouchEvent) => {
+    ev.preventDefault()
     const slider = document.querySelector(`.${styles.sliderContainer}`)?.getBoundingClientRect()
     if (!slider) return
+
     const clientX = 'touches' in ev ? ev.touches[0].clientX : ev.clientX
     let percent = ((clientX - slider.left) / slider.width) * 100
-    percent = Math.max(0, Math.min(100, percent))
-    const value = Math.round(percent)
-    if (thumb === 'min') setMinPrice(Math.min(value, maxPrice))
-    else setMaxPrice(Math.max(value, minPrice))
+    percent = Math.max(1, Math.min(100, percent)) // clamp 1–100
+
+    if (thumb === 'min') setMinPrice(Math.min(percent, maxPrice))
+    else setMaxPrice(Math.max(percent, minPrice))
   }
 
   const stop = () => {
@@ -182,20 +189,21 @@ const startDrag = (e: React.MouseEvent | React.TouchEvent, thumb: 'min' | 'max')
   window.addEventListener('touchend', stop)
 }
 
-// Click anywhere on slider to move nearest thumb
+// Click/tap anywhere on slider to move nearest thumb
 const handleSliderClick = (e: React.MouseEvent | React.TouchEvent) => {
   e.preventDefault()
   const slider = e.currentTarget.getBoundingClientRect()
   const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
-  const percent = ((clientX - slider.left) / slider.width) * 100
-  const value = Math.round(percent)
-  if (Math.abs(value - minPrice) < Math.abs(value - maxPrice)) setMinPrice(Math.min(value, maxPrice))
-  else setMaxPrice(Math.max(value, minPrice))
+  let percent = ((clientX - slider.left) / slider.width) * 100
+  percent = Math.max(1, Math.min(100, percent)) // clamp 1–100
+
+  if (Math.abs(percent - minPrice) < Math.abs(percent - maxPrice)) setMinPrice(Math.min(percent, maxPrice))
+  else setMaxPrice(Math.max(percent, minPrice))
 }
 
-const minPercent = minPrice
-const maxPercent = maxPrice
-
+// Optional: handle typing in input fields
+const handleMinInput = (val: number) => setMinPrice(Math.min(Math.max(val, 1), maxPrice))
+const handleMaxInput = (val: number) => setMaxPrice(Math.max(Math.min(val, 100), minPrice))
 
   return (
     <div className={styles.modal}>
