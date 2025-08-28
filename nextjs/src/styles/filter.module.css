@@ -50,16 +50,6 @@
   cursor: pointer;
 }
 
-
-
-/* Min and Max sliders z-index */
-.minSlider {
-  z-index: 3;
-}
-.maxSlider {
-  z-index: 4;
-}
-
 /* Webkit thumb */
 .rangeSlider::-webkit-slider-thumb {
   -webkit-appearance: none;
