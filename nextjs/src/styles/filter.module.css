@@ -6,7 +6,7 @@
 }
 
 .maxSlider {
-  z-index: 4; /* topmost */
+  z-index: 3; /* topmost */
 }
 
 /* Optional: slightly increase thumb size for easier dragging */
