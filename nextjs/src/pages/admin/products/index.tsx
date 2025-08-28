@@ -49,7 +49,7 @@ export default function AdminPage({ products }: { products: Product[] }) {
 
       {showModal && (
         <FilterSortModal
-          initialCategories={mockCategories}
+          initialCategories={categories}
           initialMinPrice={10}
           initialMaxPrice={1000}
           initialSort="relevance"
