@@ -192,14 +192,16 @@ export default function FilterSortModal({
       style={{ left: `${(minPrice / 10000) * 100}%`, right: `${100 - (maxPrice / 10000) * 100}%` }}
     />
 
- <input
+<input
   type="range"
   min={0}
   max={10000}
   value={minPrice}
-  onChange={e => setMinPrice(Math.min(Number(e.target.value), maxPrice))}
-  className={`${styles.rangeSlider} ${styles.minSlider}`}
-  style={{ zIndex: minPrice > 10000 - maxPrice ? 5 : 3 }} // dynamic
+  onChange={e => {
+    const val = Number(e.target.value)
+    if (val <= maxPrice) setMinPrice(val)
+  }}
+  className={styles.rangeSlider}
 />
 
 <input
@@ -207,9 +209,11 @@ export default function FilterSortModal({
   min={0}
   max={10000}
   value={maxPrice}
-  onChange={e => setMaxPrice(Math.max(Number(e.target.value), minPrice))}
-  className={`${styles.rangeSlider} ${styles.maxSlider}`}
-  style={{ zIndex: maxPrice > 10000 - minPrice ? 5 : 4 }}
+  onChange={e => {
+    const val = Number(e.target.value)
+    if (val >= minPrice) setMaxPrice(val)
+  }}
+  className={styles.rangeSlider}
 />
 
     <div className={styles.sliderValues}>
