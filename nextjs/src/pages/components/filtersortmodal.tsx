@@ -205,6 +205,8 @@ const handleSliderClick = (e: React.MouseEvent | React.TouchEvent) => {
 const minPercent = minPrice
 const maxPercent = maxPrice
 
+useEffect(() => setMinInput(minPrice), [minPrice])
+useEffect(() => setMaxInput(maxPrice), [maxPrice])
 
   return (
     <div className={styles.modal}>
@@ -262,50 +264,47 @@ const maxPercent = maxPrice
 </div>
 
 
-<div className={styles.sliderValues}>
-  <input
-    type="number"
-    min={0}
-    max={maxPrice}
-    value={minInput}
-    onClick={e => e.stopPropagation()}
-    onMouseDown={e => e.stopPropagation()}
-    onTouchStart={e => e.stopPropagation()}
-    onFocus={(e) => e.target.select()}   // ✅ auto-select on focus
-    onChange={(e) => setMinInput(Number(e.target.value))}
-    onBlur={() => {
-      const val = Math.max(0, Math.min(minInput, maxPrice))
-      setMinPrice(val)
-      setMinInput(val)
-    }}
-    onKeyDown={(e) => {
-      if (e.key === "Enter") {
-        e.currentTarget.blur() // commit on Enter
-      }
-    }}
-  />
-  <input
-    type="number"
-    min={minPrice}
-    max={100}
-    value={maxInput}
-    onClick={e => e.stopPropagation()}
-    onMouseDown={e => e.stopPropagation()}
-    onTouchStart={e => e.stopPropagation()}
-    onFocus={(e) => e.target.select()}   // ✅ auto-select on focus
-    onChange={(e) => setMaxInput(Number(e.target.value))}
-    onBlur={() => {
-      const val = Math.max(minPrice, Math.min(maxInput, 100))
-      setMaxPrice(val)
-      setMaxInput(val)
-    }}
-    onKeyDown={(e) => {
-      if (e.key === "Enter") {
-        e.currentTarget.blur()
-      }
-    }}
-  />
-</div>
+<input
+  type="number"
+  min={0}
+  max={maxPrice}
+  placeholder="Min"
+  value={minInput}
+  onClick={e => e.stopPropagation()}
+  onMouseDown={e => e.stopPropagation()}
+  onTouchStart={e => e.stopPropagation()}
+  onFocus={(e) => e.target.select()}
+  onChange={(e) => setMinInput(Number(e.target.value))}
+  onBlur={() => {
+    const val = Math.max(0, Math.min(minInput, maxPrice))
+    setMinPrice(val)
+    setMinInput(val)
+  }}
+  onKeyDown={(e) => {
+    if (e.key === "Enter") e.currentTarget.blur()
+  }}
+/>
+
+<input
+  type="number"
+  min={minPrice}
+  max={100}
+  placeholder="Max"
+  value={maxInput}
+  onClick={e => e.stopPropagation()}
+  onMouseDown={e => e.stopPropagation()}
+  onTouchStart={e => e.stopPropagation()}
+  onFocus={(e) => e.target.select()}
+  onChange={(e) => setMaxInput(Number(e.target.value))}
+  onBlur={() => {
+    const val = Math.max(minPrice, Math.min(maxInput, 100))
+    setMaxPrice(val)
+    setMaxInput(val)
+  }}
+  onKeyDown={(e) => {
+    if (e.key === "Enter") e.currentTarget.blur()
+  }}
+/>
 
 
       {/* Colors */}
