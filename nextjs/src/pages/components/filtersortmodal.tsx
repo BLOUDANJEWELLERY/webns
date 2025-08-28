@@ -132,7 +132,7 @@ export default function FilterSortModal({
               {isExpanded ? '▾' : '▸'}
             </button>
           )}
-          <label className={styles.customCheckboxLabel}>
+          <label>
             <input
               type="checkbox"
               checked={selectedCategories.includes(node._id)}
