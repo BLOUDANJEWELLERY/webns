@@ -271,18 +271,25 @@ const maxPercent = maxPrice
     onClick={e => e.stopPropagation()}
     onMouseDown={e => e.stopPropagation()}
     onTouchStart={e => e.stopPropagation()}
-    onChange={(e) => setMinInput(Number(e.target.value))}
-    onBlur={() => {
-      const val = Math.max(0, Math.min(minInput, maxPrice))
-      setMinPrice(val)
+    onFocus={(e) => e.target.select()}   // ✅ auto-select
+    onChange={(e) => {
+      const val = Number(e.target.value)
+      // ✅ immediate clamp while typing
+      if (isNaN(val)) val = 0
+      val = Math.max(0, Math.min(val, maxPrice))
       setMinInput(val)
+    }}
+    onBlur={() => {
+      // ✅ commit to actual slider value
+      setMinPrice(minInput)
     }}
     onKeyDown={(e) => {
       if (e.key === "Enter") {
-        e.currentTarget.blur() // trigger blur logic on Enter
+        e.currentTarget.blur() // commit on Enter
       }
     }}
   />
+
   <input
     type="number"
     min={minPrice}
@@ -291,11 +298,15 @@ const maxPercent = maxPrice
     onClick={e => e.stopPropagation()}
     onMouseDown={e => e.stopPropagation()}
     onTouchStart={e => e.stopPropagation()}
-    onChange={(e) => setMaxInput(Number(e.target.value))}
-    onBlur={() => {
-      const val = Math.max(minPrice, Math.min(maxInput, 100))
-      setMaxPrice(val)
+    onFocus={(e) => e.target.select()}   // ✅ auto-select
+    onChange={(e) => {
+      const val = Number(e.target.value)
+      if (isNaN(val)) val = minPrice
+      val = Math.max(minPrice, Math.min(val, 100))
       setMaxInput(val)
+    }}
+    onBlur={() => {
+      setMaxPrice(maxInput)
     }}
     onKeyDown={(e) => {
       if (e.key === "Enter") {
