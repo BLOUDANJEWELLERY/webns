@@ -263,73 +263,44 @@ const maxPercent = maxPrice
 
 
 <div className={styles.sliderValues}>
-  {/* Min Input */}
   <input
     type="number"
     min={0}
     max={maxPrice}
-    placeholder="Min"
-    value={minInput === null ? "" : minInput}
+    value={minInput}
     onClick={e => e.stopPropagation()}
     onMouseDown={e => e.stopPropagation()}
     onTouchStart={e => e.stopPropagation()}
-    onFocus={(e) => e.target.select()}
-    onChange={(e) => {
-      const val = e.target.value
-      if (val === "") {
-        setMinInput(null)
-      } else {
-        let num = Number(val)
-        if (!isNaN(num)) {
-          num = Math.max(0, Math.min(num, maxPrice))
-          setMinInput(num)
-        }
-      }
-    }}
+    onChange={(e) => setMinInput(Number(e.target.value))}
     onBlur={() => {
-      if (minInput === null) {
-        setMinInput(minPrice)
-      } else {
-        setMinPrice(minInput)
-      }
+      let val = Math.max(0, Math.min(minInput, maxPrice))
+      setMinPrice(val)
+      setMinInput(val)
     }}
     onKeyDown={(e) => {
-      if (e.key === "Enter") e.currentTarget.blur()
+      if (e.key === "Enter") {
+        e.currentTarget.blur() // trigger blur logic on Enter
+      }
     }}
   />
-
-  {/* Max Input */}
   <input
     type="number"
     min={minPrice}
     max={100}
-    placeholder="Max"
-    value={maxInput === null ? "" : maxInput}
+    value={maxInput}
     onClick={e => e.stopPropagation()}
     onMouseDown={e => e.stopPropagation()}
     onTouchStart={e => e.stopPropagation()}
-    onFocus={(e) => e.target.select()}
-    onChange={(e) => {
-      const val = e.target.value
-      if (val === "") {
-        setMaxInput(null)
-      } else {
-        let num = Number(val)
-        if (!isNaN(num)) {
-          num = Math.max(minPrice, Math.min(num, 100))
-          setMaxInput(num)
-        }
-      }
-    }}
+    onChange={(e) => setMaxInput(Number(e.target.value))}
     onBlur={() => {
-      if (maxInput === null) {
-        setMaxInput(maxPrice)
-      } else {
-        setMaxPrice(maxInput)
-      }
+      let val = Math.max(minPrice, Math.min(maxInput, 100))
+      setMaxPrice(val)
+      setMaxInput(val)
     }}
     onKeyDown={(e) => {
-      if (e.key === "Enter") e.currentTarget.blur()
+      if (e.key === "Enter") {
+        e.currentTarget.blur()
+      }
     }}
   />
 </div>
