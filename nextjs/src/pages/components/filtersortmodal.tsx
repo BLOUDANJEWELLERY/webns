@@ -154,9 +154,9 @@ const [minPrice, setMinPrice] = useState(1)
 const [maxPrice, setMaxPrice] = useState(100)
 const [activeThumb, setActiveThumb] = useState<'min' | 'max' | null>(null)
 
-// Input field state (can be null while user is typing)
-const [minInput, setMinInput] = useState<number | null>(minPrice)
-const [maxInput, setMaxInput] = useState<number | null>(maxPrice)
+// temporary values while typing
+const [minInput, setMinInput] = useState(minPrice)
+const [maxInput, setMaxInput] = useState(maxPrice)
 
 
 const startDrag = (e: React.MouseEvent | React.TouchEvent, thumb: 'min' | 'max') => {
