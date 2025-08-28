@@ -150,7 +150,7 @@ export default function FilterSortModal({
 
   // Slider percentages
 // State
-const [minPrice, setMinPrice] = useState(1)
+const [minPrice, setMinPrice] = useState(0)
 const [maxPrice, setMaxPrice] = useState(100)
 const [activeThumb, setActiveThumb] = useState<'min' | 'max' | null>(null)
 
