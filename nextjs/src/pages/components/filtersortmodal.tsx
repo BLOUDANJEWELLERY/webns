@@ -223,36 +223,61 @@ const maxPercent = maxPrice
       </section>
 
 {/* Price Slider */}
-<div
-  className={styles.sliderContainer}
-  onMouseDown={handleSliderClick}
-  onTouchStart={handleSliderClick}
->
-  <div className={styles.rangeTrack}></div>
-  <div
-    className={styles.rangeTrackActive}
-    style={{ left: `${minPercent}%`, right: `${100 - maxPercent}%` }}
-  ></div>
+<section className={styles.section}>
+  <h4 className={styles.sectionTitle}>Price Range</h4>
 
-  <div
-    className={styles.thumb}
-    style={{ left: `${minPercent}%`, zIndex: activeThumb === 'min' ? 4 : 2 }}
-    onMouseDown={e => startDrag(e, 'min')}
-    onTouchStart={e => startDrag(e, 'min')}
-  />
+  <div className={styles.sliderContainer} onMouseDown={handleSliderClick} onTouchStart={handleSliderClick}>
+    {/* Track */}
+    <div className={styles.rangeTrack}></div>
+    <div
+      className={styles.rangeTrackActive}
+      style={{ left: `${minPercent}%`, right: `${100 - maxPercent}%` }}
+    ></div>
 
-  <div
-    className={styles.thumb}
-    style={{ left: `${maxPercent}%`, zIndex: activeThumb === 'max' ? 4 : 2 }}
-    onMouseDown={e => startDrag(e, 'max')}
-    onTouchStart={e => startDrag(e, 'max')}
-  />
+    {/* Thumbs */}
+    <div
+      className={styles.thumb}
+      style={{ left: `${minPercent}%`, zIndex: activeThumb === 'min' ? 4 : 2 }}
+      onMouseDown={e => startDrag(e, 'min')}
+      onTouchStart={e => startDrag(e, 'min')}
+    />
+    <div
+      className={styles.thumb}
+      style={{ left: `${maxPercent}%`, zIndex: activeThumb === 'max' ? 4 : 2 }}
+      onMouseDown={e => startDrag(e, 'max')}
+      onTouchStart={e => startDrag(e, 'max')}
+    />
 
-  <div className={styles.sliderValues}>
-    <span>{minPrice}</span>
-    <span>{maxPrice}</span>
+    {/* Inputs */}
+    <div className={styles.sliderInputs}>
+      <input
+        type="number"
+        min={1}
+        max={100}
+        value={minPrice}
+        onChange={e => {
+          let val = Math.max(1, Math.min(Number(e.target.value), maxPrice))
+          setMinPrice(Math.round(val))
+        }}
+      />
+      <input
+        type="number"
+        min={1}
+        max={100}
+        value={maxPrice}
+        onChange={e => {
+          let val = Math.min(100, Math.max(Number(e.target.value), minPrice))
+          setMaxPrice(Math.round(val))
+        }}
+      />
+    </div>
+
+    <div className={styles.sliderValues}>
+      <span>{minPrice}</span>
+      <span>{maxPrice}</span>
+    </div>
   </div>
-</div>
+</section>
 
       {/* Colors */}
       <section className={styles.section}>
