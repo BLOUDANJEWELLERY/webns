@@ -50,7 +50,7 @@ export default function FilterSortModal({
   initialCategories,
   initialMinPrice = 0,
   initialMaxPrice = 100,
-  initialSort = 'alphabeticalAZ',
+  initialSort = 'relevance',
   onApply,
   onClose,
 }: FilterSortModalProps) {
