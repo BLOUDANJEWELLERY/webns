@@ -153,26 +153,19 @@ const [minPrice, setMinPrice] = useState(1)
 const [maxPrice, setMaxPrice] = useState(100)
 const [activeThumb, setActiveThumb] = useState<'min' | 'max' | null>(null)
 
-// Convert prices to percentages for rendering thumbs
-const minPercent = minPrice
-const maxPercent = maxPrice
-
-// Start dragging a thumb
 const startDrag = (e: React.MouseEvent | React.TouchEvent, thumb: 'min' | 'max') => {
   e.preventDefault()
   setActiveThumb(thumb)
 
   const move = (ev: MouseEvent | TouchEvent) => {
-    ev.preventDefault()
     const slider = document.querySelector(`.${styles.sliderContainer}`)?.getBoundingClientRect()
     if (!slider) return
-
     const clientX = 'touches' in ev ? ev.touches[0].clientX : ev.clientX
     let percent = ((clientX - slider.left) / slider.width) * 100
-    percent = Math.max(1, Math.min(100, percent)) // clamp 1–100
-
-    if (thumb === 'min') setMinPrice(Math.min(percent, maxPrice))
-    else setMaxPrice(Math.max(percent, minPrice))
+    percent = Math.max(0, Math.min(100, percent))
+    const value = Math.round(percent)
+    if (thumb === 'min') setMinPrice(Math.min(value, maxPrice))
+    else setMaxPrice(Math.max(value, minPrice))
   }
 
   const stop = () => {
@@ -189,21 +182,19 @@ const startDrag = (e: React.MouseEvent | React.TouchEvent, thumb: 'min' | 'max')
   window.addEventListener('touchend', stop)
 }
 
-// Click/tap anywhere on slider to move nearest thumb
+// Click anywhere on slider to move nearest thumb
 const handleSliderClick = (e: React.MouseEvent | React.TouchEvent) => {
   e.preventDefault()
   const slider = e.currentTarget.getBoundingClientRect()
   const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
-  let percent = ((clientX - slider.left) / slider.width) * 100
-  percent = Math.max(1, Math.min(100, percent)) // clamp 1–100
-
-  if (Math.abs(percent - minPrice) < Math.abs(percent - maxPrice)) setMinPrice(Math.min(percent, maxPrice))
-  else setMaxPrice(Math.max(percent, minPrice))
+  const percent = ((clientX - slider.left) / slider.width) * 100
+  const value = Math.round(percent)
+  if (Math.abs(value - minPrice) < Math.abs(value - maxPrice)) setMinPrice(Math.min(value, maxPrice))
+  else setMaxPrice(Math.max(value, minPrice))
 }
 
-// Optional: handle typing in input fields
-const handleMinInput = (val: number) => setMinPrice(Math.min(Math.max(val, 1), maxPrice))
-const handleMaxInput = (val: number) => setMaxPrice(Math.max(Math.min(val, 100), minPrice))
+const minPercent = minPrice
+const maxPercent = maxPrice
 
   return (
     <div className={styles.modal}>
@@ -231,61 +222,36 @@ const handleMaxInput = (val: number) => setMaxPrice(Math.max(Math.min(val, 100),
       </section>
 
 {/* Price Slider */}
-<section className={styles.section}>
-  <h4 className={styles.sectionTitle}>Price Range</h4>
+<div
+  className={styles.sliderContainer}
+  onMouseDown={handleSliderClick}
+  onTouchStart={handleSliderClick}
+>
+  <div className={styles.rangeTrack}></div>
+  <div
+    className={styles.rangeTrackActive}
+    style={{ left: `${minPercent}%`, right: `${100 - maxPercent}%` }}
+  ></div>
 
-  <div className={styles.sliderContainer} onMouseDown={handleSliderClick} onTouchStart={handleSliderClick}>
-    {/* Track */}
-    <div className={styles.rangeTrack}></div>
-    <div
-      className={styles.rangeTrackActive}
-      style={{ left: `${minPercent}%`, right: `${100 - maxPercent}%` }}
-    ></div>
+  <div
+    className={styles.thumb}
+    style={{ left: `${minPercent}%`, zIndex: activeThumb === 'min' ? 4 : 2 }}
+    onMouseDown={e => startDrag(e, 'min')}
+    onTouchStart={e => startDrag(e, 'min')}
+  />
 
-    {/* Thumbs */}
-    <div
-      className={styles.thumb}
-      style={{ left: `${minPercent}%`, zIndex: activeThumb === 'min' ? 4 : 2 }}
-      onMouseDown={e => startDrag(e, 'min')}
-      onTouchStart={e => startDrag(e, 'min')}
-    />
-    <div
-      className={styles.thumb}
-      style={{ left: `${maxPercent}%`, zIndex: activeThumb === 'max' ? 4 : 2 }}
-      onMouseDown={e => startDrag(e, 'max')}
-      onTouchStart={e => startDrag(e, 'max')}
-    />
+  <div
+    className={styles.thumb}
+    style={{ left: `${maxPercent}%`, zIndex: activeThumb === 'max' ? 4 : 2 }}
+    onMouseDown={e => startDrag(e, 'max')}
+    onTouchStart={e => startDrag(e, 'max')}
+  />
 
-    {/* Inputs */}
-    <div className={styles.sliderInputs}>
-      <input
-        type="number"
-        min={1}
-        max={100}
-        value={minPrice}
-        onChange={e => {
-          let val = Math.max(1, Math.min(Number(e.target.value), maxPrice))
-          setMinPrice(Math.round(val))
-        }}
-      />
-      <input
-        type="number"
-        min={1}
-        max={100}
-        value={maxPrice}
-        onChange={e => {
-          let val = Math.min(100, Math.max(Number(e.target.value), minPrice))
-          setMaxPrice(Math.round(val))
-        }}
-      />
-    </div>
-
-    <div className={styles.sliderValues}>
-      <span>{minPrice}</span>
-      <span>{maxPrice}</span>
-    </div>
+  <div className={styles.sliderValues}>
+    <span>{minPrice}</span>
+    <span>{maxPrice}</span>
   </div>
-</section>
+</div>
 
       {/* Colors */}
       <section className={styles.section}>
