@@ -114,7 +114,7 @@ export default function AdminPage({ products }: { products: Product[] }) {
 }
 
 export async function getStaticProps() {
-  // Fetch products with categories populated
+  // Fetch products with categories, colors, and sizes only
   const productQuery = `*[_type == "product"] | order(title asc){
     _id,
     title,
@@ -126,17 +126,21 @@ export async function getStaticProps() {
       title,
       parent->{_id, title},
       order
-    }
+    },
+    "colors": colorImages[].color,
+    "sizes": variants[].size
   }`
+
   const products: Product[] = await client.fetch(productQuery)
 
-  // Fetch all categories separately
+  // Fetch all categories
   const categoryQuery = `*[_type=="category"]{
     _id,
     title,
     parent->{_id, title},
     order
   } | order(order asc)`
+
   const categories: CategoryRaw[] = await client.fetch(categoryQuery)
 
   return {
