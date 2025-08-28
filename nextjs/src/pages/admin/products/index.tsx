@@ -16,6 +16,17 @@ const client = createClient({
 const builder = imageUrlBuilder(client)
 const urlFor = (source: any) => builder.image(source)
 
+interface CategoryRaw {
+  _id: string
+  title: string
+  parent?: { _id: string; title: string }
+  order?: number
+}
+
+interface ExperimentalPageProps {
+  categories: CategoryRaw[]
+}
+
 type Product = {
   _id: string
   title: string
@@ -81,14 +92,36 @@ export default function AdminPage({ products }: { products: Product[] }) {
   )
 }
 
-export async function getServerSideProps() {
+export async function getStaticProps() {
+  // Fetch products with categories populated
   const productQuery = `*[_type == "product"] | order(title asc){
     _id,
     title,
     price,
     "slug": slug.current,
-    defaultImage
+    defaultImage,
+    "categories": categories[]->{
+      _id,
+      title,
+      parent->{_id, title},
+      order
+    }
   }`
   const products: Product[] = await client.fetch(productQuery)
-  return { props: { products } }
+
+  // Fetch all categories separately
+  const categoryQuery = `*[_type=="category"]{
+    _id,
+    title,
+    parent->{_id, title},
+    order
+  } | order(order asc)`
+  const categories: CategoryRaw[] = await client.fetch(categoryQuery)
+
+  return {
+    props: {
+      products,
+      categories: categories || []
+    }
+  }
 }
