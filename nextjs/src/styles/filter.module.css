@@ -71,96 +71,63 @@
 }
 
 /* ----- Category Tree ----- */
-.checkboxGroup {
-  border: 1px solid #d6c6b2;
-  border-radius: 6px;
-  padding: 10px 14px;
-  background-color: #fdfaf6;
-  max-height: 250px;
-  overflow-y: auto;
-  font-size: 14px;
-  scrollbar-width: thin;
-  scrollbar-color: #b8860b #fdfaf6;
-}
-
-.checkboxGroup::-webkit-scrollbar {
-  width: 6px;
-}
-.checkboxGroup::-webkit-scrollbar-thumb {
-  background: #b8860b;
-  border-radius: 4px;
-}
-.checkboxGroup::-webkit-scrollbar-track {
-  background: #fdfaf6;
-}
-
 .categoryRow {
   display: flex;
   align-items: center;
   gap: 6px;
   margin: 4px 0;
   line-height: 1.4;
-  padding: 2px 0;
-  transition: background 0.2s ease;
-  border-radius: 4px;
-}
-
-.categoryRow:hover {
-  background: #f7f1e8;
 }
 
 .toggleBtn {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 12px; /* slightly smaller so arrow sits level with checkbox */
   line-height: 1;
   padding: 0;
-  color: #7a5a2e;
+  color: #7a5a2e; /* brown/gold accent */
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
+  width: 16px;  /* reserve space so labels don’t jump when no children */
   height: 16px;
 }
 
-/* Custom Checkbox */
-.customCheckboxLabel {
-  position: relative;
+.checkboxGroup {
+  border: 1px solid #d6c6b2; /* soft brown border */
+  border-radius: 6px;
+  padding: 10px 14px;
+  background-color: #fdfaf6; /* light warm background */
+  max-height: 250px; /* keep it scrollable if too many */
+  overflow-y: auto;
+  font-size: 14px;
+}
+
+.checkboxGroup label {
   display: flex;
   align-items: center;
+  gap: 6px;
   cursor: pointer;
-  font-weight: 500;
-  padding-left: 28px;
+  padding: 2px 0;
+  transition: background 0.2s ease;
+  flex-grow: 1;
 }
 
-.customCheckboxLabel input[type="checkbox"] {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.customCheckboxLabel span::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 2px;
-  width: 20px;
-  height: 20px;
-  border: 2px solid #5d4037;
+.checkboxGroup label:hover {
+  background: #f7f1e8; /* light hover effect */
   border-radius: 4px;
-  background-color: #fffdfb;
-  transition: all 0.2s ease;
 }
 
-.customCheckboxLabel input:checked + span::before {
-  background-color: #c89b3c;
-  border-color: #5d4037;
+.checkboxGroup input[type="checkbox"] {
+  accent-color: #b8860b; /* golden accent for checkboxes */
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
 }
 
 .nested {
-  margin-left: 18px;
+  margin-left: 18px; /* indent child categories */
   border-left: 1px dashed #d6c6b2;
   padding-left: 10px;
 }
