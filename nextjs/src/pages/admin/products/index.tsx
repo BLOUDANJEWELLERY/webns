@@ -29,21 +29,6 @@ export default function AdminPage({ products }: { products: Product[] }) {
 <>
 <AdminHeader title="Admin Panel" titleHref="/admin" />
     <div className={styles.mainContainer}>
-      {/* Floating Settings Button 
-          <Link href="/admin/categories" passHref>
-          <button className={styles.settingsButton} title="Manage Categories">
-            {/* Simple Cog Icon 
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm7.43-1.5a7.93 7.93 0 0 0 .07-1 7.93 7.93 0 0 0-.07-1l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.21l-2.49 1a7.84 7.84 0 0 0-1.73-1l-.38-2.65A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.5.44l-.38 2.65a7.84 7.84 0 0 0-1.73 1l-2.49-1a.5.5 0 0 0-.61.21l-2 3.46a.5.5 0 0 0 .12.64L4.57 12a7.93 7.93 0 0 0-.07 1 7.93 7.93 0 0 0 .07 1l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .61.21l2.49-1a7.84 7.84 0 0 0 1.73 1l.38 2.65a.5.5 0 0 0 .5.44h4a.5.5 0 0 0 .5-.44l.38-2.65a7.84 7.84 0 0 0 1.73-1l2.49 1a.5.5 0 0 0 .61-.21l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.65z"/>
-            </svg>
-          </button>
-        </Link>*/}
 
       {/* Page Heading */}
       <h1 className={styles.heading}>Products</h1>
