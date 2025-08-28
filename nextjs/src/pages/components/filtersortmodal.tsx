@@ -262,35 +262,75 @@ const maxPercent = maxPrice
   />
 </div>
 
+
 <div className={styles.sliderValues}>
+  {/* Min Input */}
   <input
     type="number"
     min={0}
     max={maxPrice}
-    value={minInput}
+    placeholder="Min"
+    value={minInput === null ? "" : minInput}
     onClick={e => e.stopPropagation()}
     onMouseDown={e => e.stopPropagation()}
     onTouchStart={e => e.stopPropagation()}
-    onChange={(e) => setMinInput(Number(e.target.value))} // only update input state
+    onFocus={(e) => e.target.select()}
+    onChange={(e) => {
+      const val = e.target.value
+      if (val === "") {
+        setMinInput(null)
+      } else {
+        let num = Number(val)
+        if (!isNaN(num)) {
+          num = Math.max(0, Math.min(num, maxPrice))
+          setMinInput(num)
+        }
+      }
+    }}
     onBlur={() => {
-      const val = Math.max(0, Math.min(minInput, maxPrice))
-      setMinPrice(val)   // commit to slider on blur
-      setMinInput(val)   // sync input with committed
+      if (minInput === null) {
+        setMinInput(minPrice)
+      } else {
+        setMinPrice(minInput)
+      }
+    }}
+    onKeyDown={(e) => {
+      if (e.key === "Enter") e.currentTarget.blur()
     }}
   />
+
+  {/* Max Input */}
   <input
     type="number"
     min={minPrice}
     max={100}
-    value={maxInput}
+    placeholder="Max"
+    value={maxInput === null ? "" : maxInput}
     onClick={e => e.stopPropagation()}
     onMouseDown={e => e.stopPropagation()}
     onTouchStart={e => e.stopPropagation()}
-    onChange={(e) => setMaxInput(Number(e.target.value))}
+    onFocus={(e) => e.target.select()}
+    onChange={(e) => {
+      const val = e.target.value
+      if (val === "") {
+        setMaxInput(null)
+      } else {
+        let num = Number(val)
+        if (!isNaN(num)) {
+          num = Math.max(minPrice, Math.min(num, 100))
+          setMaxInput(num)
+        }
+      }
+    }}
     onBlur={() => {
-      const val = Math.max(minPrice, Math.min(maxInput, 100))
-      setMaxPrice(val)
-      setMaxInput(val)
+      if (maxInput === null) {
+        setMaxInput(maxPrice)
+      } else {
+        setMaxPrice(maxInput)
+      }
+    }}
+    onKeyDown={(e) => {
+      if (e.key === "Enter") e.currentTarget.blur()
     }}
   />
 </div>
