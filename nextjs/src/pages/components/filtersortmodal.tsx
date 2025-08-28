@@ -149,6 +149,7 @@ export default function FilterSortModal({
   }
 
   // Slider percentages
+// State
 const [minPrice, setMinPrice] = useState(1)
 const [maxPrice, setMaxPrice] = useState(100)
 const [activeThumb, setActiveThumb] = useState<'min' | 'max' | null>(null)
@@ -189,12 +190,16 @@ const handleSliderClick = (e: React.MouseEvent | React.TouchEvent) => {
   const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
   const percent = ((clientX - slider.left) / slider.width) * 100
   const value = Math.round(percent)
-  if (Math.abs(value - minPrice) < Math.abs(value - maxPrice)) setMinPrice(Math.min(value, maxPrice))
-  else setMaxPrice(Math.max(value, minPrice))
+  if (Math.abs(value - minPrice) < Math.abs(value - maxPrice)) {
+    setMinPrice(Math.min(value, maxPrice))
+  } else {
+    setMaxPrice(Math.max(value, minPrice))
+  }
 }
 
 const minPercent = minPrice
 const maxPercent = maxPrice
+
 
   return (
     <div className={styles.modal}>
@@ -233,6 +238,7 @@ const maxPercent = maxPrice
     style={{ left: `${minPercent}%`, right: `${100 - maxPercent}%` }}
   ></div>
 
+  {/* Min Thumb */}
   <div
     className={styles.thumb}
     style={{ left: `${minPercent}%`, zIndex: activeThumb === 'min' ? 4 : 2 }}
@@ -240,6 +246,7 @@ const maxPercent = maxPrice
     onTouchStart={e => startDrag(e, 'min')}
   />
 
+  {/* Max Thumb */}
   <div
     className={styles.thumb}
     style={{ left: `${maxPercent}%`, zIndex: activeThumb === 'max' ? 4 : 2 }}
@@ -247,11 +254,31 @@ const maxPercent = maxPrice
     onTouchStart={e => startDrag(e, 'max')}
   />
 
+  {/* Inputs instead of plain values */}
   <div className={styles.sliderValues}>
-    <span>{minPrice}</span>
-    <span>{maxPrice}</span>
+    <input
+      type="number"
+      min={0}
+      max={maxPrice}
+      value={minPrice}
+      onChange={(e) => {
+        let val = Math.max(0, Math.min(Number(e.target.value), maxPrice))
+        setMinPrice(val)
+      }}
+    />
+    <input
+      type="number"
+      min={minPrice}
+      max={100}
+      value={maxPrice}
+      onChange={(e) => {
+        let val = Math.max(minPrice, Math.min(Number(e.target.value), 100))
+        setMaxPrice(val)
+      }}
+    />
   </div>
 </div>
+
 
       {/* Colors */}
       <section className={styles.section}>
