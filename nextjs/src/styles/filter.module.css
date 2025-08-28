@@ -1,17 +1,12 @@
 /* ----- Modal Base ----- */
 
 /* ----- Price Slider ----- */
-/* Slider Container */
 .sliderContainer {
   position: relative;
   width: 100%;
-  height: 50px; /* space for thumbs */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  height: 50px;
 }
 
-/* Full track */
 .rangeTrack {
   position: absolute;
   height: 6px;
@@ -23,7 +18,6 @@
   z-index: 1;
 }
 
-/* Active range */
 .rangeTrackActive {
   position: absolute;
   height: 6px;
@@ -35,7 +29,6 @@
   transition: left 0.15s ease, right 0.15s ease;
 }
 
-/* Sliders */
 .rangeSlider {
   -webkit-appearance: none;
   position: absolute;
@@ -46,12 +39,10 @@
   background: transparent;
   margin: 0;
   padding: 0;
-  pointer-events: auto;
+  pointer-events: all;
   cursor: pointer;
-  z-index: 3;
 }
 
-/* Webkit thumb */
 .rangeSlider::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 22px;
@@ -60,7 +51,7 @@
   background-color: #c89b3c;
   border: 2px solid #5d4037;
   cursor: pointer;
-  margin-top: 0; /* use transform to center */
+  margin-top: 0;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -69,7 +60,6 @@
   box-shadow: 0 0 12px rgba(200, 155, 60, 0.6);
 }
 
-/* Firefox thumb */
 .rangeSlider::-moz-range-thumb {
   width: 22px;
   height: 22px;
@@ -85,7 +75,6 @@
   box-shadow: 0 0 12px rgba(200, 155, 60, 0.6);
 }
 
-/* Slider Values */
 .sliderValues {
   display: flex;
   justify-content: space-between;
