@@ -227,8 +227,7 @@ export default function FilterSortModal({
   useEffect(() => setMaxInput(maxPrice), [maxPrice])
 
   return (
-<div className={`${styles.fullOverlay} ${isOpen ? styles.show : ''}`} onClick={onClose}>
-  <div className={`${styles.fullSidebar} ${isOpen ? styles.open : ''}`} onClick={e => e.stopPropagation()}>
+ <div className={`${styles.fullSidebar} ${isOpen ? styles.open : ''}`} onClick={e => e.stopPropagation()}>
     <div className={styles.modal}>
       <h3 className={styles.modalTitle}>Filter & Sort</h3>
 
@@ -319,6 +318,5 @@ export default function FilterSortModal({
     </div>
 
  </div>
-  </div>
   )
 }
