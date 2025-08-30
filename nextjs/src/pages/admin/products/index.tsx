@@ -156,21 +156,20 @@ export default function AdminPage({ products, categories }: PageProps) {
 
         {showModal && (
           <FilterSortModal
-            isOpen={showFilters}
-  onClose={() => setShowFilters(false)}
-            initialCategories={categories}
-            initialSelectedCategories={currentFilters.categories}
-            initialSelectedColors={currentFilters.colors}
-            initialSelectedSizes={currentFilters.sizes}
-            initialMinPrice={currentFilters.minPrice}
-            initialMaxPrice={currentFilters.maxPrice}
-            initialSort={currentFilters.sort}
-            onApply={(filters) => {
-              setCurrentFilters(filters)
-              setShowModal(false)
-            }}
-            onClose={() => setShowModal(false)}
-          />
+  isOpen={showModal}
+  onClose={() => setShowModal(false)}
+  initialCategories={categories}
+  initialSelectedCategories={currentFilters.categories}
+  initialSelectedColors={currentFilters.colors}
+  initialSelectedSizes={currentFilters.sizes}
+  initialMinPrice={currentFilters.minPrice}
+  initialMaxPrice={currentFilters.maxPrice}
+  initialSort={currentFilters.sort}
+  onApply={(filters) => {
+    setCurrentFilters(filters)
+    setShowModal(false)
+  }}
+/>
         )}
 
         <h1 className={styles.heading}>Products</h1>
