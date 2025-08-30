@@ -228,7 +228,8 @@ export default function FilterSortModal({
 
   return (
  <div className={`${styles.fullSidebar} ${isOpen ? styles.open : ''}`} onClick={e => e.stopPropagation()}>
-    <h3 className={styles.modalTitle}>Filter & Sort</h3>
+    <div className={styles.modal}>
+<h3 className={styles.modalTitle}>Filter & Sort</h3>
 
       <div style={{ textAlign: 'right', marginBottom: '0.75rem' }}>
         <button className={styles.resetBtn} onClick={handleReset}>Reset</button>
@@ -314,7 +315,7 @@ export default function FilterSortModal({
         <button className={styles.applyBtn} onClick={handleApply}>Apply</button>
         <button className={styles.closeBtn} onClick={onClose}>Close</button>
       </div>
-
+</div>
  </div>
   )
 }
