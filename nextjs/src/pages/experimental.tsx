@@ -32,7 +32,9 @@ export default function ExperimentalPage({ categories }: ExperimentalPageProps) 
   return (
     <div>
       <h1>Products Page</h1>
-      <FilterSortModal initialCategories={categories} />
+      <FilterSortModal 
+open={showModal}
+initialCategories={categories} />
     </div>
   )
 }
