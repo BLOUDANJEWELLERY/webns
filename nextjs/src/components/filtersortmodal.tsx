@@ -21,7 +21,7 @@ type SortOption =
   | 'priceHighLow'
   | 'relevance'
 
-interface FilterSortModalProps {
+interface FilterSortSidebarProps {
   initialCategories: CategoryRaw[]
   initialSelectedCategories?: string[]
   initialSelectedColors?: string[]
@@ -29,6 +29,7 @@ interface FilterSortModalProps {
   initialMinPrice?: number
   initialMaxPrice?: number
   initialSort?: SortOption
+  open: boolean
   onApply?: (filters: {
     categories: string[]
     colors: string[]
@@ -49,7 +50,7 @@ const HARD_CODED_SIZES = [
   'XXS','XS','S','M','L','XL','XXL','XXXL'
 ]
 
-export default function FilterSortModal({
+export default function FilterSortSidebar({
   initialCategories,
   initialSelectedCategories = [],
   initialSelectedColors = [],
@@ -57,10 +58,10 @@ export default function FilterSortModal({
   initialMinPrice = 0,
   initialMaxPrice = 100,
   initialSort = 'relevance',
+  open,
   onApply,
   onClose,
-}: FilterSortModalProps) {
-
+}: FilterSortSidebarProps) {
   // ----- States -----
   const [selectedCategories, setSelectedCategories] = useState<string[]>(initialSelectedCategories)
   const [selectedColors, setSelectedColors] = useState<string[]>(initialSelectedColors)
@@ -69,10 +70,6 @@ export default function FilterSortModal({
   const [minPrice, setMinPrice] = useState(initialMinPrice)
   const [maxPrice, setMaxPrice] = useState(initialMaxPrice)
   const [sort, setSort] = useState<SortOption>(initialSort)
-  const [activeThumb, setActiveThumb] = useState<'min' | 'max' | null>(null)
-  const [minInput, setMinInput] = useState(minPrice)
-  const [maxInput, setMaxInput] = useState(maxPrice)
-  const [closing, setClosing] = useState(false)
 
   // ----- Category Tree & Parent Map -----
   const { categoryTree, parentMap } = useMemo(() => {
@@ -112,15 +109,6 @@ export default function FilterSortModal({
     setExpandedCategories(newExpanded)
   }, [selectedCategories, parentMap])
 
-  // ----- Handlers -----
-  const toggleCategoryExpand = (id: string) => {
-    setExpandedCategories(prev => {
-      const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
-      return next
-    })
-  }
-
   const handleToggle = (value: string, selected: string[], setSelected: React.Dispatch<React.SetStateAction<string[]>>) => {
     setSelected(selected.includes(value) ? selected.filter(v => v !== value) : [...selected, value])
   }
@@ -129,12 +117,10 @@ export default function FilterSortModal({
     setSelectedCategories([])
     setSelectedColors([])
     setSelectedSizes([])
-    setMinPrice(0)
-    setMaxPrice(100)
-    setMinInput(0)
-    setMaxInput(100)
+    setMinPrice(initialMinPrice)
+    setMaxPrice(initialMaxPrice)
     setSort(initialSort)
-    setExpandedCategories(new Set()) // reset expanded state
+    setExpandedCategories(new Set())
   }
 
   const handleApply = () => {
@@ -144,17 +130,9 @@ export default function FilterSortModal({
       sizes: selectedSizes,
       minPrice,
       maxPrice,
-      sort
+      sort,
     })
-    handleClose()
-  }
-
-  const handleClose = () => {
-    setClosing(true)
-    setTimeout(() => {
-      onClose?.()
-      setClosing(false)
-    }, 300) // match CSS transition
+    onClose?.()
   }
 
   // ----- Recursive Category Component -----
@@ -164,7 +142,13 @@ export default function FilterSortModal({
       <div>
         <div className={styles.categoryRow}>
           {node.children.length > 0 && (
-            <button type="button" className={styles.toggleBtn} onClick={() => toggleCategoryExpand(node._id)}>
+            <button type="button" className={styles.toggleBtn} onClick={() => {
+              setExpandedCategories(prev => {
+                const next = new Set(prev)
+                next.has(node._id) ? next.delete(node._id) : next.add(node._id)
+                return next
+              })
+            }}>
               {isExpanded ? '▾' : '▸'}
             </button>
           )}
@@ -186,144 +170,80 @@ export default function FilterSortModal({
     )
   }
 
-  // ----- Slider Handlers -----
-  const startDrag = (e: React.MouseEvent | React.TouchEvent, thumb: 'min' | 'max') => {
-    e.preventDefault()
-    setActiveThumb(thumb)
-
-    const move = (ev: MouseEvent | TouchEvent) => {
-      const slider = document.querySelector(`.${styles.sliderContainer}`)?.getBoundingClientRect()
-      if (!slider) return
-      const clientX = 'touches' in ev ? ev.touches[0].clientX : ev.clientX
-      let percent = ((clientX - slider.left) / slider.width) * 100
-      percent = Math.max(0, Math.min(100, percent))
-      percent = Math.round(percent)
-      if (thumb === 'min') setMinPrice(Math.min(percent, maxPrice))
-      else setMaxPrice(Math.max(percent, minPrice))
-    }
-
-    const stop = () => {
-      setActiveThumb(null)
-      window.removeEventListener('mousemove', move)
-      window.removeEventListener('mouseup', stop)
-      window.removeEventListener('touchmove', move)
-      window.removeEventListener('touchend', stop)
-    }
-
-    window.addEventListener('mousemove', move)
-    window.addEventListener('mouseup', stop)
-    window.addEventListener('touchmove', move, { passive: false })
-    window.addEventListener('touchend', stop)
-  }
-
-  const handleSliderClick = (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault()
-    const slider = e.currentTarget.getBoundingClientRect()
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
-    let percent = ((clientX - slider.left) / slider.width) * 100
-    percent = Math.round(percent)
-    if (Math.abs(percent - minPrice) < Math.abs(percent - maxPrice)) setMinPrice(Math.min(percent, maxPrice))
-    else setMaxPrice(Math.max(percent, minPrice))
-  }
-
-  const minPercent = minPrice
-  const maxPercent = maxPrice
-
-  useEffect(() => setMinInput(minPrice), [minPrice])
-  useEffect(() => setMaxInput(maxPrice), [maxPrice])
-
-  // ----- Render -----
   return (
-    <div className={styles.overlay}>
-      <div className={`${styles.modal} ${closing ? styles.slideOut : styles.slideIn}`}>
-        <h3 className={styles.modalTitle}>Filter & Sort</h3>
+    <>
+      {/* Backdrop */}
+      <div className={`${styles.backdrop} ${open ? styles.show : ''}`} onClick={onClose}></div>
 
-        <div style={{ textAlign: 'right', marginBottom: '0.75rem' }}>
-          <button className={styles.resetBtn} onClick={handleReset}>Reset</button>
-        </div>
+      {/* Sidebar */}
+      <aside className={`${styles.sidebar} ${open ? styles.open : ''}`}>
+        <header className={styles.sidebarHeader}>
+          <h3>Filter & Sort</h3>
+          <button className={styles.closeBtn} onClick={onClose}>×</button>
+        </header>
 
-        {/* Categories */}
-        <section className={styles.section}>
-          <h4 className={styles.sectionTitle}>Categories</h4>
-          <div className={styles.checkboxGroup}>
-            <label className={styles.customCheckboxLabel}>
-              <input
-                type="checkbox"
-                checked={selectedCategories.length === 0}
-                onChange={() => setSelectedCategories([])}
-              />
-              <span>All Categories</span>
+        <div className={styles.sidebarContent}>
+          {/* Categories */}
+          <section className={styles.section}>
+            <h4>Categories</h4>
+            <label>
+              <input type="checkbox" checked={selectedCategories.length === 0} onChange={() => setSelectedCategories([])} />
+              All Categories
             </label>
-            {categoryTree.length === 0 ? <p>No categories found.</p> :
-              categoryTree.map(node => <CategoryNodeItem key={node._id} node={node} />)}
-          </div>
-        </section>
+            {categoryTree.map(node => <CategoryNodeItem key={node._id} node={node} />)}
+          </section>
 
-        {/* Price Slider */}
-        <div className={styles.sliderContainer} onMouseDown={handleSliderClick} onTouchStart={handleSliderClick}>
-          <div className={styles.rangeTrack}></div>
-          <div className={styles.rangeTrackActive} style={{ left: `${minPercent}%`, right: `${100 - maxPercent}%` }}></div>
+          {/* Colors */}
+          <section className={styles.section}>
+            <h4>Colors</h4>
+            <div className={styles.circleGrid}>
+              <button onClick={() => setSelectedColors([])} className={selectedColors.length === 0 ? styles.activeCircle : ''}>All</button>
+              {HARD_CODED_COLORS.map(color => (
+                <button
+                  key={color}
+                  onClick={() => handleToggle(color, selectedColors, setSelectedColors)}
+                  className={selectedColors.includes(color) ? styles.activeCircle : ''}
+                  style={{ backgroundColor: color.toLowerCase() }}
+                />
+              ))}
+            </div>
+          </section>
 
-          <div className={styles.thumb} style={{ left: `${minPercent}%`, zIndex: activeThumb === 'min' ? 4 : 2 }}
-            onMouseDown={e => startDrag(e, 'min')} onTouchStart={e => startDrag(e, 'min')} />
-          <div className={styles.thumb} style={{ left: `${maxPercent}%`, zIndex: activeThumb === 'max' ? 4 : 2 }}
-            onMouseDown={e => startDrag(e, 'max')} onTouchStart={e => startDrag(e, 'max')} />
+          {/* Sizes */}
+          <section className={styles.section}>
+            <h4>Sizes</h4>
+            <div className={styles.circleGrid}>
+              <button onClick={() => setSelectedSizes([])} className={selectedSizes.length === 0 ? styles.activeCircle : ''}>All</button>
+              {HARD_CODED_SIZES.map(size => (
+                <button
+                  key={size}
+                  onClick={() => handleToggle(size, selectedSizes, setSelectedSizes)}
+                  className={selectedSizes.includes(size) ? styles.activeCircle : ''}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* Sort */}
+          <section className={styles.section}>
+            <h4>Sort By</h4>
+            <select value={sort} onChange={e => setSort(e.target.value as SortOption)}>
+              <option value="alphabeticalAZ">A-Z</option>
+              <option value="alphabeticalZA">Z-A</option>
+              <option value="priceLowHigh">Price: Low to High</option>
+              <option value="priceHighLow">Price: High to Low</option>
+              <option value="relevance">Relevance</option>
+            </select>
+          </section>
         </div>
 
-        <div className={styles.sliderValues}>
-          <input type="number" min={0} max={maxPrice} value={minInput} onChange={e => setMinInput(Number(e.target.value))}
-            onBlur={() => { const val = Math.round(Math.max(0, Math.min(minInput, maxPrice))); setMinPrice(val); setMinInput(val) }} />
-          <input type="number" min={minPrice} max={100} value={maxInput} onChange={e => setMaxInput(Number(e.target.value))}
-            onBlur={() => { const val = Math.round(Math.max(minPrice, Math.min(maxInput, 100))); setMaxPrice(val); setMaxInput(val) }} />
-        </div>
-
-        {/* Colors */}
-        <section className={styles.section}>
-          <h4 className={styles.sectionTitle}>Colors</h4>
-          <div className={styles.circleGrid}>
-            <button className={`${styles.colorCircle} ${selectedColors.length === 0 ? styles.activeCircle : ''}`} onClick={() => setSelectedColors([])}>All</button>
-            {HARD_CODED_COLORS.map(color => (
-              <button key={color} type="button"
-                className={`${styles.colorCircle} ${selectedColors.includes(color) ? styles.activeCircle : ''}`}
-                style={{ backgroundColor: color.toLowerCase() }}
-                onClick={() => handleToggle(color, selectedColors, setSelectedColors)}
-                title={color} />
-            ))}
-          </div>
-        </section>
-
-        {/* Sizes */}
-        <section className={styles.section}>
-          <h4 className={styles.sectionTitle}>Sizes</h4>
-          <div className={styles.circleGrid}>
-            <button className={`${styles.sizeCircle} ${selectedSizes.length === 0 ? styles.activeCircle : ''}`} onClick={() => setSelectedSizes([])}>All</button>
-            {HARD_CODED_SIZES.map(size => (
-              <button key={size} type="button"
-                className={`${styles.sizeCircle} ${selectedSizes.includes(size) ? styles.activeCircle : ''}`}
-                onClick={() => handleToggle(size, selectedSizes, setSelectedSizes)}>
-                {size}
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {/* Sort */}
-        <section className={styles.section}>
-          <h4 className={styles.sectionTitle}>Sort By</h4>
-          <select className={styles.sortSelect} value={sort} onChange={e => setSort(e.target.value as SortOption)}>
-            <option value="alphabeticalAZ">A-Z</option>
-            <option value="alphabeticalZA">Z-A</option>
-            <option value="priceLowHigh">Price: Low to High</option>
-            <option value="priceHighLow">Price: High to Low</option>
-            <option value="relevance">Relevance</option>
-          </select>
-        </section>
-
-        <div className={styles.buttons}>
+        <footer className={styles.sidebarFooter}>
+          <button className={styles.resetBtn} onClick={handleReset}>Reset</button>
           <button className={styles.applyBtn} onClick={handleApply}>Apply</button>
-          <button className={styles.closeBtn} onClick={handleClose}>Close</button>
-        </div>
-      </div>
-    </div>
+        </footer>
+      </aside>
+    </>
   )
 }
