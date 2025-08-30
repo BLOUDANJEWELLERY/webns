@@ -10,7 +10,7 @@
   background: #fff;
   backdrop-filter: blur(10px);
   transform: translateX(100%);
-  transition: transform 0.35s ease-in-out;
+  transition: transform 2.35s ease-in-out;
   z-index: 1000;
   display: flex;
   flex-direction: column;
