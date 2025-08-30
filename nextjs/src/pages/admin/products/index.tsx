@@ -58,7 +58,7 @@ const [currentFilters, setCurrentFilters] = useState<any>({
     <>
       <AdminHeader title="Admin Panel" titleHref="/admin" />
       <div className={styles.mainContainer}>
-        <button onClick={() => setShowModal(true)}>Open Filters</button>
+        <button className={styles.actionButton} onClick={() => setShowModal(true)}>Open Filters</button>
 
 {showModal && (
       <FilterSortModal
