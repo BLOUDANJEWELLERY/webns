@@ -49,8 +49,8 @@ export default function AdminPage({ products, categories }: PageProps) {
     categories: [] as string[],
     colors: [] as string[],
     sizes: [] as string[],
-    minPrice: 10,
-    maxPrice: 1000,
+    minPrice: 0,
+    maxPrice: 100,
     sort: 'relevance' as SortOption,
   })
 
