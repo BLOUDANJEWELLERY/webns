@@ -52,6 +52,7 @@ const HARD_CODED_SIZES = [
 ]
 
 export default function FilterSortModal({
+  isOpen,
   initialCategories,
   initialSelectedCategories = [],
   initialSelectedColors = [],
