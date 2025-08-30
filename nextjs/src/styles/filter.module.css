@@ -1,5 +1,31 @@
 /* ----- Modal Base ----- */
 
+
+/* Overlay covering full viewport */
+.fullOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #fff; /* solid, hides parent page completely */
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  z-index: 9999;
+  overflow-y: auto;
+}
+
+.fullOverlay.show {
+  transform: translateX(0);
+}
+
+/* Sidebar content inside overlay (optional padding) */
+.fullSidebar {
+  width: 100%;
+  height: 100%;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
 /* ----- Price Slider ----- */
 .sliderContainer {
   position: relative;
