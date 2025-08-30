@@ -40,7 +40,38 @@ interface PageProps {
   categories: CategoryRaw[]
 }
 
-type SortOption = 'relevance' | 'alphabeticalAZ' | 'alphabeticalZA' | 'priceLowHigh' | 'priceHighLow'
+type SortOption =
+  | 'relevance'
+  | 'alphabeticalAZ'
+  | 'alphabeticalZA'
+  | 'priceLowHigh'
+  | 'priceHighLow'
+
+// ---- Helper to expand selected categories into all descendants ----
+function getAllDescendants(categories: CategoryRaw[], selected: string[]): string[] {
+  const map: Record<string, string[]> = {}
+
+  // Build parent -> children map
+  categories.forEach(cat => {
+    if (cat.parent?._id) {
+      if (!map[cat.parent._id]) map[cat.parent._id] = []
+      map[cat.parent._id].push(cat._id)
+    }
+  })
+
+  const result = new Set<string>()
+
+  function dfs(id: string) {
+    result.add(id)
+    if (map[id]) {
+      map[id].forEach(childId => dfs(childId))
+    }
+  }
+
+  selected.forEach(id => dfs(id))
+
+  return Array.from(result)
+}
 
 export default function AdminPage({ products, categories }: PageProps) {
   const [showModal, setShowModal] = useState(false)
@@ -58,10 +89,11 @@ export default function AdminPage({ products, categories }: PageProps) {
   const filteredProducts = useMemo(() => {
     let filtered = products
 
-    // Filter by categories
+    // Filter by categories (expand to include children)
     if (currentFilters.categories.length > 0) {
+      const expandedCategories = getAllDescendants(categories, currentFilters.categories)
       filtered = filtered.filter(prod =>
-        prod.categories.some(cat => currentFilters.categories.includes(cat._id))
+        prod.categories.some(cat => expandedCategories.includes(cat._id))
       )
     }
 
@@ -80,8 +112,8 @@ export default function AdminPage({ products, categories }: PageProps) {
     }
 
     // Filter by price
-    filtered = filtered.filter(prod =>
-      prod.price >= currentFilters.minPrice && prod.price <= currentFilters.maxPrice
+    filtered = filtered.filter(
+      prod => prod.price >= currentFilters.minPrice && prod.price <= currentFilters.maxPrice
     )
 
     // Sort
@@ -104,7 +136,7 @@ export default function AdminPage({ products, categories }: PageProps) {
     }
 
     return filtered
-  }, [products, currentFilters])
+  }, [products, currentFilters, categories])
 
   return (
     <>
