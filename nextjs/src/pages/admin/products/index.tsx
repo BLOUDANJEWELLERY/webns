@@ -1,3 +1,4 @@
+
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState, useMemo } from 'react'
@@ -6,7 +7,6 @@ import imageUrlBuilder from '@sanity/image-url'
 import styles from '../../../styles/admin.module.css'
 import AdminHeader from '../../components/AdminHeader'
 import FilterSortModal from '../../../components/filtersortmodal'
-import { GetServerSideProps } from 'next'
 
 const client = createClient({
   projectId: '3jc8hsku',
@@ -75,6 +75,7 @@ function getAllDescendants(categories: CategoryRaw[], selected: string[]): strin
 
 export default function AdminPage({ products, categories }: PageProps) {
   const [showModal, setShowModal] = useState(false)
+
   const [searchQuery, setSearchQuery] = useState('')
 
   const [currentFilters, setCurrentFilters] = useState({
@@ -155,7 +156,6 @@ export default function AdminPage({ products, categories }: PageProps) {
 
         {showModal && (
           <FilterSortModal
-            open={showModal}
             initialCategories={categories}
             initialSelectedCategories={currentFilters.categories}
             initialSelectedColors={currentFilters.colors}
@@ -230,7 +230,6 @@ export default function AdminPage({ products, categories }: PageProps) {
   )
 }
 
-// ---- Static props for products ----
 export async function getStaticProps() {
   const productQuery = `*[_type == "product"] | order(title asc){
     _id,
@@ -250,13 +249,6 @@ export async function getStaticProps() {
 
   const products: Product[] = await client.fetch(productQuery)
 
-  return {
-    props: { products },
-  }
-}
-
-// ---- Server-side props for categories ----
-export const getServerSideProps: GetServerSideProps = async () => {
   const categoryQuery = `*[_type=="category"]{
     _id,
     title,
@@ -267,6 +259,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
   const categories: CategoryRaw[] = await client.fetch(categoryQuery)
 
   return {
-    props: { categories },
+    props: { products, categories },
+    revalidate: 60,
   }
 }
