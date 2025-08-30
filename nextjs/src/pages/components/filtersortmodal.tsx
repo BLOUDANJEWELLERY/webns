@@ -24,6 +24,9 @@ type SortOption =
 
 interface FilterSortModalProps {
   initialCategories: CategoryRaw[]
+  initialSelectedCategories?: string[]
+  initialSelectedColors?: string[]
+  initialSelectedSizes?: string[]
   initialMinPrice?: number
   initialMaxPrice?: number
   initialSort?: SortOption
@@ -55,6 +58,13 @@ export default function FilterSortModal({
   onApply,
   onClose,
 }: FilterSortModalProps) {
+
+const [selectedCategories, setSelectedCategories] = useState<string[]>(initialSelectedCategories || [])
+const [selectedColors, setSelectedColors] = useState<string[]>(initialSelectedColors || [])
+const [selectedSizes, setSelectedSizes] = useState<string[]>(initialSelectedSizes || [])
+const [minPrice, setMinPrice] = useState(initialMinPrice || 0)
+const [maxPrice, setMaxPrice] = useState(initialMaxPrice || 100)
+const [sort, setSort] = useState<SortOption>(initialSort || 'relevance')
 
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [selectedColors, setSelectedColors] = useState<string[]>([])
