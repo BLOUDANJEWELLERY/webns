@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import styles from '../../../styles/admin.module.css'
@@ -40,40 +40,97 @@ interface PageProps {
   categories: CategoryRaw[]
 }
 
-export default function AdminPage({ products, categories }: PageProps) {
-const [showModal, setShowModal] = useState(false)
+type SortOption = 'relevance' | 'alphabeticalAZ' | 'alphabeticalZA' | 'priceLowHigh' | 'priceHighLow'
 
-// Current filters (persist across modal open/close)
-const [currentFilters, setCurrentFilters] = useState({
-  categories: [] as string[],
-  colors: [] as string[],
-  sizes: [] as string[],
-  minPrice: 10,
-  maxPrice: 1000,
-  sort: 'relevance' as 'relevance' | 'alphabeticalAZ' | 'alphabeticalZA' | 'priceLowHigh' | 'priceHighLow'
-})
+export default function AdminPage({ products, categories }: PageProps) {
+  const [showModal, setShowModal] = useState(false)
+
+  const [currentFilters, setCurrentFilters] = useState({
+    categories: [] as string[],
+    colors: [] as string[],
+    sizes: [] as string[],
+    minPrice: 10,
+    maxPrice: 1000,
+    sort: 'relevance' as SortOption,
+  })
+
+  // ----- Filtered & Sorted Products -----
+  const filteredProducts = useMemo(() => {
+    let filtered = products
+
+    // Filter by categories
+    if (currentFilters.categories.length > 0) {
+      filtered = filtered.filter(prod =>
+        prod.categories.some(cat => currentFilters.categories.includes(cat._id))
+      )
+    }
+
+    // Filter by colors
+    if (currentFilters.colors.length > 0) {
+      filtered = filtered.filter(prod =>
+        prod.colors.some(color => currentFilters.colors.includes(color))
+      )
+    }
+
+    // Filter by sizes
+    if (currentFilters.sizes.length > 0) {
+      filtered = filtered.filter(prod =>
+        prod.sizes.some(size => currentFilters.sizes.includes(size))
+      )
+    }
+
+    // Filter by price
+    filtered = filtered.filter(prod =>
+      prod.price >= currentFilters.minPrice && prod.price <= currentFilters.maxPrice
+    )
+
+    // Sort
+    switch (currentFilters.sort) {
+      case 'alphabeticalAZ':
+        filtered = filtered.slice().sort((a, b) => a.title.localeCompare(b.title))
+        break
+      case 'alphabeticalZA':
+        filtered = filtered.slice().sort((a, b) => b.title.localeCompare(a.title))
+        break
+      case 'priceLowHigh':
+        filtered = filtered.slice().sort((a, b) => a.price - b.price)
+        break
+      case 'priceHighLow':
+        filtered = filtered.slice().sort((a, b) => b.price - a.price)
+        break
+      case 'relevance':
+      default:
+        break // keep default order
+    }
+
+    return filtered
+  }, [products, currentFilters])
 
   return (
     <>
       <AdminHeader title="Admin Panel" titleHref="/admin" />
       <div className={styles.mainContainer}>
-        <button className={styles.actionButton} onClick={() => setShowModal(true)}>Open Filters</button>
-    {showModal && (
-      <FilterSortModal
-        initialCategories={categories}           // your categories from props
-        initialSelectedCategories={currentFilters.categories}
-        initialSelectedColors={currentFilters.colors}
-        initialSelectedSizes={currentFilters.sizes}
-        initialMinPrice={currentFilters.minPrice}
-        initialMaxPrice={currentFilters.maxPrice}
-        initialSort={currentFilters.sort}
-        onApply={(filters) => {
-          setCurrentFilters(filters)           // persist filters
-          setShowModal(false)                  // close modal
-        }}
-        onClose={() => setShowModal(false)}
-      />
-    )}
+        <button className={styles.actionButton} onClick={() => setShowModal(true)}>
+          Open Filters
+        </button>
+
+        {showModal && (
+          <FilterSortModal
+            initialCategories={categories}
+            initialSelectedCategories={currentFilters.categories}
+            initialSelectedColors={currentFilters.colors}
+            initialSelectedSizes={currentFilters.sizes}
+            initialMinPrice={currentFilters.minPrice}
+            initialMaxPrice={currentFilters.maxPrice}
+            initialSort={currentFilters.sort}
+            onApply={(filters) => {
+              setCurrentFilters(filters)
+              setShowModal(false)
+            }}
+            onClose={() => setShowModal(false)}
+          />
+        )}
+
         <h1 className={styles.heading}>Products</h1>
 
         <div className={styles.createWrapper}>
@@ -84,11 +141,11 @@ const [currentFilters, setCurrentFilters] = useState({
 
         <h2 className={styles.subHeading}>All Products</h2>
 
-        {products.length === 0 ? (
-          <p className={styles.message}>No products found.</p>
+        {filteredProducts.length === 0 ? (
+          <p className={styles.message}>No products match the current filters.</p>
         ) : (
           <div className={styles.grid}>
-            {products.map((product) => (
+            {filteredProducts.map((product) => (
               <Link
                 key={product._id}
                 href={`/admin/products/${product.slug}`}
@@ -123,7 +180,6 @@ const [currentFilters, setCurrentFilters] = useState({
 }
 
 export async function getStaticProps() {
-  // Fetch products with categories, colors, and sizes
   const productQuery = `*[_type == "product"] | order(title asc){
     _id,
     title,
@@ -142,7 +198,6 @@ export async function getStaticProps() {
 
   const products: Product[] = await client.fetch(productQuery)
 
-  // Fetch all categories
   const categoryQuery = `*[_type=="category"]{
     _id,
     title,
@@ -153,9 +208,7 @@ export async function getStaticProps() {
   const categories: CategoryRaw[] = await client.fetch(categoryQuery)
 
   return {
-    props: {
-      products,
-      categories: categories || []
-    }
+    props: { products, categories },
+    revalidate: 60,
   }
 }
