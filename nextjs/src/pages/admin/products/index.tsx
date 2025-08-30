@@ -156,6 +156,8 @@ export default function AdminPage({ products, categories }: PageProps) {
 
         {showModal && (
           <FilterSortModal
+            isOpen={showFilters}
+  onClose={() => setShowFilters(false)}
             initialCategories={categories}
             initialSelectedCategories={currentFilters.categories}
             initialSelectedColors={currentFilters.colors}
