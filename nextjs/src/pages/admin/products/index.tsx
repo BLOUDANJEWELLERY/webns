@@ -51,7 +51,6 @@ type SortOption =
 function getAllDescendants(categories: CategoryRaw[], selected: string[]): string[] {
   const map: Record<string, string[]> = {}
 
-  // Build parent -> children map
   categories.forEach(cat => {
     if (cat.parent?._id) {
       if (!map[cat.parent._id]) map[cat.parent._id] = []
@@ -76,6 +75,8 @@ function getAllDescendants(categories: CategoryRaw[], selected: string[]): strin
 export default function AdminPage({ products, categories }: PageProps) {
   const [showModal, setShowModal] = useState(false)
 
+  const [searchQuery, setSearchQuery] = useState('')
+
   const [currentFilters, setCurrentFilters] = useState({
     categories: [] as string[],
     colors: [] as string[],
@@ -85,11 +86,11 @@ export default function AdminPage({ products, categories }: PageProps) {
     sort: 'relevance' as SortOption,
   })
 
-  // ----- Filtered & Sorted Products -----
+  // ----- Filtered, Searched & Sorted Products -----
   const filteredProducts = useMemo(() => {
     let filtered = products
 
-    // Filter by categories (expand to include children)
+    // Filter by categories
     if (currentFilters.categories.length > 0) {
       const expandedCategories = getAllDescendants(categories, currentFilters.categories)
       filtered = filtered.filter(prod =>
@@ -116,6 +117,12 @@ export default function AdminPage({ products, categories }: PageProps) {
       prod => prod.price >= currentFilters.minPrice && prod.price <= currentFilters.maxPrice
     )
 
+    // 🔍 Search by name
+    if (searchQuery.trim()) {
+      const queryLower = searchQuery.toLowerCase()
+      filtered = filtered.filter(prod => prod.title.toLowerCase().includes(queryLower))
+    }
+
     // Sort
     switch (currentFilters.sort) {
       case 'alphabeticalAZ':
@@ -132,11 +139,11 @@ export default function AdminPage({ products, categories }: PageProps) {
         break
       case 'relevance':
       default:
-        break // keep default order
+        break
     }
 
     return filtered
-  }, [products, currentFilters, categories])
+  }, [products, currentFilters, categories, searchQuery])
 
   return (
     <>
@@ -164,6 +171,17 @@ export default function AdminPage({ products, categories }: PageProps) {
         )}
 
         <h1 className={styles.heading}>Products</h1>
+
+        {/* 🔍 Search Bar */}
+        <div className={styles.searchWrapper}>
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className={styles.searchInput}
+          />
+        </div>
 
         <div className={styles.createWrapper}>
           <Link href="/admin/products/create">
