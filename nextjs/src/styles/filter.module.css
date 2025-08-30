@@ -1,31 +1,44 @@
 /* ----- Modal Base ----- */
 
-
-/* Overlay covering full viewport */
+/* Full-screen overlay */
 .fullOverlay {
   position: fixed;
   top: 0;
+  right: 0;
+  bottom: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: #fff; /* solid, hides parent page completely */
-  transform: translateX(100%);
+  background: rgba(0,0,0,0.4);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease;
+  z-index: 1000;
+}
+
+/* Show overlay */
+.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Sidebar container */
+.fullSidebar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 320px; /* adjust as needed */
+  height: 100%;
+  background: #fff;
+  box-shadow: -3px 0 10px rgba(0,0,0,0.2);
+  transform: translateX(100%); /* hidden by default */
   transition: transform 0.3s ease;
-  z-index: 9999;
   overflow-y: auto;
 }
 
-.fullOverlay.show {
+/* Slide in when overlay is shown */
+.show .fullSidebar {
   transform: translateX(0);
 }
 
-/* Sidebar content inside overlay (optional padding) */
-.fullSidebar {
-  width: 100%;
-  height: 100%;
-  padding: 1.5rem;
-  box-sizing: border-box;
-}
 /* ----- Price Slider ----- */
 .sliderContainer {
   position: relative;
