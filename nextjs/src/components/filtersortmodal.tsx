@@ -78,8 +78,8 @@ export default function FilterSortModal({
     const map: Record<string, CategoryNode> = {}
     const roots: CategoryNode[] = []
 
-    initialCategories.forEach(cat => map[cat._id] = { ...cat, children: [] })
-    initialCategories.forEach(cat => {
+    initialCategories?.forEach(cat => map[cat._id] = { ...cat, children: [] })
+    initialCategories?.forEach(cat => {
       if (cat.parent?._id) map[cat.parent._id]?.children.push(map[cat._id])
       else roots.push(map[cat._id])
     })
@@ -109,8 +109,10 @@ export default function FilterSortModal({
     setSelectedCategories([])
     setSelectedColors([])
     setSelectedSizes([])
-    setMinPrice(initialMinPrice)
-    setMaxPrice(initialMaxPrice)
+    setMinPrice(0) // reset to 0
+    setMaxPrice(100) // reset to 100
+    setMinInput(0)
+    setMaxInput(100)
     setSort(initialSort)
   }
 
@@ -166,6 +168,7 @@ export default function FilterSortModal({
       const clientX = 'touches' in ev ? ev.touches[0].clientX : ev.clientX
       let percent = ((clientX - slider.left) / slider.width) * 100
       percent = Math.max(0, Math.min(100, percent))
+      percent = Math.round(percent) // round to integer
       if (thumb === 'min') setMinPrice(Math.min(percent, maxPrice))
       else setMaxPrice(Math.max(percent, minPrice))
     }
@@ -188,7 +191,8 @@ export default function FilterSortModal({
     e.preventDefault()
     const slider = e.currentTarget.getBoundingClientRect()
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
-    const percent = ((clientX - slider.left) / slider.width) * 100
+    let percent = ((clientX - slider.left) / slider.width) * 100
+    percent = Math.round(percent) // round to integer
     if (Math.abs(percent - minPrice) < Math.abs(percent - maxPrice)) setMinPrice(Math.min(percent, maxPrice))
     else setMaxPrice(Math.max(percent, minPrice))
   }
@@ -237,9 +241,9 @@ export default function FilterSortModal({
 
       <div className={styles.sliderValues}>
         <input type="number" min={0} max={maxPrice} value={minInput} onChange={e => setMinInput(Number(e.target.value))}
-          onBlur={() => { const val = Math.max(0, Math.min(minInput, maxPrice)); setMinPrice(val); setMinInput(val) }} />
+          onBlur={() => { const val = Math.round(Math.max(0, Math.min(minInput, maxPrice))); setMinPrice(val); setMinInput(val) }} />
         <input type="number" min={minPrice} max={100} value={maxInput} onChange={e => setMaxInput(Number(e.target.value))}
-          onBlur={() => { const val = Math.max(minPrice, Math.min(maxInput, 100)); setMaxPrice(val); setMaxInput(val) }} />
+          onBlur={() => { const val = Math.round(Math.max(minPrice, Math.min(maxInput, 100))); setMaxPrice(val); setMaxInput(val) }} />
       </div>
 
       {/* Colors */}
