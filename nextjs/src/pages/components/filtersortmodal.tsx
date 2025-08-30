@@ -1,4 +1,3 @@
-//src/pages/components/filtersortmodal.tsx
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
@@ -52,6 +51,9 @@ const HARD_CODED_SIZES = [
 
 export default function FilterSortModal({
   initialCategories,
+  initialSelectedCategories = [],
+  initialSelectedColors = [],
+  initialSelectedSizes = [],
   initialMinPrice = 0,
   initialMaxPrice = 100,
   initialSort = 'relevance',
@@ -59,33 +61,31 @@ export default function FilterSortModal({
   onClose,
 }: FilterSortModalProps) {
 
-const [selectedCategories, setSelectedCategories] = useState<string[]>(initialSelectedCategories || [])
-const [selectedColors, setSelectedColors] = useState<string[]>(initialSelectedColors || [])
-const [selectedSizes, setSelectedSizes] = useState<string[]>(initialSelectedSizes || [])
-const [minPrice, setMinPrice] = useState(initialMinPrice || 0)
-const [maxPrice, setMaxPrice] = useState(initialMaxPrice || 100)
-const [sort, setSort] = useState<SortOption>(initialSort || 'relevance')
-
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const [selectedColors, setSelectedColors] = useState<string[]>([])
-  const [selectedSizes, setSelectedSizes] = useState<string[]>([])
+  // ----- States -----
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(initialSelectedCategories)
+  const [selectedColors, setSelectedColors] = useState<string[]>(initialSelectedColors)
+  const [selectedSizes, setSelectedSizes] = useState<string[]>(initialSelectedSizes)
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
+  const [minPrice, setMinPrice] = useState(initialMinPrice)
+  const [maxPrice, setMaxPrice] = useState(initialMaxPrice)
   const [sort, setSort] = useState<SortOption>(initialSort)
+  const [activeThumb, setActiveThumb] = useState<'min' | 'max' | null>(null)
+  const [minInput, setMinInput] = useState(minPrice)
+  const [maxInput, setMaxInput] = useState(maxPrice)
 
   // ----- Category Tree -----
   const categoryTree = useMemo(() => {
-    if (!initialCategories) return []
     const map: Record<string, CategoryNode> = {}
     const roots: CategoryNode[] = []
 
-    initialCategories.forEach(cat => map[cat._id] = {...cat, children: []})
+    initialCategories.forEach(cat => map[cat._id] = { ...cat, children: [] })
     initialCategories.forEach(cat => {
       if (cat.parent?._id) map[cat.parent._id]?.children.push(map[cat._id])
       else roots.push(map[cat._id])
     })
 
     const sortTree = (nodes: CategoryNode[]) => {
-      nodes.sort((a,b) => (a.order||0) - (b.order||0))
+      nodes.sort((a, b) => (a.order || 0) - (b.order || 0))
       nodes.forEach(n => sortTree(n.children))
     }
     sortTree(roots)
@@ -101,11 +101,7 @@ const [sort, setSort] = useState<SortOption>(initialSort || 'relevance')
     })
   }
 
-  const handleToggle = (
-    value: string,
-    selected: string[],
-    setSelected: React.Dispatch<React.SetStateAction<string[]>>
-  ) => {
+  const handleToggle = (value: string, selected: string[], setSelected: React.Dispatch<React.SetStateAction<string[]>>) => {
     setSelected(selected.includes(value) ? selected.filter(v => v !== value) : [...selected, value])
   }
 
@@ -130,7 +126,7 @@ const [sort, setSort] = useState<SortOption>(initialSort || 'relevance')
     onClose?.()
   }
 
-  // ----- Recursive Category -----
+  // ----- Recursive Category Component -----
   const CategoryNodeItem = ({ node }: { node: CategoryNode }) => {
     const isExpanded = expandedCategories.has(node._id)
     return (
@@ -159,71 +155,55 @@ const [sort, setSort] = useState<SortOption>(initialSort || 'relevance')
     )
   }
 
-  // Slider percentages
-// State
-const [minPrice, setMinPrice] = useState(0)
-const [maxPrice, setMaxPrice] = useState(100)
-const [activeThumb, setActiveThumb] = useState<'min' | 'max' | null>(null)
+  // ----- Slider Handlers -----
+  const startDrag = (e: React.MouseEvent | React.TouchEvent, thumb: 'min' | 'max') => {
+    e.preventDefault()
+    setActiveThumb(thumb)
 
-// temporary values while typing
-const [minInput, setMinInput] = useState(minPrice)
-const [maxInput, setMaxInput] = useState(maxPrice)
+    const move = (ev: MouseEvent | TouchEvent) => {
+      const slider = document.querySelector(`.${styles.sliderContainer}`)?.getBoundingClientRect()
+      if (!slider) return
+      const clientX = 'touches' in ev ? ev.touches[0].clientX : ev.clientX
+      let percent = ((clientX - slider.left) / slider.width) * 100
+      percent = Math.max(0, Math.min(100, percent))
+      if (thumb === 'min') setMinPrice(Math.min(percent, maxPrice))
+      else setMaxPrice(Math.max(percent, minPrice))
+    }
 
+    const stop = () => {
+      setActiveThumb(null)
+      window.removeEventListener('mousemove', move)
+      window.removeEventListener('mouseup', stop)
+      window.removeEventListener('touchmove', move)
+      window.removeEventListener('touchend', stop)
+    }
 
-const startDrag = (e: React.MouseEvent | React.TouchEvent, thumb: 'min' | 'max') => {
-  e.preventDefault()
-  setActiveThumb(thumb)
-
-  const move = (ev: MouseEvent | TouchEvent) => {
-    const slider = document.querySelector(`.${styles.sliderContainer}`)?.getBoundingClientRect()
-    if (!slider) return
-    const clientX = 'touches' in ev ? ev.touches[0].clientX : ev.clientX
-    let percent = ((clientX - slider.left) / slider.width) * 100
-    percent = Math.max(0, Math.min(100, percent))
-    const value = Math.round(percent)
-    if (thumb === 'min') setMinPrice(Math.min(value, maxPrice))
-    else setMaxPrice(Math.max(value, minPrice))
+    window.addEventListener('mousemove', move)
+    window.addEventListener('mouseup', stop)
+    window.addEventListener('touchmove', move, { passive: false })
+    window.addEventListener('touchend', stop)
   }
 
-  const stop = () => {
-    setActiveThumb(null)
-    window.removeEventListener('mousemove', move)
-    window.removeEventListener('mouseup', stop)
-    window.removeEventListener('touchmove', move)
-    window.removeEventListener('touchend', stop)
+  const handleSliderClick = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault()
+    const slider = e.currentTarget.getBoundingClientRect()
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+    const percent = ((clientX - slider.left) / slider.width) * 100
+    if (Math.abs(percent - minPrice) < Math.abs(percent - maxPrice)) setMinPrice(Math.min(percent, maxPrice))
+    else setMaxPrice(Math.max(percent, minPrice))
   }
 
-  window.addEventListener('mousemove', move)
-  window.addEventListener('mouseup', stop)
-  window.addEventListener('touchmove', move, { passive: false })
-  window.addEventListener('touchend', stop)
-}
+  const minPercent = minPrice
+  const maxPercent = maxPrice
 
-// Click anywhere on slider to move nearest thumb
-const handleSliderClick = (e: React.MouseEvent | React.TouchEvent) => {
-  e.preventDefault()
-  const slider = e.currentTarget.getBoundingClientRect()
-  const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
-  const percent = ((clientX - slider.left) / slider.width) * 100
-  const value = Math.round(percent)
-  if (Math.abs(value - minPrice) < Math.abs(value - maxPrice)) {
-    setMinPrice(Math.min(value, maxPrice))
-  } else {
-    setMaxPrice(Math.max(value, minPrice))
-  }
-}
-
-const minPercent = minPrice
-const maxPercent = maxPrice
-
-useEffect(() => setMinInput(minPrice), [minPrice])
-useEffect(() => setMaxInput(maxPrice), [maxPrice])
+  useEffect(() => setMinInput(minPrice), [minPrice])
+  useEffect(() => setMaxInput(maxPrice), [maxPrice])
 
   return (
     <div className={styles.modal}>
       <h3 className={styles.modalTitle}>Filter & Sort</h3>
 
-      <div style={{textAlign:'right', marginBottom:'0.75rem'}}>
+      <div style={{ textAlign: 'right', marginBottom: '0.75rem' }}>
         <button className={styles.resetBtn} onClick={handleReset}>Reset</button>
       </div>
 
@@ -244,98 +224,35 @@ useEffect(() => setMaxInput(maxPrice), [maxPrice])
         </div>
       </section>
 
-{/* Price Slider */}
-{/* Slider container */}
-<div
-  className={styles.sliderContainer}
-  onMouseDown={handleSliderClick}
-  onTouchStart={handleSliderClick}
->
-  <div className={styles.rangeTrack}></div>
-  <div
-    className={styles.rangeTrackActive}
-    style={{ left: `${minPercent}%`, right: `${100 - maxPercent}%` }}
-  ></div>
+      {/* Price Slider */}
+      <div className={styles.sliderContainer} onMouseDown={handleSliderClick} onTouchStart={handleSliderClick}>
+        <div className={styles.rangeTrack}></div>
+        <div className={styles.rangeTrackActive} style={{ left: `${minPercent}%`, right: `${100 - maxPercent}%` }}></div>
 
-  {/* Min Thumb */}
-  <div
-    className={styles.thumb}
-    style={{ left: `${minPercent}%`, zIndex: activeThumb === 'min' ? 4 : 2 }}
-    onMouseDown={e => startDrag(e, 'min')}
-    onTouchStart={e => startDrag(e, 'min')}
-  />
+        <div className={styles.thumb} style={{ left: `${minPercent}%`, zIndex: activeThumb === 'min' ? 4 : 2 }}
+          onMouseDown={e => startDrag(e, 'min')} onTouchStart={e => startDrag(e, 'min')} />
+        <div className={styles.thumb} style={{ left: `${maxPercent}%`, zIndex: activeThumb === 'max' ? 4 : 2 }}
+          onMouseDown={e => startDrag(e, 'max')} onTouchStart={e => startDrag(e, 'max')} />
+      </div>
 
-  {/* Max Thumb */}
-  <div
-    className={styles.thumb}
-    style={{ left: `${maxPercent}%`, zIndex: activeThumb === 'max' ? 4 : 2 }}
-    onMouseDown={e => startDrag(e, 'max')}
-    onTouchStart={e => startDrag(e, 'max')}
-  />
-</div>
-
-<div className={styles.sliderValues}>
-<input
-  type="number"
-  min={0}
-  max={maxPrice}
-  placeholder="Min"
-  value={minInput}
-  onClick={e => e.stopPropagation()}
-  onMouseDown={e => e.stopPropagation()}
-  onTouchStart={e => e.stopPropagation()}
-  onFocus={(e) => e.target.select()}
-  onChange={(e) => setMinInput(Number(e.target.value))}
-  onBlur={() => {
-    const val = Math.max(0, Math.min(minInput, maxPrice))
-    setMinPrice(val)
-    setMinInput(val)
-  }}
-  onKeyDown={(e) => {
-    if (e.key === "Enter") e.currentTarget.blur()
-  }}
-/>
-
-<input
-  type="number"
-  min={minPrice}
-  max={100}
-  placeholder="Max"
-  value={maxInput}
-  onClick={e => e.stopPropagation()}
-  onMouseDown={e => e.stopPropagation()}
-  onTouchStart={e => e.stopPropagation()}
-  onFocus={(e) => e.target.select()}
-  onChange={(e) => setMaxInput(Number(e.target.value))}
-  onBlur={() => {
-    const val = Math.max(minPrice, Math.min(maxInput, 100))
-    setMaxPrice(val)
-    setMaxInput(val)
-  }}
-  onKeyDown={(e) => {
-    if (e.key === "Enter") e.currentTarget.blur()
-  }}
-/>
-</div>
+      <div className={styles.sliderValues}>
+        <input type="number" min={0} max={maxPrice} value={minInput} onChange={e => setMinInput(Number(e.target.value))}
+          onBlur={() => { const val = Math.max(0, Math.min(minInput, maxPrice)); setMinPrice(val); setMinInput(val) }} />
+        <input type="number" min={minPrice} max={100} value={maxInput} onChange={e => setMaxInput(Number(e.target.value))}
+          onBlur={() => { const val = Math.max(minPrice, Math.min(maxInput, 100)); setMaxPrice(val); setMaxInput(val) }} />
+      </div>
 
       {/* Colors */}
       <section className={styles.section}>
         <h4 className={styles.sectionTitle}>Colors</h4>
         <div className={styles.circleGrid}>
-          <button
-            className={`${styles.colorCircle} ${selectedColors.length === 0 ? styles.activeCircle : ''}`}
-            onClick={() => setSelectedColors([])}
-            title="All Colors"
-          >All</button>
+          <button className={`${styles.colorCircle} ${selectedColors.length === 0 ? styles.activeCircle : ''}`} onClick={() => setSelectedColors([])}>All</button>
           {HARD_CODED_COLORS.map(color => (
-            <button
-              key={color}
-              type="button"
+            <button key={color} type="button"
               className={`${styles.colorCircle} ${selectedColors.includes(color) ? styles.activeCircle : ''}`}
               style={{ backgroundColor: color.toLowerCase() }}
               onClick={() => handleToggle(color, selectedColors, setSelectedColors)}
-              title={color}
-            />
+              title={color} />
           ))}
         </div>
       </section>
@@ -344,17 +261,11 @@ useEffect(() => setMaxInput(maxPrice), [maxPrice])
       <section className={styles.section}>
         <h4 className={styles.sectionTitle}>Sizes</h4>
         <div className={styles.circleGrid}>
-          <button
-            className={`${styles.sizeCircle} ${selectedSizes.length === 0 ? styles.activeCircle : ''}`}
-            onClick={() => setSelectedSizes([])}
-          >All</button>
+          <button className={`${styles.sizeCircle} ${selectedSizes.length === 0 ? styles.activeCircle : ''}`} onClick={() => setSelectedSizes([])}>All</button>
           {HARD_CODED_SIZES.map(size => (
-            <button
-              key={size}
-              type="button"
+            <button key={size} type="button"
               className={`${styles.sizeCircle} ${selectedSizes.includes(size) ? styles.activeCircle : ''}`}
-              onClick={() => handleToggle(size, selectedSizes, setSelectedSizes)}
-            >
+              onClick={() => handleToggle(size, selectedSizes, setSelectedSizes)}>
               {size}
             </button>
           ))}
@@ -364,11 +275,7 @@ useEffect(() => setMaxInput(maxPrice), [maxPrice])
       {/* Sort */}
       <section className={styles.section}>
         <h4 className={styles.sectionTitle}>Sort By</h4>
-        <select
-          className={styles.sortSelect}
-          value={sort}
-          onChange={e => setSort(e.target.value as SortOption)}
-        >
+        <select className={styles.sortSelect} value={sort} onChange={e => setSort(e.target.value as SortOption)}>
           <option value="alphabeticalAZ">A-Z</option>
           <option value="alphabeticalZA">Z-A</option>
           <option value="priceLowHigh">Price: Low to High</option>
