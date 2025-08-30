@@ -73,12 +73,17 @@ export default function FilterSortModal({
   const [minInput, setMinInput] = useState(minPrice)
   const [maxInput, setMaxInput] = useState(maxPrice)
 
-  // ----- Category Tree -----
-  const categoryTree = useMemo(() => {
+  // ----- Category Tree & Parent Map -----
+  const { categoryTree, parentMap } = useMemo(() => {
     const map: Record<string, CategoryNode> = {}
     const roots: CategoryNode[] = []
+    const parentMap: Record<string, string | null> = {}
 
-    initialCategories?.forEach(cat => map[cat._id] = { ...cat, children: [] })
+    initialCategories?.forEach(cat => {
+      map[cat._id] = { ...cat, children: [] }
+      parentMap[cat._id] = cat.parent?._id || null
+    })
+
     initialCategories?.forEach(cat => {
       if (cat.parent?._id) map[cat.parent._id]?.children.push(map[cat._id])
       else roots.push(map[cat._id])
@@ -89,8 +94,22 @@ export default function FilterSortModal({
       nodes.forEach(n => sortTree(n.children))
     }
     sortTree(roots)
-    return roots
+
+    return { categoryTree: roots, parentMap }
   }, [initialCategories])
+
+  // ----- Expand parents of selected categories -----
+  useEffect(() => {
+    const newExpanded = new Set<string>()
+    selectedCategories.forEach(catId => {
+      let current = catId
+      while (parentMap[current]) {
+        newExpanded.add(parentMap[current]!)
+        current = parentMap[current]!
+      }
+    })
+    setExpandedCategories(newExpanded)
+  }, [selectedCategories, parentMap])
 
   // ----- Handlers -----
   const toggleCategoryExpand = (id: string) => {
@@ -109,11 +128,12 @@ export default function FilterSortModal({
     setSelectedCategories([])
     setSelectedColors([])
     setSelectedSizes([])
-    setMinPrice(0) // reset to 0
-    setMaxPrice(100) // reset to 100
+    setMinPrice(0)
+    setMaxPrice(100)
     setMinInput(0)
     setMaxInput(100)
     setSort(initialSort)
+    setExpandedCategories(new Set()) // reset expanded state
   }
 
   const handleApply = () => {
@@ -168,7 +188,7 @@ export default function FilterSortModal({
       const clientX = 'touches' in ev ? ev.touches[0].clientX : ev.clientX
       let percent = ((clientX - slider.left) / slider.width) * 100
       percent = Math.max(0, Math.min(100, percent))
-      percent = Math.round(percent) // round to integer
+      percent = Math.round(percent)
       if (thumb === 'min') setMinPrice(Math.min(percent, maxPrice))
       else setMaxPrice(Math.max(percent, minPrice))
     }
@@ -192,7 +212,7 @@ export default function FilterSortModal({
     const slider = e.currentTarget.getBoundingClientRect()
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
     let percent = ((clientX - slider.left) / slider.width) * 100
-    percent = Math.round(percent) // round to integer
+    percent = Math.round(percent)
     if (Math.abs(percent - minPrice) < Math.abs(percent - maxPrice)) setMinPrice(Math.min(percent, maxPrice))
     else setMaxPrice(Math.max(percent, minPrice))
   }
