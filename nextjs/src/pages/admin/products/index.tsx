@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import styles from '../../../styles/admin.module.css'
-import AdminHeader from '../../components/AdminHeader'
+import AdminHeader from '../../../components/AdminHeader'
 import FilterSortModal from '../../components/filtersortmodal'
 
 const client = createClient({
