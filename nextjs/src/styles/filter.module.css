@@ -6,7 +6,7 @@
   top: 0;
   right: 0;
   width: 270px;
-  height: 100vh;
+  height: 100%;
   background: #fff;
   backdrop-filter: blur(10px);
   transform: translateX(100%);
