@@ -227,16 +227,14 @@ export default function FilterSortModal({
   useEffect(() => setMaxInput(maxPrice), [maxPrice])
 
   return (
-  <div className={`${styles.fullOverlay} ${isOpen ? styles.show : ''}`} onClick={onClose}>
+<div className={`${styles.fullOverlay} ${isOpen ? styles.show : ''}`} onClick={onClose}>
   <div className={`${styles.fullSidebar} ${isOpen ? styles.open : ''}`} onClick={e => e.stopPropagation()}>
-    
     <div className={styles.modal}>
       <h3 className={styles.modalTitle}>Filter & Sort</h3>
 
       <div style={{ textAlign: 'right', marginBottom: '0.75rem' }}>
         <button className={styles.resetBtn} onClick={handleReset}>Reset</button>
       </div>
-
       {/* Categories */}
       <section className={styles.section}>
         <h4 className={styles.sectionTitle}>Categories</h4>
