@@ -72,6 +72,7 @@ export default function FilterSortModal({
   const [activeThumb, setActiveThumb] = useState<'min' | 'max' | null>(null)
   const [minInput, setMinInput] = useState(minPrice)
   const [maxInput, setMaxInput] = useState(maxPrice)
+  const [closing, setClosing] = useState(false)
 
   // ----- Category Tree & Parent Map -----
   const { categoryTree, parentMap } = useMemo(() => {
@@ -145,7 +146,15 @@ export default function FilterSortModal({
       maxPrice,
       sort
     })
-    onClose?.()
+    handleClose()
+  }
+
+  const handleClose = () => {
+    setClosing(true)
+    setTimeout(() => {
+      onClose?.()
+      setClosing(false)
+    }, 300) // match CSS transition
   }
 
   // ----- Recursive Category Component -----
@@ -223,94 +232,97 @@ export default function FilterSortModal({
   useEffect(() => setMinInput(minPrice), [minPrice])
   useEffect(() => setMaxInput(maxPrice), [maxPrice])
 
+  // ----- Render -----
   return (
-    <div className={styles.modal}>
-      <h3 className={styles.modalTitle}>Filter & Sort</h3>
+    <div className={styles.overlay}>
+      <div className={`${styles.modal} ${closing ? styles.slideOut : styles.slideIn}`}>
+        <h3 className={styles.modalTitle}>Filter & Sort</h3>
 
-      <div style={{ textAlign: 'right', marginBottom: '0.75rem' }}>
-        <button className={styles.resetBtn} onClick={handleReset}>Reset</button>
-      </div>
-
-      {/* Categories */}
-      <section className={styles.section}>
-        <h4 className={styles.sectionTitle}>Categories</h4>
-        <div className={styles.checkboxGroup}>
-          <label className={styles.customCheckboxLabel}>
-            <input
-              type="checkbox"
-              checked={selectedCategories.length === 0}
-              onChange={() => setSelectedCategories([])}
-            />
-            <span>All Categories</span>
-          </label>
-          {categoryTree.length === 0 ? <p>No categories found.</p> :
-            categoryTree.map(node => <CategoryNodeItem key={node._id} node={node} />)}
+        <div style={{ textAlign: 'right', marginBottom: '0.75rem' }}>
+          <button className={styles.resetBtn} onClick={handleReset}>Reset</button>
         </div>
-      </section>
 
-      {/* Price Slider */}
-      <div className={styles.sliderContainer} onMouseDown={handleSliderClick} onTouchStart={handleSliderClick}>
-        <div className={styles.rangeTrack}></div>
-        <div className={styles.rangeTrackActive} style={{ left: `${minPercent}%`, right: `${100 - maxPercent}%` }}></div>
+        {/* Categories */}
+        <section className={styles.section}>
+          <h4 className={styles.sectionTitle}>Categories</h4>
+          <div className={styles.checkboxGroup}>
+            <label className={styles.customCheckboxLabel}>
+              <input
+                type="checkbox"
+                checked={selectedCategories.length === 0}
+                onChange={() => setSelectedCategories([])}
+              />
+              <span>All Categories</span>
+            </label>
+            {categoryTree.length === 0 ? <p>No categories found.</p> :
+              categoryTree.map(node => <CategoryNodeItem key={node._id} node={node} />)}
+          </div>
+        </section>
 
-        <div className={styles.thumb} style={{ left: `${minPercent}%`, zIndex: activeThumb === 'min' ? 4 : 2 }}
-          onMouseDown={e => startDrag(e, 'min')} onTouchStart={e => startDrag(e, 'min')} />
-        <div className={styles.thumb} style={{ left: `${maxPercent}%`, zIndex: activeThumb === 'max' ? 4 : 2 }}
-          onMouseDown={e => startDrag(e, 'max')} onTouchStart={e => startDrag(e, 'max')} />
-      </div>
+        {/* Price Slider */}
+        <div className={styles.sliderContainer} onMouseDown={handleSliderClick} onTouchStart={handleSliderClick}>
+          <div className={styles.rangeTrack}></div>
+          <div className={styles.rangeTrackActive} style={{ left: `${minPercent}%`, right: `${100 - maxPercent}%` }}></div>
 
-      <div className={styles.sliderValues}>
-        <input type="number" min={0} max={maxPrice} value={minInput} onChange={e => setMinInput(Number(e.target.value))}
-          onBlur={() => { const val = Math.round(Math.max(0, Math.min(minInput, maxPrice))); setMinPrice(val); setMinInput(val) }} />
-        <input type="number" min={minPrice} max={100} value={maxInput} onChange={e => setMaxInput(Number(e.target.value))}
-          onBlur={() => { const val = Math.round(Math.max(minPrice, Math.min(maxInput, 100))); setMaxPrice(val); setMaxInput(val) }} />
-      </div>
-
-      {/* Colors */}
-      <section className={styles.section}>
-        <h4 className={styles.sectionTitle}>Colors</h4>
-        <div className={styles.circleGrid}>
-          <button className={`${styles.colorCircle} ${selectedColors.length === 0 ? styles.activeCircle : ''}`} onClick={() => setSelectedColors([])}>All</button>
-          {HARD_CODED_COLORS.map(color => (
-            <button key={color} type="button"
-              className={`${styles.colorCircle} ${selectedColors.includes(color) ? styles.activeCircle : ''}`}
-              style={{ backgroundColor: color.toLowerCase() }}
-              onClick={() => handleToggle(color, selectedColors, setSelectedColors)}
-              title={color} />
-          ))}
+          <div className={styles.thumb} style={{ left: `${minPercent}%`, zIndex: activeThumb === 'min' ? 4 : 2 }}
+            onMouseDown={e => startDrag(e, 'min')} onTouchStart={e => startDrag(e, 'min')} />
+          <div className={styles.thumb} style={{ left: `${maxPercent}%`, zIndex: activeThumb === 'max' ? 4 : 2 }}
+            onMouseDown={e => startDrag(e, 'max')} onTouchStart={e => startDrag(e, 'max')} />
         </div>
-      </section>
 
-      {/* Sizes */}
-      <section className={styles.section}>
-        <h4 className={styles.sectionTitle}>Sizes</h4>
-        <div className={styles.circleGrid}>
-          <button className={`${styles.sizeCircle} ${selectedSizes.length === 0 ? styles.activeCircle : ''}`} onClick={() => setSelectedSizes([])}>All</button>
-          {HARD_CODED_SIZES.map(size => (
-            <button key={size} type="button"
-              className={`${styles.sizeCircle} ${selectedSizes.includes(size) ? styles.activeCircle : ''}`}
-              onClick={() => handleToggle(size, selectedSizes, setSelectedSizes)}>
-              {size}
-            </button>
-          ))}
+        <div className={styles.sliderValues}>
+          <input type="number" min={0} max={maxPrice} value={minInput} onChange={e => setMinInput(Number(e.target.value))}
+            onBlur={() => { const val = Math.round(Math.max(0, Math.min(minInput, maxPrice))); setMinPrice(val); setMinInput(val) }} />
+          <input type="number" min={minPrice} max={100} value={maxInput} onChange={e => setMaxInput(Number(e.target.value))}
+            onBlur={() => { const val = Math.round(Math.max(minPrice, Math.min(maxInput, 100))); setMaxPrice(val); setMaxInput(val) }} />
         </div>
-      </section>
 
-      {/* Sort */}
-      <section className={styles.section}>
-        <h4 className={styles.sectionTitle}>Sort By</h4>
-        <select className={styles.sortSelect} value={sort} onChange={e => setSort(e.target.value as SortOption)}>
-          <option value="alphabeticalAZ">A-Z</option>
-          <option value="alphabeticalZA">Z-A</option>
-          <option value="priceLowHigh">Price: Low to High</option>
-          <option value="priceHighLow">Price: High to Low</option>
-          <option value="relevance">Relevance</option>
-        </select>
-      </section>
+        {/* Colors */}
+        <section className={styles.section}>
+          <h4 className={styles.sectionTitle}>Colors</h4>
+          <div className={styles.circleGrid}>
+            <button className={`${styles.colorCircle} ${selectedColors.length === 0 ? styles.activeCircle : ''}`} onClick={() => setSelectedColors([])}>All</button>
+            {HARD_CODED_COLORS.map(color => (
+              <button key={color} type="button"
+                className={`${styles.colorCircle} ${selectedColors.includes(color) ? styles.activeCircle : ''}`}
+                style={{ backgroundColor: color.toLowerCase() }}
+                onClick={() => handleToggle(color, selectedColors, setSelectedColors)}
+                title={color} />
+            ))}
+          </div>
+        </section>
 
-      <div className={styles.buttons}>
-        <button className={styles.applyBtn} onClick={handleApply}>Apply</button>
-        <button className={styles.closeBtn} onClick={onClose}>Close</button>
+        {/* Sizes */}
+        <section className={styles.section}>
+          <h4 className={styles.sectionTitle}>Sizes</h4>
+          <div className={styles.circleGrid}>
+            <button className={`${styles.sizeCircle} ${selectedSizes.length === 0 ? styles.activeCircle : ''}`} onClick={() => setSelectedSizes([])}>All</button>
+            {HARD_CODED_SIZES.map(size => (
+              <button key={size} type="button"
+                className={`${styles.sizeCircle} ${selectedSizes.includes(size) ? styles.activeCircle : ''}`}
+                onClick={() => handleToggle(size, selectedSizes, setSelectedSizes)}>
+                {size}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* Sort */}
+        <section className={styles.section}>
+          <h4 className={styles.sectionTitle}>Sort By</h4>
+          <select className={styles.sortSelect} value={sort} onChange={e => setSort(e.target.value as SortOption)}>
+            <option value="alphabeticalAZ">A-Z</option>
+            <option value="alphabeticalZA">Z-A</option>
+            <option value="priceLowHigh">Price: Low to High</option>
+            <option value="priceHighLow">Price: High to Low</option>
+            <option value="relevance">Relevance</option>
+          </select>
+        </section>
+
+        <div className={styles.buttons}>
+          <button className={styles.applyBtn} onClick={handleApply}>Apply</button>
+          <button className={styles.closeBtn} onClick={handleClose}>Close</button>
+        </div>
       </div>
     </div>
   )
