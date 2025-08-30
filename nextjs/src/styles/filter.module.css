@@ -1,42 +1,41 @@
 /* ----- Modal Base ----- */
 
-/* Full-screen overlay */
+/* Overlay */
 .fullOverlay {
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  top: 0; right: 0; bottom: 0; left: 0;
   background: rgba(0,0,0,0.4);
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.35s ease-in-out;
   z-index: 1000;
 }
 
-/* Show overlay */
-.show {
+.fullOverlay.show {
   opacity: 1;
   visibility: visible;
 }
 
-/* Sidebar container */
+/* Sidebar sliding */
 .fullSidebar {
-  position: absolute;
+  position: fixed;
   top: 0;
   right: 0;
-  width: 320px; /* adjust as needed */
+  width: 320px; /* adjust to your design */
   height: 100%;
   background: #fff;
-  box-shadow: -3px 0 10px rgba(0,0,0,0.2);
-  transform: translateX(100%); /* hidden by default */
-  transition: transform 0.3s ease;
+  box-shadow: -6px 0 20px rgba(0,0,0,0.25);
+  transform: translateX(100%); /* hidden off-screen right */
+  transition: transform 0.35s ease-in-out;
   overflow-y: auto;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 1.5rem;
 }
 
-/* Slide in when overlay is shown */
-.show .fullSidebar {
-  transform: translateX(0);
+.fullSidebar.open {
+  transform: translateX(0); /* slide in */
 }
 
 /* ----- Price Slider ----- */
