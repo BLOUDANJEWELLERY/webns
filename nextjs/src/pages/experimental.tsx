@@ -1,6 +1,6 @@
 // pages/experimental.tsx
 import { GetServerSideProps } from "next"
-import FilterSortModal from "./components/filtersortmodal"
+import FilterSortModal from "../components/filtersortmodal"
 import { client } from "../lib/sanityClient"
 
 // Match your Sanity schema for categories
