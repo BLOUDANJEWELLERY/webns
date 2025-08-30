@@ -3,39 +3,39 @@
 /* Overlay */
 .fullOverlay {
   position: fixed;
-  top: 0; right: 0; bottom: 0; left: 0;
-  background: rgba(0,0,0,0.4);
-  opacity: 0;
+  inset: 0;
+  background: rgba(0,0,0,0);
   visibility: hidden;
-  transition: opacity 0.35s ease-in-out;
+  opacity: 0;
+  transition: opacity 0.35s ease-in-out, visibility 0.35s ease-in-out;
   z-index: 1000;
 }
 
 .fullOverlay.show {
-  opacity: 1;
+  background: rgba(0,0,0,0.4);
   visibility: visible;
+  opacity: 1;
 }
 
-/* Sidebar sliding */
+/* Sidebar */
 .fullSidebar {
   position: fixed;
   top: 0;
   right: 0;
-  width: 320px; /* adjust to your design */
+  width: 320px;
   height: 100%;
   background: #fff;
-  box-shadow: -6px 0 20px rgba(0,0,0,0.25);
-  transform: translateX(100%); /* hidden off-screen right */
+  transform: translateX(100%);
   transition: transform 0.35s ease-in-out;
-  overflow-y: auto;
   z-index: 1001;
   display: flex;
   flex-direction: column;
   padding: 2rem 1.5rem;
+  overflow-y: auto;
 }
 
 .fullSidebar.open {
-  transform: translateX(0); /* slide in */
+  transform: translateX(0);
 }
 
 /* ----- Price Slider ----- */
