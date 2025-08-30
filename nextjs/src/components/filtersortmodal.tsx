@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import styles from '../../styles/filter.module.css'
+import styles from '../styles/filter.module.css'
 
 interface CategoryRaw {
   _id: string
