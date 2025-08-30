@@ -42,7 +42,17 @@ interface PageProps {
 
 export default function AdminPage({ products, categories }: PageProps) {
   const [showModal, setShowModal] = useState(false)
-  const [appliedFilters, setAppliedFilters] = useState<any>(null)
+const [appliedFilters, setAppliedFilters] = useState<any>(null) // holds currently applied filters
+const [currentFilters, setCurrentFilters] = useState<any>({
+  categories,
+  minPrice: 10,
+  maxPrice: 1000,
+  sort: 'relevance',
+})
+
+
+
+
 
   return (
     <>
@@ -50,19 +60,20 @@ export default function AdminPage({ products, categories }: PageProps) {
       <div className={styles.mainContainer}>
         <button onClick={() => setShowModal(true)}>Open Filters</button>
 
-        {showModal && (
-          <FilterSortModal
-            initialCategories={categories}
-            initialMinPrice={10}
-            initialMaxPrice={1000}
-            initialSort="relevance"
-            onApply={(filters) => {
-              console.log('Applied Filters:', filters)
-              setAppliedFilters(filters)
-            }}
-            onClose={() => setShowModal(false)}
-          />
-        )}
+{showModal && (
+      <FilterSortModal
+        initialCategories={currentFilters.categories}
+        initialMinPrice={currentFilters.minPrice}
+        initialMaxPrice={currentFilters.maxPrice}
+        initialSort={currentFilters.sort}
+        onApply={(filters) => {
+          setAppliedFilters(filters)        // save applied filters for product filtering
+          setCurrentFilters(filters)        // update currentFilters so modal retains state
+          setShowModal(false)               // close modal
+        }}
+        onClose={() => setShowModal(false)}
+      />
+    )}
 
         <h1 className={styles.heading}>Products</h1>
 
