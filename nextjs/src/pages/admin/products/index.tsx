@@ -6,6 +6,7 @@ import imageUrlBuilder from '@sanity/image-url'
 import styles from '../../../styles/admin.module.css'
 import AdminHeader from '../../components/AdminHeader'
 import FilterSortModal from '../../../components/filtersortmodal'
+import { GetServerSideProps } from 'next'
 
 const client = createClient({
   projectId: '3jc8hsku',
@@ -74,7 +75,6 @@ function getAllDescendants(categories: CategoryRaw[], selected: string[]): strin
 
 export default function AdminPage({ products, categories }: PageProps) {
   const [showModal, setShowModal] = useState(false)
-
   const [searchQuery, setSearchQuery] = useState('')
 
   const [currentFilters, setCurrentFilters] = useState({
@@ -229,6 +229,7 @@ export default function AdminPage({ products, categories }: PageProps) {
   )
 }
 
+// ---- Static props for products ----
 export async function getStaticProps() {
   const productQuery = `*[_type == "product"] | order(title asc){
     _id,
@@ -248,6 +249,13 @@ export async function getStaticProps() {
 
   const products: Product[] = await client.fetch(productQuery)
 
+  return {
+    props: { products },
+  }
+}
+
+// ---- Server-side props for categories ----
+export const getServerSideProps: GetServerSideProps = async () => {
   const categoryQuery = `*[_type=="category"]{
     _id,
     title,
@@ -258,7 +266,6 @@ export async function getStaticProps() {
   const categories: CategoryRaw[] = await client.fetch(categoryQuery)
 
   return {
-    props: { products, categories },
-    revalidate: 60,
+    props: { categories },
   }
 }
