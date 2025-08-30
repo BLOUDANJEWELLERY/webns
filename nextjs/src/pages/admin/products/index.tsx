@@ -150,6 +150,8 @@ export default function AdminPage({ products, categories }: PageProps) {
     <>
       <AdminHeader title="Admin Panel" titleHref="/admin" />
 
+      <div className={styles.mainContainer}>
+
         <button className={styles.actionButton} onClick={() => setShowModal(true)}>
           Open Filters
         </button>
@@ -171,11 +173,6 @@ export default function AdminPage({ products, categories }: PageProps) {
   }}
 />
         )}
-
-
-      <div className={styles.mainContainer}>
-
-
         <h1 className={styles.heading}>Products</h1>
 
         {/* 🔍 Search Bar */}
