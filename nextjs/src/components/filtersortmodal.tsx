@@ -25,22 +25,21 @@ type SortOption =
 interface FilterSortModalProps {
   isOpen: boolean; // NEW
   onClose?: () => void;
-  initialCategories: CategoryRaw[]
-  initialSelectedCategories?: string[]
-  initialSelectedColors?: string[]
-  initialSelectedSizes?: string[]
-  initialMinPrice?: number
-  initialMaxPrice?: number
-  initialSort?: SortOption
+  initialCategories: CategoryRaw[];
+  initialSelectedCategories?: string[];
+  initialSelectedColors?: string[];
+  initialSelectedSizes?: string[];
+  initialMinPrice?: number;
+  initialMaxPrice?: number;
+  initialSort?: SortOption;
   onApply?: (filters: {
-    categories: string[]
-    colors: string[]
-    sizes: string[]
-    minPrice: number
-    maxPrice: number
-    sort: SortOption
-  }) => void
-  onClose?: () => void
+    categories: string[];
+    colors: string[];
+    sizes: string[];
+    minPrice: number;
+    maxPrice: number;
+    sort: SortOption;
+  }) => void;
 }
 
 const HARD_CODED_COLORS = [
