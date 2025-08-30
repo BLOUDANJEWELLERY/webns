@@ -41,40 +41,39 @@ interface PageProps {
 }
 
 export default function AdminPage({ products, categories }: PageProps) {
-  const [showModal, setShowModal] = useState(false)
-const [appliedFilters, setAppliedFilters] = useState<any>(null) // holds currently applied filters
-const [currentFilters, setCurrentFilters] = useState<any>({
-  categories,
+const [showModal, setShowModal] = useState(false)
+
+// Current filters (persist across modal open/close)
+const [currentFilters, setCurrentFilters] = useState({
+  categories: [] as string[],
+  colors: [] as string[],
+  sizes: [] as string[],
   minPrice: 10,
   maxPrice: 1000,
-  sort: 'relevance',
+  sort: 'relevance' as 'relevance' | 'alphabeticalAZ' | 'alphabeticalZA' | 'priceLowHigh' | 'priceHighLow'
 })
-
-
-
-
 
   return (
     <>
       <AdminHeader title="Admin Panel" titleHref="/admin" />
       <div className={styles.mainContainer}>
         <button className={styles.actionButton} onClick={() => setShowModal(true)}>Open Filters</button>
-
-{showModal && (
+    {showModal && (
       <FilterSortModal
-        initialCategories={currentFilters.categories}
+        initialCategories={categories}           // your categories from props
+        initialSelectedCategories={currentFilters.categories}
+        initialSelectedColors={currentFilters.colors}
+        initialSelectedSizes={currentFilters.sizes}
         initialMinPrice={currentFilters.minPrice}
         initialMaxPrice={currentFilters.maxPrice}
         initialSort={currentFilters.sort}
         onApply={(filters) => {
-          setAppliedFilters(filters)        // save applied filters for product filtering
-          setCurrentFilters(filters)        // update currentFilters so modal retains state
-          setShowModal(false)               // close modal
+          setCurrentFilters(filters)           // persist filters
+          setShowModal(false)                  // close modal
         }}
         onClose={() => setShowModal(false)}
       />
     )}
-
         <h1 className={styles.heading}>Products</h1>
 
         <div className={styles.createWrapper}>
